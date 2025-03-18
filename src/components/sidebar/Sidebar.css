@@ -1,0 +1,21 @@
+.icon {
+    font-size: 1.2rem; /* Tamaño de los iconos */
+    margin-right: 10px; /* Espacio entre el icono y el texto */
+  }
+  
+  .brand .icon {
+    font-size: 1.5rem; /* Tamaño del icono de la marca */
+  }
+  
+  .side-menu li a {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    color: inherit;
+    text-decoration: none;
+  }
+  
+  .side-menu li.active a {
+    background-color: #f0f0f0; /* Estilo para el menú activo */
+    border-radius: 5px;
+  }

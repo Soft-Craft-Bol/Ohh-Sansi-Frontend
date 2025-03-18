@@ -1,0 +1,75 @@
+import React, { useState, useEffect } from 'react';
+import { FaBars, FaSearch, FaTimes, FaBell, FaMoon, FaSun } from 'react-icons/fa';
+import './Navbar.css';
+
+const Navbar = () => {
+  const [isSearchVisible, setIsSearchVisible] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isSidebarVisible, setIsSidebarVisible] = useState(true);
+
+  const toggleSearch = () => {
+    if (window.innerWidth < 576) {
+      setIsSearchVisible(!isSearchVisible);
+    }
+  };
+
+  const toggleDarkMode = () => {
+    setIsDarkMode(!isDarkMode);
+    document.body.classList.toggle('dark', !isDarkMode); // Corregido el estado
+  };
+
+  const toggleSidebar = () => {
+    setIsSidebarVisible(!isSidebarVisible);
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar) {
+      sidebar.classList.toggle('hide');
+    }
+  };
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth > 576) {
+        setIsSearchVisible(false);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  return (
+    <nav>
+      <i className='bx bx-menu' onClick={toggleSidebar}>
+        {isSidebarVisible ? <FaBars /> : <FaBars />} {/* Icono dinámico */}
+      </i>
+      <a href="#" className="nav-link">Categories</a>
+      <form action="#" className={isSearchVisible ? 'show' : ''}>
+        <div className="form-input">
+          <input type="search" placeholder="Search..." />
+          <button type="submit" className="search-btn" onClick={toggleSearch}>
+            {isSearchVisible ? <FaTimes /> : <FaSearch />} {/* Icono dinámico */}
+          </button>
+        </div>
+      </form>
+      <input
+        type="checkbox"
+        id="switch-mode"
+        hidden
+        checked={isDarkMode}
+        onChange={toggleDarkMode}
+      />
+      <label htmlFor="switch-mode" className="switch-mode">
+        {isDarkMode ? <FaSun /> : <FaMoon />} {/* Icono dinámico */}
+      </label>
+      <a href="#" className="notification">
+        <FaBell />
+        <span className="num">8</span>
+      </a>
+      <a href="#" className="profile">
+        <img src="../../assets/img/people.png" alt="Profile" />
+      </a>
+    </nav>
+  );
+};
+
+export default Navbar;
