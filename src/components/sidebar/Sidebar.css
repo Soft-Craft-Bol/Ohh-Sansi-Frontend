@@ -1,6 +1,6 @@
 .icon {
     font-size: 1.2rem; /* Tamaño de los iconos */
-    margin-right: 10px; /* Espacio entre el icono y el texto */
+    margin-right: 20px; /* Espacio entre el icono y el texto */
   }
   
   .brand .icon {
@@ -19,3 +19,23 @@
     background-color: #f0f0f0; /* Estilo para el menú activo */
     border-radius: 5px;
   }
+
+
+
+  #sidebar.hide .side-menu li a .text {
+    display: none;
+}
+
+#sidebar.hide .side-menu li a .icon {
+    display: block;
+    margin-right: 0; /* Elimina el margen derecho para que el icono quede centrado */
+}
+
+#sidebar.hide .brand .text {
+    display: none;
+}
+
+#sidebar.hide .brand .icon {
+    display: block;
+    margin-right: 0; /* Elimina el margen derecho para que el icono quede centrado */
+}

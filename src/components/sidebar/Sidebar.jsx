@@ -19,7 +19,7 @@ const Sidebar = ({ isSidebarVisible }) => { // Recibimos el estado del sidebar d
   };
 
   return (
-    <section id="sidebar" className={!isSidebarVisible ? 'hide-text' : ''}> 
+    <section id="sidebar" className={!isSidebarVisible ? 'hide' : ''}> 
       <a href="#" className="brand">
         <FaSmile className="icon" /> 
         <span className="text">AdminHub</span>
@@ -27,7 +27,7 @@ const Sidebar = ({ isSidebarVisible }) => { // Recibimos el estado del sidebar d
       <ul className="side-menu top">
         <li className={activeMenu === 'dashboard' ? 'active' : ''}>
           <a href="#" onClick={() => handleMenuClick('dashboard')}>
-            <FaThLarge className="icon" /> {/* Icono de dashboard */}
+            <FaThLarge className="icon" /> 
             <span className="text">Dashboard</span>
           </a>
         </li>
