@@ -9,9 +9,11 @@ import {
   FaCog,
   FaSignOutAlt,
 } from 'react-icons/fa';
-import './Sidebar.css';
 
-const Sidebar = ({ isSidebarVisible }) => { // Recibimos el estado del sidebar desde el componente padre
+import './Sidebar.css';
+import { Link } from 'react-router-dom';
+
+const Sidebar = ({ isSidebarVisible }) => {
   const [activeMenu, setActiveMenu] = useState('dashboard');
 
   const handleMenuClick = (menu) => {
@@ -19,55 +21,55 @@ const Sidebar = ({ isSidebarVisible }) => { // Recibimos el estado del sidebar d
   };
 
   return (
-    <section id="sidebar" className={!isSidebarVisible ? 'hide' : ''}> 
-      <a href="#" className="brand">
-        <FaSmile className="icon" /> 
+    <section id="sidebar" className={!isSidebarVisible ? 'hide' : ''}>
+      <Link to="/" className="brand">
+        <FaSmile className="icon" />
         <span className="text">AdminHub</span>
-      </a>
+      </Link>
       <ul className="side-menu top">
         <li className={activeMenu === 'dashboard' ? 'active' : ''}>
-          <a href="#" onClick={() => handleMenuClick('dashboard')}>
-            <FaThLarge className="icon" /> 
+          <Link to="/dashboard" onClick={() => handleMenuClick('dashboard')}> 
+            <FaThLarge className="icon" />
             <span className="text">Dashboard</span>
-          </a>
+          </Link>
         </li>
         <li className={activeMenu === 'store' ? 'active' : ''}>
-          <a href="#" onClick={() => handleMenuClick('store')}>
-            <FaShoppingBag className="icon" /> {/* Icono de store */}
+          <Link to="/store" onClick={() => handleMenuClick('store')}>
+            <FaShoppingBag className="icon" />
             <span className="text">My Store</span>
-          </a>
+          </Link>
         </li>
         <li className={activeMenu === 'analytics' ? 'active' : ''}>
-          <a href="#" onClick={() => handleMenuClick('analytics')}>
-            <FaChartPie className="icon" /> {/* Icono de analytics */}
+          <Link to="/analytics" onClick={() => handleMenuClick('analytics')}> 
+            <FaChartPie className="icon" />
             <span className="text">Analytics</span>
-          </a>
+          </Link>
         </li>
         <li className={activeMenu === 'message' ? 'active' : ''}>
-          <a href="#" onClick={() => handleMenuClick('message')}>
-            <FaCommentDots className="icon" /> {/* Icono de message */}
+          <Link to="/message" onClick={() => handleMenuClick('message')}> 
+            <FaCommentDots className="icon" />
             <span className="text">Message</span>
-          </a>
+          </Link>
         </li>
         <li className={activeMenu === 'team' ? 'active' : ''}>
-          <a href="#" onClick={() => handleMenuClick('team')}>
-            <FaUsers className="icon" /> {/* Icono de team */}
+          <Link to="/team" onClick={() => handleMenuClick('team')}> 
+            <FaUsers className="icon" />
             <span className="text">Team</span>
-          </a>
+          </Link>
         </li>
       </ul>
       <ul className="side-menu">
         <li>
-          <a href="#">
-            <FaCog className="icon" /> {/* Icono de settings */}
+          <Link to="/settings"> 
+            <FaCog className="icon" />
             <span className="text">Settings</span>
-          </a>
+          </Link>
         </li>
         <li>
-          <a href="#" className="logout">
-            <FaSignOutAlt className="icon" /> {/* Icono de logout */}
+          <Link to="/logout" className="logout">
+            <FaSignOutAlt className="icon" />
             <span className="text">Logout</span>
-          </a>
+          </Link>
         </li>
       </ul>
     </section>

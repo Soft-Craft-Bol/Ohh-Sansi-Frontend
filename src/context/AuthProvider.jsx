@@ -8,7 +8,7 @@ export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [tokenValid, setTokenValid] = useState(false);
 
-  useEffect(() => {
+  useEffect(() => { 
     const token = getToken();
     if (token && isTokenValid(token)) {
       setTokenValid(true);

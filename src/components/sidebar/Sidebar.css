@@ -1,10 +1,10 @@
 .icon {
-    font-size: 1.2rem; /* Tamaño de los iconos */
-    margin-right: 20px; /* Espacio entre el icono y el texto */
+    font-size: 1.2rem; 
+    margin-right: 0px;
   }
   
   .brand .icon {
-    font-size: 1.5rem; /* Tamaño del icono de la marca */
+    font-size: 1.5rem; 
   }
   
   .side-menu li a {
