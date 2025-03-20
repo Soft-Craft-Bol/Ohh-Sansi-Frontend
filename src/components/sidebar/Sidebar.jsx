@@ -9,16 +9,22 @@ import {
   FaCog,
   FaSignOutAlt,
 } from 'react-icons/fa';
-
+import { signOut } from '../../utils/authFuntions';
 import './Sidebar.css';
 import { Link } from 'react-router-dom';
 
 const Sidebar = ({ isSidebarVisible }) => {
   const [activeMenu, setActiveMenu] = useState('dashboard');
+  //cerrar secion
+    const handleLogout = () => {
+    signOut();
+  };
 
   const handleMenuClick = (menu) => {
     setActiveMenu(menu);
   };
+
+
 
   return (
     <section id="sidebar" className={!isSidebarVisible ? 'hide' : ''}>
@@ -66,10 +72,11 @@ const Sidebar = ({ isSidebarVisible }) => {
           </Link>
         </li>
         <li>
-          <Link to="/logout" className="logout">
-            <FaSignOutAlt className="icon" />
-            <span className="text">Logout</span>
-          </Link>
+            <button onClick={handleLogout} className='logout'>
+                <FaSignOutAlt className="icon" />
+                <span className="text">Logout</span>
+            </button>
+          
         </li>
       </ul>
     </section>
