@@ -3,6 +3,7 @@ import { Routes, Route } from 'react-router-dom';
 import PrivateRoute from '../context/PrivateRoute';
 import MainContent from '../components/sidebar/Main';
 import Inicio from '../pages/home/Inicio';
+import Layout from '../Layout/Layout';
 
 const LoginUser = lazy(() => import('../pages/login/LoginUser'));
 
@@ -27,7 +28,9 @@ const AppRoutes = () => {
         path="/home"
         element={
           <PrivateRoute>
-            <Inicio/>
+          <Layout>
+            <MainContent/>
+            </Layout>
           </PrivateRoute>
         }
       />

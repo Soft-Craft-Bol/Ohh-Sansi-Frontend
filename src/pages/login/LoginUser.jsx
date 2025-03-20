@@ -66,6 +66,7 @@ const LoginUser = () => {
         });
 
         navigate('/home');
+        window.location.reload();
       } else {
         setLoginError('Usuario o contraseña incorrectos.');
       }
