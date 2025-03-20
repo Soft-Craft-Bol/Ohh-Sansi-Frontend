@@ -34,6 +34,16 @@ const AppRoutes = () => {
           </PrivateRoute>
         }
       />
+       <Route
+        path="/inicio"
+        element={
+          <PrivateRoute>
+          <Layout>
+            <Inicio/>
+            </Layout>
+          </PrivateRoute>
+        }
+      />
     </Routes>
   );
 };

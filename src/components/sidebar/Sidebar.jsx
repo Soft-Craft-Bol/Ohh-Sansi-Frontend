@@ -9,16 +9,22 @@ import {
   FaCog,
   FaSignOutAlt,
 } from 'react-icons/fa';
-
+import { signOut } from '../../utils/authFuntions';
 import './Sidebar.css';
 import { Link } from 'react-router-dom';
 
 const Sidebar = ({ isSidebarVisible }) => {
   const [activeMenu, setActiveMenu] = useState('dashboard');
+  //cerrar secion
+    const handleLogout = () => {
+    signOut();
+  };
 
   const handleMenuClick = (menu) => {
     setActiveMenu(menu);
   };
+
+
 
   return (
     <section id="sidebar" className={!isSidebarVisible ? 'hide' : ''}>
@@ -28,19 +34,19 @@ const Sidebar = ({ isSidebarVisible }) => {
       </Link>
       <ul className="side-menu top">
         <li className={activeMenu === 'dashboard' ? 'active' : ''}>
-          <Link to="/dashboard" onClick={() => handleMenuClick('dashboard')}> 
+          <Link to="/home" onClick={() => handleMenuClick('dashboard')}> 
             <FaThLarge className="icon" />
             <span className="text">Dashboard</span>
           </Link>
         </li>
         <li className={activeMenu === 'store' ? 'active' : ''}>
-          <Link to="/store" onClick={() => handleMenuClick('store')}>
+          <Link to="/inicio" onClick={() => handleMenuClick('store')}>
             <FaShoppingBag className="icon" />
             <span className="text">My Store</span>
           </Link>
         </li>
         <li className={activeMenu === 'analytics' ? 'active' : ''}>
-          <Link to="/analytics" onClick={() => handleMenuClick('analytics')}> 
+          <Link to="/home" onClick={() => handleMenuClick('analytics')}> 
             <FaChartPie className="icon" />
             <span className="text">Analytics</span>
           </Link>
@@ -66,10 +72,11 @@ const Sidebar = ({ isSidebarVisible }) => {
           </Link>
         </li>
         <li>
-          <Link to="/logout" className="logout">
-            <FaSignOutAlt className="icon" />
-            <span className="text">Logout</span>
-          </Link>
+            <button onClick={handleLogout} className='logout'>
+                <FaSignOutAlt className="icon" />
+                <span className="text">Logout</span>
+            </button>
+          
         </li>
       </ul>
     </section>
