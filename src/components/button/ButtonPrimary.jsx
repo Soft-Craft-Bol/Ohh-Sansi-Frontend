@@ -1,7 +1,7 @@
 import "./ButttonPrimary.css";
 
 export const ButtonPrimary = ({
-  value = "",
+  children,
   className = "",
   onClick = null,
   label = "",
@@ -18,7 +18,7 @@ export const ButtonPrimary = ({
         className={`btn-${buttonStyle} ${className}`} 
         onClick={onClick}
       >
-        {value}
+        {children}
       </button>
     </div>
   );

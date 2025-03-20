@@ -83,10 +83,10 @@ const LoginUser = () => {
 
   return (
     <div className="login-container">
-      {ohSansi && <img className="logo-fesa" src={ohSansi} alt="ohSansi" height="250px" />}
+      {ohSansi && <img className="logo-fesa" src={ohSansi} alt="ohSansi" height="200px"/>}
       <div className="login-form">
         <h1>Inicia sesión</h1>
-        {logoFcyt && <img className="logo-fesa" src={logoFcyt} alt="logoFcyt" height="80px" />}
+        {logoFcyt && <img className="logo-fesa" src={logoFcyt} alt="logoFcyt" height="80px"/>}
 
         <Formik
           initialValues={initialValues}
@@ -104,7 +104,6 @@ const LoginUser = () => {
                   {isSubmitting ? 'Ingresando...' : 'Ingresar'}
                 </ButtonPrimary>
                 <Link to="/reset">¿Olvidaste la contraseña?</Link>
-                
               </div>
             </Form>
           )}
