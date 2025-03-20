@@ -35,8 +35,8 @@ const LoginUser = () => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
 
-  const inpased = useImageLoader("inpased");
-  const logo = useImageLoader("logo");
+  const ohSansi = useImageLoader("ohSansi");
+  const logoFcyt = useImageLoader("logoFcyt");
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -83,10 +83,10 @@ const LoginUser = () => {
 
   return (
     <div className="login-container">
-      {inpased && <img className="logo-fesa" src={inpased} alt="Inpased" height="100px" />}
+      {ohSansi && <img className="logo-fesa" src={ohSansi} alt="ohSansi" height="250px" />}
       <div className="login-form">
         <h1>Inicia sesión</h1>
-        {logo && <img className="logo-fesa" src={logo} alt="Logo" height="80px" />}
+        {logoFcyt && <img className="logo-fesa" src={logoFcyt} alt="logoFcyt" height="80px" />}
 
         <Formik
           initialValues={initialValues}
@@ -95,15 +95,16 @@ const LoginUser = () => {
         >
           {({ isSubmitting }) => (
             <Form style={{ flexDirection: "column" }}>
-              <MemoizedInputText name="correoUsuario" placeholder="Introduzca su correo electronico" label="Correo electronico" />
+              <MemoizedInputText name="correoUsuario" placeholder="Introduzca su correo electrónico" label="Correo electrónico" />
               <MemoizedInputText name="password" type="password" placeholder="Introduzca su contraseña" label="Contraseña" />
 
-              <div>
+              <div style={{display:"flex", flexDirection:"column"}}>
                 {loginError && <span className="error-message">{loginError}</span>}
-                <Link to="/reset">¿Olvidaste la contraseña?</Link>
-                <ButtonPrimary type="submit" disabled={isSubmitting} className="btn-general">
+                <ButtonPrimary type="submit" disabled={isSubmitting} className="btn-general" >
                   {isSubmitting ? 'Ingresando...' : 'Ingresar'}
                 </ButtonPrimary>
+                <Link to="/reset">¿Olvidaste la contraseña?</Link>
+                
               </div>
             </Form>
           )}
