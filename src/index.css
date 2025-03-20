@@ -1,0 +1,15 @@
+:root {
+    --primary-color: #007bff;
+    --secondary-color: #6c757d;
+    --font-size-base: 16px;
+    --gray-color: #e2e2e2;
+    --yellow-color: #c8d444;
+    --blue-color: #033771;
+    --red-color: #ea0613;
+  }
+  
+  body {
+    background-color: var(--primary-color); 
+    font-size: var(--font-size-base);
+    font-family: 'DM Sans', sans-serif;
+  }
