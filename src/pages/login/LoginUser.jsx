@@ -104,7 +104,6 @@ const LoginUser = () => {
                   {isSubmitting ? 'Ingresando...' : 'Ingresar'}
                 </ButtonPrimary>
                 <Link to="/reset">¿Olvidaste la contraseña?</Link>
-                
               </div>
             </Form>
           )}
