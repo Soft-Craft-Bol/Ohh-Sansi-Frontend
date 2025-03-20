@@ -1,0 +1,65 @@
+.btn-primary {
+	height: 40px;
+	width: 150px;
+	border-radius: 8px;
+	font-size: 16px;
+	font-family: Arial, sans-serif;
+	background: #007bff;
+	color: #ffffff;
+	cursor: pointer;
+	padding: 8px;
+	border: none;
+	box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+	transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.btn-primary:hover {
+	background: #0056b3;
+	box-shadow: 3px 3px 7px rgba(0, 0, 0, 0.3);
+}
+
+
+.btn-secondary {
+	height: 40px;
+	width: 150px;
+	border-radius: 6px;
+	font-family: Arial, sans-serif;
+	background: #6c757d;
+	color: #ffffff;
+	cursor: pointer;
+	border: none;
+	box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+	transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.btn-secondary:hover {
+	background: #545b62;
+	box-shadow: 3px 3px 7px rgba(0, 0, 0, 0.3);
+}
+
+
+.btn-remove {
+	height: 40px;
+	width: 150px;
+	border-radius: 8px;
+	font-size: 16px;
+	font-family: Arial, sans-serif;
+	background: #dc3545;
+	color: #ffffff;
+	cursor: pointer;
+	padding: 8px;
+	border: none;
+	box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+	transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.btn-remove:hover {
+	background: #c82333;
+	box-shadow: 3px 3px 7px rgba(0, 0, 0, 0.3);
+}
+
+
+.config-btn-primary > label {
+	font-size: 14px;
+	padding: 8px;
+}
