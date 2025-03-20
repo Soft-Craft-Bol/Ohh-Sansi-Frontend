@@ -98,12 +98,13 @@ const LoginUser = () => {
               <MemoizedInputText name="correoUsuario" placeholder="Introduzca su correo electrónico" label="Correo electrónico" />
               <MemoizedInputText name="password" type="password" placeholder="Introduzca su contraseña" label="Contraseña" />
 
-              <div>
+              <div style={{display:"flex", flexDirection:"column"}}>
                 {loginError && <span className="error-message">{loginError}</span>}
-                <Link to="/reset">¿Olvidaste la contraseña?</Link>
-                <ButtonPrimary type="submit" disabled={isSubmitting} className="btn-general">
+                <ButtonPrimary type="submit" disabled={isSubmitting} className="btn-general" >
                   {isSubmitting ? 'Ingresando...' : 'Ingresar'}
                 </ButtonPrimary>
+                <Link to="/reset">¿Olvidaste la contraseña?</Link>
+                
               </div>
             </Form>
           )}
