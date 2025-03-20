@@ -1,9 +1,6 @@
 import axios from 'axios';
-import { getToken } from '../utils/authFunctions';
 
-//deply
-// const baseURL = "https://api.inpasep.com/api/v1";
-const baseURL = "http://localhost:8080/api/v1";
+const baseURL = "http://localhost:9999/api/v1";
 
 const api = axios.create({
     baseURL: baseURL,
@@ -11,17 +8,9 @@ const api = axios.create({
     withCredentials: true, 
     timeout: 60000,
   });
+  
 
-/* api.interceptors.request.use((config) => {
-  const token = getToken()
-  if (token) {
-    config.headers['Authorization'] = `Bearer ${token}`;
-  }
-  return config;
-}, (error) => {
-  return Promise.reject(error);
-}); */
-//
+
 api.interceptors.request.use((config) => {
   if (config.data instanceof FormData) {
     config.headers['Content-Type'] = 'multipart/form-data';
@@ -35,5 +24,8 @@ api.interceptors.request.use((config) => {
 
 export default api;
 
-export const loginUser = (data) => api.post('/auth/log-in', data);
-export const addUser = (data) => api.post('/auth/sign-up', data);
+export const loginUser = (data) => api.post('/auth/login', data);
+export const getUser = () => api.get('/auth/user')
+export const addUser = (data) => api.post('/auth/register', data);
+export const updateUser = (data) => api.put('/auth/user', data);
+export const deletYser = (id) => api.delete(`/auth/user/${id}`);

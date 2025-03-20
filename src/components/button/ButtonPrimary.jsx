@@ -1,4 +1,4 @@
-import "./ButtonPrimary.css";
+import "./ButttonPrimary.css";
 
 export const ButtonPrimary = ({
   value = "",

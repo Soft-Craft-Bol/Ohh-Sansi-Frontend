@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { getToken, getUser } from "../utils/authFunctions";
 import { isTokenValid } from "../utils/auth";
+import { getToken, getUser, removeToken } from "../utils/authFuntions";
 
 const AuthContext = createContext();
 
@@ -8,17 +8,25 @@ export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [tokenValid, setTokenValid] = useState(false);
 
-  useEffect(() => { 
+  useEffect(() => {
     const token = getToken();
     if (token && isTokenValid(token)) {
       setTokenValid(true);
-      setCurrentUser(getUser());
+      const user = getUser();
+      if (user) {
+        setCurrentUser(user);
+      }
+    } else {
+      setTokenValid(false);
+      setCurrentUser(null);
+      removeToken(); // Limpia el token si no es válido
     }
   }, []);
 
   const logout = () => {
     setTokenValid(false);
     setCurrentUser(null);
+    removeToken(); // Limpia el token al cerrar sesión
   };
 
   return (

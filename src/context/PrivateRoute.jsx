@@ -1,30 +1,16 @@
-import React, { useState } from "react";
-import { getToken } from "../utils/authFunctions";
+import React from 'react';
 import { Navigate } from 'react-router-dom';
-import  {Sidebar} from "../components/sidebar/Sid";
-import { isTokenValid } from "../utils/auth";
+import { useAuth } from './AuthProvider';
 
 const PrivateRoute = ({ children }) => {
-  const token = getToken();
-  const tokenExistAndStillValid = token && isTokenValid(token);
+    const { isAuthenticated } = useAuth();
   
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    if (!isAuthenticated) {
+      return <Navigate to="/login" />;
+    }
+  
+    return children;
+  };
 
-  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
-
-  return tokenExistAndStillValid ? (
-    <div className={`app-layout ${isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
-      <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
-      {/* <Sidebar /> */}
-      
-      <main className="main-content">
-        {children}
-      </main>
-
-    </div>
-  ) : (
-    <Navigate to="/" />
-  );
-};
-
+  
 export default PrivateRoute;
