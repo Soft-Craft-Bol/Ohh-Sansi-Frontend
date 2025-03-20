@@ -11,7 +11,7 @@
   
   .input-component .required {
     margin-left: 0.25rem;
-    color: #ff0000; /* Reemplazo de --color-red-parameter */
+    color: var(--red-color); /* Reemplazo de --color-red-parameter */
   }
   
   .input-wrapper {
@@ -36,7 +36,7 @@
   
   .text-input:focus {
     outline: none;
-    border-color: #ffaf5a; /* Reemplazo de --primary-color */
+    border-color: var(--blue-color); /* Reemplazo de --primary-color */
     box-shadow: 0 0 0 2px rgba(255, 175, 90, 0.2);
   }
   
@@ -71,12 +71,12 @@
   
   .toggle-password-btn:focus {
     outline: none;
-    color: #ffaf5a; /* Reemplazo de --primary-color */
+    color: var(--blue-color); /* Reemplazo de --primary-color */
   }
   
   .error-message {
     font-size: 0.875rem;
-    color: #ff0000; /* Reemplazo de --color-red-parameter */
+    color: var(--red-color);
     margin-top: 0.25rem;
     text-align: start;
   }
@@ -96,7 +96,7 @@
   }
   
   body.dark .error-message {
-    color: #ff0000; /* Reemplazo de --color-red-parameter */
+    color: var(--red-color); /* Reemplazo de --color-red-parameter */
   }
   
   body.dark .toggle-password-btn {

@@ -83,7 +83,7 @@ const LoginUser = () => {
 
   return (
     <div className="login-container">
-      {ohSansi && <img className="logo-fesa" src={ohSansi} alt="ohSansi" height="100px" />}
+      {ohSansi && <img className="logo-fesa" src={ohSansi} alt="ohSansi" height="250px" />}
       <div className="login-form">
         <h1>Inicia sesión</h1>
         {logoFcyt && <img className="logo-fesa" src={logoFcyt} alt="logoFcyt" height="80px" />}
@@ -95,7 +95,7 @@ const LoginUser = () => {
         >
           {({ isSubmitting }) => (
             <Form style={{ flexDirection: "column" }}>
-              <MemoizedInputText name="correoUsuario" placeholder="Introduzca su correo electronico" label="Correo electronico" />
+              <MemoizedInputText name="correoUsuario" placeholder="Introduzca su correo electrónico" label="Correo electrónico" />
               <MemoizedInputText name="password" type="password" placeholder="Introduzca su contraseña" label="Contraseña" />
 
               <div>
