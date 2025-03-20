@@ -6,12 +6,14 @@ import Inicio from '../pages/home/Inicio';
 import Layout from '../Layout/Layout';
 
 const LoginUser = lazy(() => import('../pages/login/LoginUser'));
+const Formulario = lazy(() => import('../components/formulario/Formulario'));
 
 const AppRoutes = () => {
   return (
     <Routes>
       {/* Ruta pública */}
       <Route path="/login" element={<LoginUser />} />
+      <Route path="/formulario" element={<Formulario />} />
 
       {/* Ruta raíz protegida */}
       <Route
