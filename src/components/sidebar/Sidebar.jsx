@@ -28,19 +28,19 @@ const Sidebar = ({ isSidebarVisible }) => {
       </Link>
       <ul className="side-menu top">
         <li className={activeMenu === 'dashboard' ? 'active' : ''}>
-          <Link to="/dashboard" onClick={() => handleMenuClick('dashboard')}> 
+          <Link to="/home" onClick={() => handleMenuClick('dashboard')}> 
             <FaThLarge className="icon" />
             <span className="text">Dashboard</span>
           </Link>
         </li>
         <li className={activeMenu === 'store' ? 'active' : ''}>
-          <Link to="/store" onClick={() => handleMenuClick('store')}>
+          <Link to="/inicio" onClick={() => handleMenuClick('store')}>
             <FaShoppingBag className="icon" />
             <span className="text">My Store</span>
           </Link>
         </li>
         <li className={activeMenu === 'analytics' ? 'active' : ''}>
-          <Link to="/analytics" onClick={() => handleMenuClick('analytics')}> 
+          <Link to="/home" onClick={() => handleMenuClick('analytics')}> 
             <FaChartPie className="icon" />
             <span className="text">Analytics</span>
           </Link>
