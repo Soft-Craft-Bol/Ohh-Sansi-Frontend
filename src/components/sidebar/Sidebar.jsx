@@ -44,7 +44,7 @@ const Sidebar = ({ isSidebarVisible }) => {
           </Link>
         </li>
         <li className={activeMenu === 'analytics' ? 'active' : ''}>
-          <Link to="/home" className="link" onClick={() => handleMenuClick('analytics')}>
+          <Link to="/form" className="link" onClick={() => handleMenuClick('analytics')}>
             <FaChartPie className="icon" />
             <span className="text">Analytics</span>
           </Link>
