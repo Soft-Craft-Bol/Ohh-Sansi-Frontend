@@ -32,7 +32,6 @@ const MultiStepForm = () => {
     console.log("Formulario completado");
   };
 
-  // Definir el componente correspondiente para cada paso
   const getStepComponent = (step) => {
     switch (step) {
       case 1:
