@@ -1,5 +1,7 @@
 import React from 'react';
 import './Formulario.css';
+import InputText from '../inputs/InputText';
+import inscripcionSchema from '../../schemas/InscripcionValidate';
 
 const Formulario = () => {
   return (

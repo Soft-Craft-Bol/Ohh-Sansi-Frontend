@@ -13,7 +13,7 @@ const AppRoutes = () => {
     <Routes>
       {/* Ruta pública */}
       <Route path="/login" element={<LoginUser />} />
-      <Route path="/formulario" element={<Formulario />} />
+      <Route path="/formulario" element= {<Layout><Formulario /></Layout>} />
 
       {/* Ruta raíz protegida */}
       <Route

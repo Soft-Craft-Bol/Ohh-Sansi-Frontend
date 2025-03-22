@@ -38,9 +38,9 @@ const Sidebar = ({ isSidebarVisible }) => {
           </Link>
         </li>
         <li className={activeMenu === 'store' ? 'active' : ''}>
-          <Link to="/inicio" className="link" onClick={() => handleMenuClick('store')}>
+          <Link to="/formulario" className="link" onClick={() => handleMenuClick('store')}>
             <FaShoppingBag className="icon" />
-            <span className="text">My Store</span>
+            <span className="text">Formulario</span>
           </Link>
         </li>
         <li className={activeMenu === 'analytics' ? 'active' : ''}>
