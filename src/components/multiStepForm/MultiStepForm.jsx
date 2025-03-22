@@ -1,15 +1,63 @@
 import React, { useState } from "react";
+import StepIndicator from "./StepIndicator";
+import StepForm from "./StepForm";
 import "./MultiStepForm.css";
 
-function MultiStepForm() {
+const MultiStepForm = () => {
   const [currentStep, setCurrentStep] = useState(1);
 
+  const steps = [
+    { label: "Información básica" },
+    { label: "Áreas de competencia" },
+    { label: "Tutores" },
+    { label: "Pago" },
+  ];
+
+  const stepForms = [
+    {
+      title: "Información del Participante",
+      fields: [
+        { type: "text", placeholder: "Nombre", name: "nombre", required: true },
+        { type: "text", placeholder: "Apellido", name: "apellido", required: true },
+        { type: "text", placeholder: "Colegio/Institución", name: "colegio", required: true },
+        { type: "text", placeholder: "Grado/Nivel", name: "grado", required: true },
+        { type: "email", placeholder: "Correo electrónico", name: "correo", required: true },
+        { type: "tel", placeholder: "Teléfono", name: "telefono" },
+      ],
+    },
+    {
+      title: "Áreas de Competencia",
+      fields: [
+        { type: "text", placeholder: "Área 1", name: "area1" },
+        { type: "text", placeholder: "Área 2", name: "area2" },
+      ],
+    },
+    {
+      title: "Tutores",
+      fields: [
+        { type: "text", placeholder: "Nombre del tutor", name: "tutorNombre", required: true },
+        { type: "email", placeholder: "Correo del tutor", name: "tutorCorreo" },
+      ],
+    },
+    {
+      title: "Pago",
+      fields: [
+        { type: "text", placeholder: "Método de pago", name: "metodoPago", required: true },
+        { type: "text", placeholder: "Titular de la tarjeta", name: "titularTarjeta" },
+      ],
+    },
+  ];
+
   const handleNext = () => {
-    setCurrentStep((prev) => prev + 1);
+    if (currentStep < steps.length) {
+      setCurrentStep((prev) => prev + 1);
+    }
   };
 
   const handlePrev = () => {
-    setCurrentStep((prev) => prev - 1);
+    if (currentStep > 1) {
+      setCurrentStep((prev) => prev - 1);
+    }
   };
 
   const handleSubmit = (e) => {
@@ -17,93 +65,21 @@ function MultiStepForm() {
     console.log("Formulario completado");
   };
 
-  // Calcula el ancho de la línea pintada en función del paso actual
-  const progressWidth = ((currentStep - 1) / 3) * 100;
-
   return (
     <div className="multi-step-container">
-        <h1>Nueva inscripción</h1>
-      <div className="steps-indicator" style={{ "--progress-width": `${progressWidth}%` }}>
-        <div className={`step ${currentStep >= 1 ? "completed" : ""} ${currentStep === 1 ? "active" : ""}`}>
-          <span className="step-number">1</span>
-          <span className="step-text">Información básica</span>
-        </div>
-        <div className={`step ${currentStep >= 2 ? "completed" : ""} ${currentStep === 2 ? "active" : ""}`}>
-          <span className="step-number">2</span>
-          <span className="step-text">Áreas de competencia</span>
-        </div>
-        <div className={`step ${currentStep >= 3 ? "completed" : ""} ${currentStep === 3 ? "active" : ""}`}>
-          <span className="step-number">3</span>
-          <span className="step-text">Tutores</span>
-        </div>
-        <div className={`step ${currentStep >= 4 ? "completed" : ""} ${currentStep === 4 ? "active" : ""}`}>
-          <span className="step-number">4</span>
-          <span className="step-text">Pago</span>
-        </div>
-      </div>
-
+      <h1>Nueva inscripción</h1>
+      <StepIndicator steps={steps} currentStep={currentStep} />
       <form onSubmit={handleSubmit} className="form-content">
-        {currentStep === 1 && (
-          <div className="step-content">
-            <h2>Información del Participante</h2>
-            <div className="fields-container">
-              <input type="text" placeholder="Nombre" name="nombre" required />
-              <input type="text" placeholder="Apellido" name="apellido" required />
-              <input type="text" placeholder="Colegio/Institución" name="colegio" required />
-              <input type="text" placeholder="Grado/Nivel" name="grado" required />
-              <input type="email" placeholder="Correo electrónico" name="correo" required />
-              <input type="tel" placeholder="Teléfono" name="telefono" />
-            </div>
-            <div className="buttons-container">
-              <button type="button" onClick={handleNext}>Siguiente</button>
-            </div>
-          </div>
-        )}
-
-        {currentStep === 2 && (
-          <div className="step-content">
-            <h2>Áreas de Competencia</h2>
-            <div className="fields-container">
-              <input type="text" placeholder="Área 1" name="area1" />
-              <input type="text" placeholder="Área 2" name="area2" />
-            </div>
-            <div className="buttons-container">
-              <button type="button" onClick={handlePrev}>Anterior</button>
-              <button type="button" onClick={handleNext}>Siguiente</button>
-            </div>
-          </div>
-        )}
-
-        {currentStep === 3 && (
-          <div className="step-content">
-            <h2>Tutores</h2>
-            <div className="fields-container">
-              <input type="text" placeholder="Nombre del tutor" name="tutorNombre" required />
-              <input type="email" placeholder="Correo del tutor" name="tutorCorreo" />
-            </div>
-            <div className="buttons-container">
-              <button type="button" onClick={handlePrev}>Anterior</button>
-              <button type="button" onClick={handleNext}>Siguiente</button>
-            </div>
-          </div>
-        )}
-
-        {currentStep === 4 && (
-          <div className="step-content">
-            <h2>Pago</h2>
-            <div className="fields-container">
-              <input type="text" placeholder="Método de pago" name="metodoPago" required />
-              <input type="text" placeholder="Titular de la tarjeta" name="titularTarjeta" />
-            </div>
-            <div className="buttons-container">
-              <button type="button" onClick={handlePrev}>Anterior</button>
-              <button type="submit">Finalizar</button>
-            </div>
-          </div>
-        )}
+        <StepForm
+          title={stepForms[currentStep - 1].title}
+          fields={stepForms[currentStep - 1].fields}
+          onNext={handleNext}
+          onPrev={currentStep > 1 ? handlePrev : null}
+          isLastStep={currentStep === steps.length}
+        />
       </form>
     </div>
   );
-}
+};
 
 export default MultiStepForm;
