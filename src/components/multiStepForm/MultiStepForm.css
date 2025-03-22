@@ -10,7 +10,7 @@
     justify-content: space-between;
     width: 100%;
     justify-content: space-between;
-    margin-bottom: 1rem;
+    margin-bottom: 2rem;
     position: relative;
 }
 
@@ -21,7 +21,7 @@
     top: 45%;
     left: 0;
     right: 0;
-    height: 5px;
+    height: 6px;
     background: #ccc;
     z-index: 1;
 }
@@ -34,8 +34,8 @@
     width: var(--progress-width);
     top: 45%;
     left: 0;
-    height: 5px;
-    background: #0066ff;
+    height: 6Px;
+    background: #033771;
     z-index: 2;
     transition: width 0.3s ease;
 }
@@ -44,13 +44,13 @@
 .step {
     flex: 1;
     text-align: center;
-    padding: 0.5rem;
+    padding: 0.8rem;
     color: #999;
     position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
-    z-index: 3; /* Asegura que los círculos estén sobre las líneas */
+    z-index: 3; 
 }
 
 .step-number {
@@ -67,15 +67,15 @@
 }
 
 .step.active .step-number {
-    background: #0066ff;
+    background: #033771;
 }
 
 .step.completed .step-number {
-    background: #0066ff;
+    background: #033771;
 }
 
 .step.completed {
-    color: #0066ff;
+    color: #033771;
 }
 
 .step-text {
