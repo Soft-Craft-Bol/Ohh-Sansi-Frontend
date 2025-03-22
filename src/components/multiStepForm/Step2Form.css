@@ -33,12 +33,14 @@
   
   .step2-card.selected {
     border-color: var(--blue);
-    background-color: var(--light-blue);
+    background-color: #b1bfe478; /* Fondo amarillo para cards seleccionadas */
   }
   
   .step2-card h3 {
     font-weight: 600;
     color: var(--blue);
+    display: flex;
+    align-items: center;
   }
   
   .step2-card input[type="checkbox"] {
@@ -68,10 +70,35 @@
   .step2-selected-areas h3 {
     font-weight: 600;
     color: var(--blue);
+    margin-bottom: 1rem;
   }
   
-  .step2-selected-areas ul {
-    list-style-type: disc;
-    margin-left: 1.25rem;
-    color: var(--blue);
+  .step2-selected-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .step2-selected-card {
+    border: 1px solid var(--dark-grey);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    background-color: #e7f2f8;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .step2-selected-card button {
+    background-color: var(--red);
+    color: var(--light);
+    border: none;
+    border-radius: 0.25rem;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .step2-selected-card button:hover {
+    background-color: #c82333;
   }

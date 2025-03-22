@@ -18,6 +18,10 @@ const Step2Form = () => {
     );
   };
 
+  const eliminarSeleccion = (id) => {
+    setSeleccionadas((prev) => prev.filter((areaId) => areaId !== id));
+  };
+
   return (
     <div className="step2-container">
       <span className="step2-description">
@@ -47,12 +51,21 @@ const Step2Form = () => {
       {seleccionadas.length > 0 && (
         <div className="step2-selected-areas">
           <h3>Áreas seleccionadas:</h3>
-          <ul>
+          <div className="step2-selected-cards">
             {seleccionadas.map((id) => {
               const area = areas.find((a) => a.id === id);
-              return <li key={id}>{area.nombre}</li>;
+              return (
+                <div key={id} className="step2-selected-card">
+                  <div>
+                    <h3>{area.nombre}</h3>
+                    <p>{area.descripcion}</p>
+                    <p className="costo">Costo: Bs {area.costo.toFixed(2)}</p>
+                  </div>
+                  <button onClick={() => eliminarSeleccion(id)}>Quitar</button>
+                </div>
+              );
             })}
-          </ul>
+          </div>
         </div>
       )}
     </div>
