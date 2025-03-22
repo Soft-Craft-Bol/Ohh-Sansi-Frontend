@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import StepIndicator from "./StepIndicator";
 import StepForm from "./StepForm";
+import Step1Form from "./Step1Form"; // Importar el componente del Paso 1
+import Step2Form from "./Step2Form"; // Importar el componente del Paso 2
 import "./MultiStepForm.css";
 
 const MultiStepForm = () => {
@@ -11,41 +13,6 @@ const MultiStepForm = () => {
     { label: "Áreas de competencia" },
     { label: "Tutores" },
     { label: "Pago" },
-  ];
-
-  const stepForms = [
-    {
-      title: "Información del Participante",
-      fields: [
-        { type: "text", placeholder: "Nombre", name: "nombre", required: true },
-        { type: "text", placeholder: "Apellido", name: "apellido", required: true },
-        { type: "text", placeholder: "Colegio/Institución", name: "colegio", required: true },
-        { type: "text", placeholder: "Grado/Nivel", name: "grado", required: true },
-        { type: "email", placeholder: "Correo electrónico", name: "correo", required: true },
-        { type: "tel", placeholder: "Teléfono", name: "telefono" },
-      ],
-    },
-    {
-      title: "Áreas de Competencia",
-      fields: [
-        { type: "text", placeholder: "Área 1", name: "area1" },
-        { type: "text", placeholder: "Área 2", name: "area2" },
-      ],
-    },
-    {
-      title: "Tutores",
-      fields: [
-        { type: "text", placeholder: "Nombre del tutor", name: "tutorNombre", required: true },
-        { type: "email", placeholder: "Correo del tutor", name: "tutorCorreo" },
-      ],
-    },
-    {
-      title: "Pago",
-      fields: [
-        { type: "text", placeholder: "Método de pago", name: "metodoPago", required: true },
-        { type: "text", placeholder: "Titular de la tarjeta", name: "titularTarjeta" },
-      ],
-    },
   ];
 
   const handleNext = () => {
@@ -65,18 +32,35 @@ const MultiStepForm = () => {
     console.log("Formulario completado");
   };
 
+  // Definir el componente correspondiente para cada paso
+  const getStepComponent = (step) => {
+    switch (step) {
+      case 1:
+        return <Step1Form />;
+      case 2:
+        return <Step2Form />;
+      case 3:
+        return <div>Formulario de Tutores (Paso 3)</div>;
+      case 4:
+        return <div>Formulario de Pago (Paso 4)</div>;
+      default:
+        return null;
+    }
+  };
+
   return (
     <div className="multi-step-container">
       <h1>Nueva inscripción</h1>
       <StepIndicator steps={steps} currentStep={currentStep} />
       <form onSubmit={handleSubmit} className="form-content">
         <StepForm
-          title={stepForms[currentStep - 1].title}
-          fields={stepForms[currentStep - 1].fields}
+          title={steps[currentStep - 1].label}
           onNext={handleNext}
           onPrev={currentStep > 1 ? handlePrev : null}
           isLastStep={currentStep === steps.length}
-        />
+        >
+          {getStepComponent(currentStep)} {/* Pasar el componente correspondiente */}
+        </StepForm>
       </form>
     </div>
   );
