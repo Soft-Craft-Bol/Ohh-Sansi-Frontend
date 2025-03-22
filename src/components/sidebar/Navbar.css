@@ -105,6 +105,7 @@
 	background: var(--grey);
 	cursor: pointer;
 	position: relative;
+    padding: 3px;
 }
 #content nav .switch-mode::before {
 	content: '';

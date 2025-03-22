@@ -4,6 +4,7 @@ import PrivateRoute from '../context/PrivateRoute';
 import MainContent from '../components/sidebar/Main';
 import Inicio from '../pages/home/Inicio';
 import Layout from '../Layout/Layout';
+import MultiStepForm from '../components/multiStepForm/MultiStepForm';
 
 const LoginUser = lazy(() => import('../pages/login/LoginUser'));
 
@@ -40,6 +41,17 @@ const AppRoutes = () => {
           <PrivateRoute>
           <Layout>
             <Inicio/>
+            </Layout>
+          </PrivateRoute>
+        }
+      />
+
+    <Route
+        path="/form"
+        element={
+          <PrivateRoute>
+          <Layout>
+            <MultiStepForm/>
             </Layout>
           </PrivateRoute>
         }
