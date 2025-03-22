@@ -1,0 +1,109 @@
+/* Contenedor principal del multi-step */
+.multi-step-container {
+    font-family: sans-serif;
+    margin: 2em;
+}
+
+/* Barra de pasos (la parte superior) */
+.steps-indicator {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    position: relative;
+}
+
+/* Línea horizontal base (gris) */
+.steps-indicator::before {
+    content: "";
+    position: absolute;
+    top: 45%;
+    left: 0;
+    right: 0;
+    height: 6px;
+    background: #ccc;
+    z-index: 1;
+}
+
+
+
+.steps-indicator::after {
+    content: "";
+    position: absolute;
+    width: var(--progress-width);
+    top: 45%;
+    left: 0;
+    height: 6Px;
+    background: #033771;
+    z-index: 2;
+    transition: width 0.3s ease;
+}
+
+
+.step {
+    flex: 1;
+    text-align: center;
+    padding: 0.8rem;
+    color: #999;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 3; 
+}
+
+.step-number {
+    background: #ccc;
+    color: #fff;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.5rem;
+    position: relative;
+}
+
+.step.active .step-number {
+    background: #033771;
+}
+
+.step.completed .step-number {
+    background: #033771;
+}
+
+.step.completed {
+    color: #033771;
+}
+
+.step-text {
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    color: inherit;
+}
+
+.form-content {
+    background: #fff;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid #eee;
+}
+
+.step-content {
+    margin-bottom: 1rem;
+}
+
+.fields-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.buttons-container {
+    margin-top: 1rem;
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+}

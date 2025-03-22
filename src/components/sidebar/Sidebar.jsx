@@ -4,11 +4,13 @@ import {
   FaThLarge,
   FaShoppingBag,
   FaChartPie,
-  FaCommentDots,
+  FaQuestionCircle,
   FaUsers,
   FaCog,
   FaSignOutAlt,
 } from 'react-icons/fa';
+import { PiClipboardTextFill } from "react-icons/pi";
+import { MdOutlinePayment } from "react-icons/md";
 import { signOut } from '../../utils/authFuntions';
 import './Sidebar.css';
 import { Link } from 'react-router-dom';
@@ -37,34 +39,34 @@ const Sidebar = ({ isSidebarVisible }) => {
             <span className="text">Dashboard</span>
           </Link>
         </li>
-        <li className={activeMenu === 'store' ? 'active' : ''}>
-          <Link to="/inicio" className="link" onClick={() => handleMenuClick('store')}>
-            <FaShoppingBag className="icon" />
-            <span className="text">My Store</span>
+        <li className={activeMenu === 'analytics' ? 'active' : ''}>
+          <Link to="/form" className="link" onClick={() => handleMenuClick('analytics')}>
+            <PiClipboardTextFill className="icon" />
+            <span className="text">Inscripciónes</span>
           </Link>
         </li>
-        <li className={activeMenu === 'analytics' ? 'active' : ''}>
-          <Link to="/home" className="link" onClick={() => handleMenuClick('analytics')}>
-            <FaChartPie className="icon" />
-            <span className="text">Analytics</span>
+        <li className={activeMenu === 'store' ? 'active' : ''}>
+          <Link to="/inicio" className="link" onClick={() => handleMenuClick('store')}>
+            <MdOutlinePayment className="icon" />
+            <span className="text">Pagos</span>
           </Link>
         </li>
         <li className={activeMenu === 'message' ? 'active' : ''}>
-          <Link to="/message" className="link" onClick={() => handleMenuClick('message')}>
-            <FaCommentDots className="icon" />
-            <span className="text">Message</span>
+          <Link to="/inicio" className="link" onClick={() => handleMenuClick('message')}>
+            <FaChartPie className="icon" />
+            <span className="text">Reportes</span>
           </Link>
         </li>
         <li className={activeMenu === 'team' ? 'active' : ''}>
-          <Link to="/team" className="link" onClick={() => handleMenuClick('team')}>
-            <FaUsers className="icon" />
-            <span className="text">Team</span>
+          <Link to="/inicio" className="link" onClick={() => handleMenuClick('team')}>
+            <FaQuestionCircle className="icon" />
+            <span className="text">Ayuda</span>
           </Link>
         </li>
       </ul>
       <ul className="side-menu">
         <li>
-          <Link to="/settings" className="link">
+          <Link to="/inicio" className="link">
             <FaCog className="icon" />
             <span className="text">Settings</span>
           </Link>
