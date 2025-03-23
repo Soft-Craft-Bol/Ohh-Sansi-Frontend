@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import "./Step2Form.css"; // Importar el archivo CSS
+import "./Step2Form.css";
 
 const areas = [
   { id: 1, nombre: "Matemáticas", descripcion: "Competencia de matemáticas", costo: 50 },
@@ -21,6 +21,11 @@ const Step2Form = () => {
   const eliminarSeleccion = (id) => {
     setSeleccionadas((prev) => prev.filter((areaId) => areaId !== id));
   };
+
+  const totalCosto = seleccionadas.reduce((acc, id) => {
+    const area = areas.find((a) => a.id === id);
+    return acc + (area ? area.costo : 0);
+  }, 0);
 
   return (
     <div className="step2-container">
@@ -66,6 +71,7 @@ const Step2Form = () => {
               );
             })}
           </div>
+          <h2>Total: Bs {totalCosto.toFixed(2)}</h2>
         </div>
       )}
     </div>

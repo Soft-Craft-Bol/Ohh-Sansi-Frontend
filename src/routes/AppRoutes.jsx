@@ -7,14 +7,14 @@ import Layout from '../Layout/Layout';
 import MultiStepForm from '../components/multiStepForm/MultiStepForm';
 
 const LoginUser = lazy(() => import('../pages/login/LoginUser'));
-const Formulario = lazy(() => import('../components/formulario/Formulario'));
+//const Formulario = lazy(() => import('../components/formulario/Formulario'));
 
 const AppRoutes = () => {
   return (
     <Routes>
       {/* Ruta pública */}
       <Route path="/login" element={<LoginUser />} />
-      <Route path="/formulario" element= {<Layout><Formulario /></Layout>} />
+      {/*<Route path="/formulario" element= {<Layout><Formulario /></Layout>} />*/}
 
       {/* Ruta raíz protegida */}
       <Route
