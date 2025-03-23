@@ -1,10 +1,8 @@
-/* Contenedor principal del multi-step */
 .multi-step-container {
     font-family: sans-serif;
     margin: 2em;
 }
 
-/* Barra de pasos (la parte superior) */
 .steps-indicator {
     display: flex;
     justify-content: space-between;
@@ -14,7 +12,7 @@
     position: relative;
 }
 
-/* Línea horizontal base (gris) */
+/* Línea horizontal base (gris) jaja*/
 .steps-indicator::before {
     content: "";
     position: absolute;
