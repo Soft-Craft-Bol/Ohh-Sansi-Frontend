@@ -133,7 +133,6 @@ const Step1Form = () => {
             />
           </div>
         </div>
-        <button type="submit">Continuar a áreas de competencia</button>
       </form>
     </div>
   );
