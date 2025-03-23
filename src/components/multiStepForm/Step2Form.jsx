@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import "./Step2Form.css"; // Importar el archivo CSS
+import "./Step2Form.css";
+import { toast } from "sonner";
 
 const areas = [
   { id: 1, nombre: "Matemáticas", descripcion: "Competencia de matemáticas", costo: 50 },
@@ -13,14 +14,26 @@ const Step2Form = () => {
   const [seleccionadas, setSeleccionadas] = useState([]);
 
   const toggleSeleccion = (id) => {
-    setSeleccionadas((prev) =>
-      prev.includes(id) ? prev.filter((areaId) => areaId !== id) : [...prev, id]
-    );
+    setSeleccionadas((prev) => {
+      if (prev.includes(id)) {
+        return prev.filter((areaId) => areaId !== id);
+      } else if (prev.length < 2) {
+        return [...prev, id];
+      } else {
+        toast.error("Solo puede inscribirse a 2 áreas");
+        return prev;
+      }
+    });
   };
 
   const eliminarSeleccion = (id) => {
     setSeleccionadas((prev) => prev.filter((areaId) => areaId !== id));
   };
+
+  const totalCosto = seleccionadas.reduce((acc, id) => {
+    const area = areas.find((a) => a.id === id);
+    return acc + (area ? area.costo : 0);
+  }, 0);
 
   return (
     <div className="step2-container">
@@ -66,6 +79,7 @@ const Step2Form = () => {
               );
             })}
           </div>
+          <h2>Total: Bs {totalCosto.toFixed(2)}</h2>
         </div>
       )}
     </div>
