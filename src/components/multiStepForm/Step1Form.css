@@ -1,46 +1,81 @@
 .step1-container {
-    padding: 1.5rem;
-    max-width: 100%;
-    font-family: var(--poppins);
-  }
-  
-  .step1-description {
-    color: var(--blue);
-    margin-bottom: 1rem;
-    font-size: 0.9rem;
-  }
-  
-  .step1-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr)); /* 2 columnas */
-    gap: 1rem;
-  }
-  
-  .step1-card {
-    border: 1px solid var(--dark-grey);
-    border-radius: 0.5rem;
-    padding: 1rem;
-    line-height: 1.5em;
-    background-color: var(--light);
-  }
-  
-  .step1-card label {
-    font-weight: 600;
-    color: var(--blue);
-    display: block;
-    margin-bottom: 0.5rem;
-  }
-  
-  .step1-card input {
-    width: 100%;
+  padding: 1.5rem;
+  width: 100%;
+  max-width: auto; 
+  font-family: var(--poppins);
+}
+
+.step1-description {
+  color: var(--blue);
+  text-align: left  ;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  display: grid; 
+}
+
+.step1-grid {
+  margin: center;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(550px, 1fr)); 
+  gap: 1rem;
+}
+
+.step1-card {
+  border: 1px solid var(--dark-grey);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  line-height: 1.5em;
+  background-color: var(--light);
+}
+
+.step1-card label {
+  font-weight: 600;
+  color: var(--blue);
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.step1-card input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid var(--dark-grey);
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+}
+
+.step1-card input:focus {
+  border-color: var(--blue);
+  outline: none;
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 768px) {
+  .step1-container {
     padding: 0.5rem;
-    border: 1px solid var(--dark-grey);
-    border-radius: 0.25rem;
-    font-size: 0.875rem;
   }
-  
-  .step1-card input:focus {
-    border-color: var(--blue);
-    outline: none;
+
+  .step1-description {
+    font-size: 0.8rem;
+    text-align: center;
   }
-  
+
+  .step1-grid {
+    grid-template-columns: 1fr; /* Single column on smaller screens */
+  }
+
+  .step1-card input {
+    font-size: 0.8rem;
+    padding: 0.4rem;
+  }
+}
+
+/* Smaller mobile devices */
+@media screen and (max-width: 480px) {
+  .step1-container {
+    padding: 0.25rem;
+  }
+
+  .step1-description {
+    font-size: 0.75rem;
+  }
+}
