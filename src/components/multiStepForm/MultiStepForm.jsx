@@ -3,6 +3,8 @@ import StepIndicator from "./StepIndicator";
 import StepForm from "./StepForm";
 import Step1Form from "./Step1Form"; // Importar el componente del Paso 1
 import Step2Form from "./Step2Form"; // Importar el componente del Paso 2
+import Step3Form from "./Step3Form";
+
 import "./MultiStepForm.css";
 
 const MultiStepForm = () => {
@@ -39,7 +41,7 @@ const MultiStepForm = () => {
       case 2:
         return <Step2Form />;
       case 3:
-        return <div>Formulario de Tutores (Paso 3)</div>;
+        return <Step3Form />;
       case 4:
         return <div>Formulario de Pago (Paso 4)</div>;
       default:
