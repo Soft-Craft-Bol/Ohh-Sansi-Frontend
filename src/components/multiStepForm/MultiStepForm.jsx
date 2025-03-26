@@ -1,12 +1,14 @@
 import React, { useState } from "react";
 import StepIndicator from "./StepIndicator";
 import StepForm from "./StepForm";
-import Step1Form from "./Step1Form"; // Importar el componente del Paso 1
-import Step2Form from "./Step2Form"; // Importar el componente del Paso 2
+import Step1Form from "./Step1Form"; 
+import Step2Form from "./Step2Form"; 
 import "./MultiStepForm.css";
 
 const MultiStepForm = () => {
   const [currentStep, setCurrentStep] = useState(1);
+  const [completedSteps, setCompletedSteps] = useState({});
+  const [isStepValid, setIsStepValid] = useState(false);
 
   const steps = [
     { label: "Información básica" },
@@ -16,8 +18,10 @@ const MultiStepForm = () => {
   ];
 
   const handleNext = () => {
-    if (currentStep < steps.length) {
+    if (isStepValid) {
+      setCompletedSteps((prev) => ({ ...prev, [currentStep]: true }));
       setCurrentStep((prev) => prev + 1);
+      setIsStepValid(false);
     }
   };
 
@@ -35,9 +39,9 @@ const MultiStepForm = () => {
   const getStepComponent = (step) => {
     switch (step) {
       case 1:
-        return <Step1Form />;
+        return <Step1Form setIsStepValid={setIsStepValid} />;
       case 2:
-        return <Step2Form />;
+        return <Step2Form setIsStepValid={setIsStepValid} />;
       case 3:
         return <div>Formulario de Tutores (Paso 3)</div>;
       case 4:
@@ -50,15 +54,16 @@ const MultiStepForm = () => {
   return (
     <div className="multi-step-container">
       <h1>Nueva inscripción</h1>
-      <StepIndicator steps={steps} currentStep={currentStep} />
-      <form onSubmit={handleSubmit} className="form-content">
+      <StepIndicator steps={steps} currentStep={currentStep} completedSteps={completedSteps} />
+      <form onSubmit={handleSubmit}>
         <StepForm
           title={steps[currentStep - 1].label}
           onNext={handleNext}
           onPrev={currentStep > 1 ? handlePrev : null}
           isLastStep={currentStep === steps.length}
+          isNextDisabled={!isStepValid}
         >
-          {getStepComponent(currentStep)} {/* Pasar el componente correspondiente */}
+          {getStepComponent(currentStep)}
         </StepForm>
       </form>
     </div>

@@ -6,20 +6,20 @@ const MainContent = () => {
     <main>
       <div className="head-title">
         <div className="left">
-          <h1>Dashboard</h1>
+          <h1>Tablero </h1>
           <ul className="breadcrumb">
             <li>
-              <a href="#">Dashboard</a>
+              <a href="#">Tablero de Escritorio</a>
             </li>
             <li><i className='bx bx-chevron-right'></i></li>
             <li>
-              <a className="active" href="#">Home</a>
+              <a className="active" href="#">Pagina principal</a>
             </li>
           </ul>
         </div>
         <a href="#" className="btn-download">
           <i className='bx bxs-cloud-download'></i>
-          <span className="text">Download PDF</span>
+          <span className="text">Descargar PDF</span>
         </a>
       </div>
 
@@ -28,21 +28,21 @@ const MainContent = () => {
           <i className='bx bxs-calendar-check'></i>
           <span className="text">
             <h3>1020</h3>
-            <p>New Order</p>
+            <p>Nueva Orden</p>
           </span>
         </li>
         <li>
           <i className='bx bxs-group'></i>
           <span className="text">
             <h3>2834</h3>
-            <p>Visitors</p>
+            <p>Visitantes</p>
           </span>
         </li>
         <li>
           <i className='bx bxs-dollar-circle'></i>
           <span className="text">
             <h3>$2543</h3>
-            <p>Total Sales</p>
+            <p>Total Ventas</p>
           </span>
         </li>
       </ul>
@@ -50,16 +50,16 @@ const MainContent = () => {
       <div className="table-data">
         <div className="order">
           <div className="head">
-            <h3>Recent Orders</h3>
+            <h3>Recientes</h3>
             <i className='bx bx-search'></i>
             <i className='bx bx-filter'></i>
           </div>
           <table>
             <thead>
               <tr>
-                <th>User</th>
-                <th>Date Order</th>
-                <th>Status</th>
+                <th>Usuario</th>
+                <th>Fecha de orden</th>
+                <th>Estados</th>
               </tr>
             </thead>
             <tbody>
