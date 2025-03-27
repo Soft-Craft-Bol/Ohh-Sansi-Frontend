@@ -13,6 +13,7 @@ import { PiClipboardTextFill } from "react-icons/pi";
 import { MdOutlinePayment } from "react-icons/md";
 import { signOut } from '../../utils/authFuntions';
 import './Sidebar.css';
+import logoOhSansi from '../../assets/img/ohSansi.png';
 import { Link } from 'react-router-dom';
 
 const Sidebar = ({ isSidebarVisible }) => {
@@ -29,20 +30,22 @@ const Sidebar = ({ isSidebarVisible }) => {
   return (
     <section id="sidebar" className={!isSidebarVisible ? 'hide' : ''}>
       <Link to="/" className="brand">
-        <FaSmile className="icon" />
-        <span className="text">AdminHub</span>
+        <div className="icon">
+          <img src={logoOhSansi} alt="logoOhSansi" width={100} /> 
+        </div>
+        <span className="text">Oh Sansi</span>
       </Link>
       <ul className="side-menu top">
         <li className={activeMenu === 'dashboard' ? 'active' : ''}>
           <Link to="/home" className="link" onClick={() => handleMenuClick('dashboard')}>
             <FaThLarge className="icon" />
-            <span className="text">Dashboard</span>
+            <span className="text">Pagina Principal</span>
           </Link>
         </li>
         <li className={activeMenu === 'analytics' ? 'active' : ''}>
           <Link to="/form" className="link" onClick={() => handleMenuClick('analytics')}>
             <PiClipboardTextFill className="icon" />
-            <span className="text">Inscripciónes</span>
+            <span className="text">Inscripciones</span>
           </Link>
         </li>
         <li className={activeMenu === 'store' ? 'active' : ''}>
@@ -68,13 +71,13 @@ const Sidebar = ({ isSidebarVisible }) => {
         <li>
           <Link to="/inicio" className="link">
             <FaCog className="icon" />
-            <span className="text">Settings</span>
+            <span className="text">Configuraciones</span>
           </Link>
         </li>
         <li>
           <button onClick={handleLogout} className="logout">
             <FaSignOutAlt className="icon" />
-            <span className="text">Logout</span>
+            <span className="text">Cerrar Sesión</span>
           </button>
         </li>
       </ul>
