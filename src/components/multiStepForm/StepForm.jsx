@@ -1,7 +1,8 @@
 import React from "react";
 import { ButtonPrimary } from "../button/ButtonPrimary";
 
-const StepForm = ({ title, onNext, onPrev, isLastStep, children }) => {
+const StepForm = ({ title, onNext, onPrev, isLastStep, isNextDisabled, children }) => {
+
   return (
     <div className="step-content">
       <h2>{title}</h2>
@@ -14,9 +15,14 @@ const StepForm = ({ title, onNext, onPrev, isLastStep, children }) => {
             Anterior
           </ButtonPrimary>
         )}
-        <ButtonPrimary buttonStyle="primary" onClick={onNext}>
+        <ButtonPrimary
+          buttonStyle="primary"
+          onClick={onNext}
+          disabled={isNextDisabled}
+        >
           {isLastStep ? "Finalizar" : "Siguiente"}
-        </ButtonPrimary>
+      </ButtonPrimary>
+
       </div>
     </div>
   );

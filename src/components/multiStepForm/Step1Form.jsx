@@ -5,7 +5,7 @@ import useFetchDepartamentos from "../../hooks/departamento/useFetchDepartamento
 import useFetchMunicipios from "../../hooks/departamento/useFetchMunicipios";
 import useFetchColegio from "../../hooks/Colegio/useFetchColegio";
 
-const Step1Form = () => {
+const Step1Form = ({ setIsStepValid }) => {
   const [formData, setFormData] = useState({
     nombre: "",
     apellido: "",
@@ -26,17 +26,24 @@ const Step1Form = () => {
   const [ selectedMunicipio, setSelectedMunicipio] = useState(null);
   const { colegios, loadingColegios } = useFetchColegio(selectedMunicipio);
 
+  
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-
+    const updatedData = { ...formData, [name]: value }; // ← esto es clave
+    setFormData(updatedData);
+  
     if (name === "departamento") {
       setSelectedDepartamento(value);
     }
     if (name === "municipio") {
       setSelectedMunicipio(value);
     }
+  
+    const camposObligatorios = ["nombre", "apellido", "colegio", "grado"];
+    const esValido = camposObligatorios.every((campo) => updatedData[campo]?.trim() !== "");
+    setIsStepValid(esValido); // ← activa el botón "Siguiente"
   };
+  
 
   const handleSubmit = (e) => {
     e.preventDefault();

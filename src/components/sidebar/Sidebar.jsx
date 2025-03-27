@@ -8,6 +8,7 @@ import {
   FaUsers,
   FaCog,
   FaSignOutAlt,
+  FaBookOpen,
 } from 'react-icons/fa';
 import { PiClipboardTextFill } from "react-icons/pi";
 import { MdOutlinePayment } from "react-icons/md";
@@ -48,6 +49,14 @@ const Sidebar = ({ isSidebarVisible }) => {
             <span className="text">Inscripciones</span>
           </Link>
         </li>
+        
+        <li className={activeMenu === 'materias' ? 'active' : ''}>
+          <Link to="/registro-materias" className="link" onClick={() => handleMenuClick('materias')}>
+            <FaBookOpen className="icon" />
+            <span className="text">Registro de Materias</span>
+          </Link>
+        </li>
+
         <li className={activeMenu === 'store' ? 'active' : ''}>
           <Link to="/inicio" className="link" onClick={() => handleMenuClick('store')}>
             <MdOutlinePayment className="icon" />
