@@ -1,0 +1,18 @@
+.period-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 10px;
+  }
+
+  .period-card .active-badge {
+    background: #0da04f;
+    color: white;
+    padding: 7px 10px;
+    border-radius: 5px;
+    margin-right: auto;
+  }
+  

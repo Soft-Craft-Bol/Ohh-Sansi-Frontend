@@ -1,4 +1,4 @@
-import "./ButttonPrimary.css";
+import "./ButtonPrimary.css";
 
 export const ButtonPrimary = ({
   children,

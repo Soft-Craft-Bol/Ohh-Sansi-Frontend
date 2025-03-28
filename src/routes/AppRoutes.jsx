@@ -5,6 +5,9 @@ import MainContent from '../components/sidebar/Main';
 import Inicio from '../pages/home/Inicio';
 import Layout from '../Layout/Layout';
 import MultiStepForm from '../components/multiStepForm/MultiStepForm';
+import InscriptionPeriods from '../components/management/fechas/InscriptionPeriods';
+import CategoriesManagement from '../components/management/categories/CategoriesManegement';
+import ManagementPage from '../pages/admin/Management';
 
 const LoginUser = lazy(() => import('../pages/login/LoginUser'));
 //const Formulario = lazy(() => import('../components/formulario/Formulario'));
@@ -31,34 +34,46 @@ const AppRoutes = () => {
         path="/home"
         element={
           <PrivateRoute>
-          <Layout>
-            <MainContent/>
+            <Layout>
+              <MainContent />
             </Layout>
           </PrivateRoute>
         }
       />
-       <Route
+      <Route
         path="/inicio"
         element={
           <PrivateRoute>
-          <Layout>
-            <Inicio/>
+            <Layout>
+              <Inicio />
             </Layout>
           </PrivateRoute>
         }
       />
 
-    <Route
+      <Route
         path="/form"
         element={
           <PrivateRoute>
-          <Layout>
-            <MultiStepForm/>
+            <Layout>
+              <MultiStepForm />
+            </Layout>
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/management"
+        element={
+          <PrivateRoute>
+            <Layout>
+              <ManagementPage />
             </Layout>
           </PrivateRoute>
         }
       />
     </Routes>
+
   );
 };
 

@@ -66,3 +66,18 @@
 	font-size: 14px;
 	padding: 8px;
 }
+
+.btn-submit{
+	height: 40px;
+	width: 150px;
+	border-radius: 8px;
+	font-size: 16px;
+	font-family: Arial, sans-serif;
+	background: var(--blue-color);
+	color: #ffffff;
+	cursor: pointer;
+	padding: 8px;
+	border: none;
+	box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+	transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}

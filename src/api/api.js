@@ -45,3 +45,4 @@ export const getDepartamentoById = (id) => api.get(`/departamento/${id}`);
 export const getMunicipios = (id) => api.get(`/municipios/${id}`);
 export const getMunicipiosByDepartamento = (id) => api.get(`/municipios/departamento/${id}`);
 export const getColegiosByMunicipio = (id) => api.get(`/colegios/municipio/${id}`);
+export const registerFechas = (data) => api.post('/fechas/register-fechas', data);

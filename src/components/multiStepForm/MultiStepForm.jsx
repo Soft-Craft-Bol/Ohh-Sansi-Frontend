@@ -7,8 +7,6 @@ import "./MultiStepForm.css";
 
 const MultiStepForm = () => {
   const [currentStep, setCurrentStep] = useState(1);
-  const [completedSteps, setCompletedSteps] = useState({});
-  const [isStepValid, setIsStepValid] = useState(false);
 
   const steps = [
     { label: "Información básica" },
@@ -18,10 +16,8 @@ const MultiStepForm = () => {
   ];
 
   const handleNext = () => {
-    if (isStepValid) {
-      setCompletedSteps((prev) => ({ ...prev, [currentStep]: true }));
+    if (currentStep < steps.length) {
       setCurrentStep((prev) => prev + 1);
-      setIsStepValid(false);
     }
   };
 
@@ -39,9 +35,9 @@ const MultiStepForm = () => {
   const getStepComponent = (step) => {
     switch (step) {
       case 1:
-        return <Step1Form setIsStepValid={setIsStepValid} />;
+        return <Step1Form/>;
       case 2:
-        return <Step2Form setIsStepValid={setIsStepValid} />;
+        return <Step2Form />;
       case 3:
         return <div>Formulario de Tutores (Paso 3)</div>;
       case 4:
@@ -54,14 +50,13 @@ const MultiStepForm = () => {
   return (
     <div className="multi-step-container">
       <h1>Nueva inscripción</h1>
-      <StepIndicator steps={steps} currentStep={currentStep} completedSteps={completedSteps} />
+      <StepIndicator steps={steps} currentStep={currentStep}  />
       <form onSubmit={handleSubmit}>
         <StepForm
           title={steps[currentStep - 1].label}
           onNext={handleNext}
           onPrev={currentStep > 1 ? handlePrev : null}
           isLastStep={currentStep === steps.length}
-          isNextDisabled={!isStepValid}
         >
           {getStepComponent(currentStep)}
         </StepForm>

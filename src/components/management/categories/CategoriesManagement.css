@@ -1,0 +1,21 @@
+.category-container {
+    max-width: 100%;
+    margin: auto;
+    padding: 40px;
+    font-family: var(--poppins);
+  }
+  
+  .category-container .button {
+    background-color: var(--blue);
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background 0.3s ease-in-out;
+  }
+  
+  .category-container .button:hover {
+    background-color: #35597e;
+  }
+  
