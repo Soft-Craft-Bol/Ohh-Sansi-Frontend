@@ -13,7 +13,6 @@
     position: relative;
 }
 
-/* Línea horizontal base (gris) jaja*/
 .steps-indicator::before {
     content: "";
     position: absolute;
