@@ -1,79 +1,49 @@
 import React, { useState } from "react";
 import "./Step1Form.css";
+import useFetchNivelesEscolares from "../../hooks/NivelEscolar/useFetchNivelesEscolares";
+import useFetchDepartamentos from "../../hooks/departamento/useFetchDepartamentos";
+import useFetchMunicipios from "../../hooks/departamento/useFetchMunicipios";
+import useFetchColegio from "../../hooks/Colegio/useFetchColegio";
 
-const Step1Form = () => {
+const Step1Form = ({ setIsStepValid }) => {
   const [formData, setFormData] = useState({
     nombre: "",
     apellido: "",
+    documento: "",
+    fechaNacimiento: "",
+    departamento: "",
+    municipio: "",
     institucion: "",
     grado: "",
     email: "",
     telefono: "",
-    documento: "",
-    fechaNacimiento: "",
-    contactoEmergencia: "",
-    telefonoEmergencia: "",
   });
 
-  const [errors, setErrors] = useState({});
+  const { niveles, loading } = useFetchNivelesEscolares();
+  const { departamentos, loadingDepartamentos } = useFetchDepartamentos();
+  const [selectedDepartamento, setSelectedDepartamento] = useState(null);
+  const { municipios, loadingMunicipios } = useFetchMunicipios(selectedDepartamento);
+  const [ selectedMunicipio, setSelectedMunicipio] = useState(null);
+  const { colegios, loadingColegios } = useFetchColegio(selectedMunicipio);
 
-  // Función para validar correo electrónico
-  const validateEmail = (email) => {
-    // Lista de dominios comunes y válidos
-    const validDomains = [
-      'gmail.com', 'outlook.com', 'hotmail.com', 'yahoo.com', 
-      'icloud.com', 'protonmail.com', 'edu.pe', 'unmsm.edu.pe', 
-      'pucp.edu.pe', 'uni.pe'
-    ];
-
-    // Expresiones regulares para validación
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const commonTypos = {
-      'gmai.com': 'gmail.com',
-      'gamil.com': 'gmail.com',
-      'hotmai.com': 'hotmail.com',
-      'hotmial.com': 'hotmail.com',
-      'outloo.com': 'outlook.com',
-      'outlok.com': 'outlook.com',
-      'yaho.com': 'yahoo.com',
-      'yahooo.com': 'yahoo.com'
-    };
-
-    // Validaciones
-    if (!email) return null; // No mostrar error si está vacío
-    if (!emailRegex.test(email)) {
-      return "Formato de correo inválido";
-    }
-
-    const [, domain] = email.split('@');
-    
-    // Corrección de dominios con typos
-    if (commonTypos[domain]) {
-      return `¿Quisiste decir ${email.replace(domain, commonTypos[domain])}?`;
-    }
-
-    // Validación de dominios
-    if (!validDomains.includes(domain)) {
-      return "Dominio de correo no reconocido";
-    }
-
-    return null;
-  };
-
+  
   const handleChange = (e) => {
     const { name, value } = e.target;
-    
-    // Validación específica para email
-    if (name === 'email') {
-      const emailError = validateEmail(value);
-      setErrors(prev => ({
-        ...prev,
-        email: emailError
-      }));
+    const updatedData = { ...formData, [name]: value }; // ← esto es clave
+    setFormData(updatedData);
+  
+    if (name === "departamento") {
+      setSelectedDepartamento(value);
     }
-
-    setFormData({ ...formData, [name]: value });
+    if (name === "municipio") {
+      setSelectedMunicipio(value);
+    }
+  
+    const camposObligatorios = ["nombre", "apellido", "colegio", "grado"];
+    const esValido = camposObligatorios.every((campo) => updatedData[campo]?.trim() !== "");
+    setIsStepValid(esValido); // ← activa el botón "Siguiente"
   };
+  
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -115,31 +85,145 @@ const Step1Form = () => {
       </span>
       <form onSubmit={handleSubmit}>
         <div className="step1-grid">
-          {[
-            { name: "nombre", label: "Nombre*", placeholder: "Nombre del participante" },
-            { name: "apellido", label: "Apellido*", placeholder: "Apellido del participante" },
-            { name: "institucion", label: "Colegio/Institución*", placeholder: "Nombre de la institución" },
-            { name: "grado", label: "Grado/Nivel*", placeholder: "Seleccione el grado" },
-            { name: "email", label: "Correo electrónico", placeholder: "correo@ejemplo.com", type: "email" },
-            { name: "telefono", label: "Teléfono", placeholder: "Número de contacto", type: "tel" },
-            { name: "documento", label: "Documento de identidad", placeholder: "Número de identificación" },
-            { name: "fechaNacimiento", label: "Fecha de nacimiento", type: "date" }
-          ].map((field) => (
-            <div key={field.name} className="step1-card">
-              <label htmlFor={field.name}>{field.label}</label>
-              <input
-                id={field.name}
-                type={field.type || "text"}
-                name={field.name}
-                value={formData[field.name]}
-                onChange={handleChange}
-                placeholder={field.placeholder}
-              />
-              {errors[field.name] && (
-                <span className="error-message">{errors[field.name]}</span>
+          <div className="step1-card">
+            <label>Nombre*</label>
+            <input
+              type="text"
+              name="nombre"
+              value={formData.nombre}
+              onChange={handleChange}
+              placeholder="Nombre del participante"
+            />
+          </div>
+          <div className="step1-card">
+            <label>Apellido*</label>
+            <input
+              type="text"
+              name="apellido"
+              value={formData.apellido}
+              onChange={handleChange}
+              placeholder="Apellido del participante"
+            />
+          </div>
+          <div className="step1-card">
+            <label>Documento de identidad</label>
+            <input
+              type="text"
+              name="documento"
+              value={formData.documento}
+              onChange={handleChange}
+              placeholder="Número de identificación"
+            />
+          </div>
+          <div className="step1-card">
+            <label>Fecha de nacimiento</label>
+            <input
+              type="date"
+              name="fechaNacimiento"
+              value={formData.fechaNacimiento}
+              onChange={handleChange}
+            />
+          </div>
+          <div className="step1-card">
+            <label>Departamento</label>
+            <select className="select" name="departamento" value={formData.departamento} onChange={handleChange}>
+              <option value="">Seleccione un departamento</option>
+              {loading ? (
+                <option>Cargando...</option>
+              ) : departamentos.length === 0 ? (
+                <option>No se encontraron departamentos</option>
+              ) : (
+                departamentos.map((departamento) => (
+                  <option key={departamento.idDepartamento} value={departamento.idDepartamento} >
+                    {departamento.nombreDepartamento}
+                  </option>
+                ))
               )}
-            </div>
-          ))}
+            </select>
+          </div>
+          <div className="step1-card">
+            <label>Municipio</label>
+            <select
+              className="select"
+              name="municipio"
+              value={formData.municipio}
+              onChange={handleChange}
+            >
+              <option value="">Seleccione un municipio</option>
+              {loadingMunicipios ? (
+                <option>Cargando...</option>
+              ) : municipios.length === 0 ? (
+                <option>No se encontraron municipios</option>
+              ) : (
+                municipios.map((municipio) => (
+                  <option key={municipio.idMunicipio} value={municipio.idMunicipio}>
+                    {municipio.nombreMunicipio}
+                  </option>
+                ))
+              )}
+            </select>
+          </div>
+          <div className="step1-card">
+            <label>Colegio/Institución*</label>
+            <select
+              className="select"
+              name="colegio"
+              value={formData.colegio}
+              onChange={handleChange}
+            >
+              <option value="">Seleccione un colegio</option>
+              {loadingColegios ? (
+                <option>Cargando...</option>
+              ) : colegios.length === 0 ? (
+                <option>No se encontraron colegios</option>
+              ) : (
+                colegios.map((colegio) => (
+                  <option key={colegio.idColegio} value={colegio.idColegio}>
+                    {colegio.nombreColegio}-----{colegio.direccion}
+                  </option>
+                ))
+              )}
+            </select>
+          </div>
+          <div className="step1-card">
+            <label>Grado/Nivel*</label>
+            <select className="select" name="grado" value={formData.grado} onChange={handleChange}>
+              <option value="">Seleccione un grado</option>
+              {loading ? (
+                <option>Cargando...</option>
+              ) : niveles.length === 0 ? (
+                <option>No se encontraron niveles</option>
+              ) : (
+                niveles.map((nivel) => (
+                  <option key={nivel.idNivel} value={nivel.codigoNivel}>
+                    {nivel.nombreNivelEscolar}
+                  </option>
+                ))
+              )}
+            </select>
+          </div>
+
+          <div className="step1-card">
+            <label>Correo electrónico</label>
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              placeholder="correo@ejemplo.com"
+            />
+          </div>
+          <div className="step1-card">
+            <label>Teléfono</label>
+            <input
+              type="tel"
+              name="telefono"
+              value={formData.telefono}
+              onChange={handleChange}
+              placeholder="Número de contacto"
+            />
+          </div>
+
         </div>
       </form>
     </div>

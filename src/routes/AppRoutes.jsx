@@ -5,6 +5,8 @@ import MainContent from '../components/sidebar/Main';
 import Inicio from '../pages/home/Inicio';
 import Layout from '../Layout/Layout';
 import MultiStepForm from '../components/multiStepForm/MultiStepForm';
+import FormArea from "../components/forms/formArea/FormArea";
+
 
 const LoginUser = lazy(() => import('../pages/login/LoginUser'));
 //const Formulario = lazy(() => import('../components/formulario/Formulario'));
@@ -58,7 +60,21 @@ const AppRoutes = () => {
           </PrivateRoute>
         }
       />
+
+    <Route
+      path="/registro-materias"
+      element={
+        <PrivateRoute>
+          <Layout>
+            <FormArea />
+          </Layout>
+        </PrivateRoute>
+      }
+    />
+
     </Routes>
+    
+    
   );
 };
 
