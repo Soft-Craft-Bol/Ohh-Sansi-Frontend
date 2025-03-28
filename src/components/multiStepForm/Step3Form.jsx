@@ -90,7 +90,11 @@ const Step3Form = () => {
             onChange={handleChange}
             onBlur={handleBlur}
             placeholder="Ingrese el nombre del tutor"
-            className={errors.nombres && touchedFields.nombres? "error-input" : "valid-input"}
+            className={`
+              ${errors.nombres && touchedFields.nombres ? "error-input" : ""}
+              ${!errors.nombres && touchedFields.nombres ? "valid-input" : ""}
+              default
+            `}
           />
           {errors.nombres && touchedFields.nombres && <p className="error-message">{errors.nombres}</p>}
         </div>
@@ -104,7 +108,11 @@ const Step3Form = () => {
             onChange={handleChange}
             onBlur={handleBlur}
             placeholder="Ingrese el apellido del tutor"
-            className={errors.apellidos && touchedFields.apellidos ? "error-input" : "valid-input"}
+            className={`
+              ${errors.apellidos && touchedFields.apellidos ? "error-input" : ""}
+              ${!errors.apellidos && touchedFields.apellidos ? "valid-input" : ""}
+              default
+            `}
           />
           {errors.apellidos && touchedFields.apellidos && <p className="error-message">{errors.apellidos}</p>}
         </div>
@@ -118,7 +126,11 @@ const Step3Form = () => {
             onChange={handleChange}
             onBlur={handleBlur}
             placeholder="Ingrese el número telefónico del tutor"
-            className={errors.telefono && touchedFields.telefono ? "error-input" : "valid-input"}
+            className={`
+              ${errors.telefono && touchedFields.telefono ? "error-input" : ""}
+              ${!errors.telefono && touchedFields.telefono ? "valid-input" : ""}
+              default
+            `}
           />
           {errors.telefono && touchedFields.telefono && <p className="error-message">{errors.telefono}</p>}
         </div>
@@ -132,7 +144,11 @@ const Step3Form = () => {
             onChange={handleChange}
             onBlur={handleBlur}
             placeholder="correo@ejemplo.com"
-            className={errors.correo && touchedFields.correo ? "error-input" : "valid-input"}
+            className={`
+              ${errors.correo && touchedFields.correo ? "error-input" : ""}
+              ${!errors.correo && touchedFields.correo ? "valid-input" : ""}
+              default
+            `}
           />
           {errors.correo && touchedFields.correo && <p className="error-message">{errors.correo}</p>}
         </div>
@@ -144,7 +160,11 @@ const Step3Form = () => {
             value={formData.tipoTutor}
             onBlur={handleBlur}
             onChange={handleChange}
-            className={errors.tipoTutor && touchedFields.tipoTutor ? "error-input" : "valid-input"}
+            className={`
+              ${errors.tipoTutor && touchedFields.tipoTutor ? "error-input" : ""}
+              ${!errors.tipoTutor && touchedFields.tipoTutor ? "valid-input" : ""}
+              default
+            `}
           >
             <option value="">Seleccione el tipo de tutor</option>
             <option value="profesor">Profesor</option>
