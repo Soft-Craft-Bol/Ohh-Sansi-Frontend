@@ -37,9 +37,9 @@ const MultiStepForm = () => {
   const getStepComponent = (step) => {
     switch (step) {
       case 1:
-        return <Step1Form />;
+        return <Step1Form setIsStepValid={setIsStepValid} />;
       case 2:
-        return <Step2Form />;
+        return <Step2Form setIsStepValid={setIsStepValid} />;
       case 3:
         return <Step3Form />;
       case 4:
@@ -53,14 +53,14 @@ const MultiStepForm = () => {
     <div className="multi-step-container">
       <h1>Nueva inscripción</h1>
       <StepIndicator steps={steps} currentStep={currentStep} />
-      <form onSubmit={handleSubmit} className="form-content">
+      <form onSubmit={handleSubmit}>
         <StepForm
           title={steps[currentStep - 1].label}
           onNext={handleNext}
           onPrev={currentStep > 1 ? handlePrev : null}
           isLastStep={currentStep === steps.length}
         >
-          {getStepComponent(currentStep)} {/* Pasar el componente correspondiente */}
+          {getStepComponent(currentStep)}
         </StepForm>
       </form>
     </div>

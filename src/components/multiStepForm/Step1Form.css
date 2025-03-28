@@ -2,6 +2,7 @@
     padding: 1.5rem;
     max-width: 100%;
     font-family: var(--poppins);
+    
   }
   
   .step1-description {
@@ -44,3 +45,10 @@
     outline: none;
   }
   
+  .select {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid var(--dark-grey);
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+  }
