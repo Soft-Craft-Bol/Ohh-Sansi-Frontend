@@ -6,7 +6,7 @@ import Inicio from '../pages/home/Inicio';
 import Layout from '../Layout/Layout';
 import MultiStepForm from '../components/multiStepForm/MultiStepForm';
 import ManagementPage from '../pages/admin/Management';
-import FormArea from "../components/forms/formArea/FormArea";
+import FormArea from "../components/management/formArea/FormArea";
 
 
 const LoginUser = lazy(() => import('../pages/login/LoginUser'));
