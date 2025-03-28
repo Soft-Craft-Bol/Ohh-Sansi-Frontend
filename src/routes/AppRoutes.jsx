@@ -5,9 +5,9 @@ import MainContent from '../components/sidebar/Main';
 import Inicio from '../pages/home/Inicio';
 import Layout from '../Layout/Layout';
 import MultiStepForm from '../components/multiStepForm/MultiStepForm';
-import InscriptionPeriods from '../components/management/fechas/InscriptionPeriods';
-import CategoriesManagement from '../components/management/categories/CategoriesManegement';
 import ManagementPage from '../pages/admin/Management';
+import FormArea from "../components/forms/formArea/FormArea";
+
 
 const LoginUser = lazy(() => import('../pages/login/LoginUser'));
 //const Formulario = lazy(() => import('../components/formulario/Formulario'));
@@ -72,8 +72,19 @@ const AppRoutes = () => {
           </PrivateRoute>
         }
       />
-    </Routes>
 
+    <Route
+      path="/registro-materias"
+      element={
+        <PrivateRoute>
+          <Layout>
+            <FormArea />
+          </Layout>
+        </PrivateRoute>
+      }
+    />
+
+    </Routes>
   );
 };
 

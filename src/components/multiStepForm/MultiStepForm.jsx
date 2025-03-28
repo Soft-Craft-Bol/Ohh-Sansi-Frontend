@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import StepIndicator from "./StepIndicator";
 import StepForm from "./StepForm";
-import Step1Form from "./Step1Form"; 
+import Step1Form from "./Step1Form";
 import Step2Form from "./Step2Form"; 
+import Step3Form from "./Step3Form";
+
 import "./MultiStepForm.css";
 
 const MultiStepForm = () => {
@@ -39,7 +41,7 @@ const MultiStepForm = () => {
       case 2:
         return <Step2Form />;
       case 3:
-        return <div>Formulario de Tutores (Paso 3)</div>;
+        return <Step3Form />;
       case 4:
         return <div>Formulario de Pago (Paso 4)</div>;
       default:
@@ -50,7 +52,7 @@ const MultiStepForm = () => {
   return (
     <div className="multi-step-container">
       <h1>Nueva inscripción</h1>
-      <StepIndicator steps={steps} currentStep={currentStep}  />
+      <StepIndicator steps={steps} currentStep={currentStep} />
       <form onSubmit={handleSubmit}>
         <StepForm
           title={steps[currentStep - 1].label}
