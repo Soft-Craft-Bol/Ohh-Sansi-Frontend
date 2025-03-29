@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import "./Step3Form.css";
 
-
 const Step3Form = () => {
   const [formData, setFormData] = useState({
     nombres: "",
@@ -14,13 +13,23 @@ const Step3Form = () => {
   const [errors, setErrors] = useState({});
   const [isFormValid, setIsFormValid] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-
+  const [tipoTutores, setTipoTutores] = useState([]);  // Para cargar los tipos de tutor
 
   useEffect(() => {
     const savedData = localStorage.getItem("step3Data");
     if (savedData) {
       setFormData(JSON.parse(savedData));
     }
+
+    // Usar fetch para cargar los tipos de tutor desde el backend
+    fetch("http://localhost:9999/api/v1/tipo-tutor/findAllTipoTutor")
+      .then((response) => response.json())  // Convierte la respuesta a JSON
+      .then((data) => {
+        setTipoTutores(data);  // Suponiendo que la respuesta es un array de tipos de tutor
+      })
+      .catch((error) => {
+        console.error("Error al cargar los tipos de tutor:", error);
+      });
   }, []);
 
   useEffect(() => {
@@ -30,33 +39,30 @@ const Step3Form = () => {
 
   const validateForm = () => {
     let newErrors = {};
-  
+
     if (formData.nombres && !/^[A-Za-z\s]+$/.test(formData.nombres)) {
       newErrors.nombres = "Solo se permiten letras y espacios.";
     }
-  
+
     if (formData.apellidos && !/^[A-Za-z\s]+$/.test(formData.apellidos)) {
       newErrors.apellidos = "Solo se permiten letras y espacios.";
     }
-  
+
     if (formData.telefono && !/^\d+$/.test(formData.telefono)) {
       newErrors.telefono = "Solo se permiten números.";
     }
-  
+
     if (formData.correo && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.correo)) {
       newErrors.correo = "Formato de correo inválido.";
     }
-  
-    // Validar el tipo de tutor solo si el usuario ha intentado enviar el formulario
+
     if (isSubmitted && !formData.tipoTutor) {
       newErrors.tipoTutor = "Seleccione un tipo de tutor.";
     }
-  
+
     setErrors(newErrors);
     setIsFormValid(Object.keys(newErrors).length === 0);
   };
-  
-  
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -65,9 +71,25 @@ const Step3Form = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     validateForm();
+    setIsSubmitted(true);
+
     if (isFormValid) {
-      alert("Formulario enviado correctamente.");
-      // BD 
+      fetch("http://localhost:9999/api/v1/tutor", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),  // Enviar los datos como JSON
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          console.log("Tutor registrado:", data);
+          alert("Formulario enviado correctamente.");
+        })
+        .catch((error) => {
+          console.error("Error al enviar el formulario:", error);
+          alert("Ocurrió un error al enviar el formulario.");
+        });
     } else {
       alert("Corrija los errores antes de continuar.");
     }
@@ -142,23 +164,26 @@ const Step3Form = () => {
             className={errors.tipoTutor ? "error-input" : "valid-input"}
           >
             <option value="">Seleccione el tipo de tutor</option>
-            <option value="profesor">Profesor</option>
-            <option value="asistente">Asistente</option>
+            {tipoTutores.length > 0 &&
+              tipoTutores.map((tipo) => (
+                <option key={tipo.id} value={tipo.nombre}>
+                  {tipo.nombre}
+                </option>
+              ))}
           </select>
           {errors.tipoTutor && <p className="error-message">{errors.tipoTutor}</p>}
         </div>
-      </form>
 
-      <div className="step3-button-container">
-        <button
-          type="submit"
-          className={`step3-button ${isFormValid ? "active" : "disabled"}`}
-          onClick={handleSubmit}
-          disabled={!isFormValid}
-        >
-          Continuar a áreas de competencia
-        </button>
-      </div>
+        <div className="step3-button-container">
+          <button
+            type="submit"
+            className={`step3-button ${isFormValid ? "active" : "disabled"}`}
+            disabled={!isFormValid}
+          >
+            Continuar a áreas de competencia
+          </button>
+        </div>
+      </form>
     </div>
   );
 };
