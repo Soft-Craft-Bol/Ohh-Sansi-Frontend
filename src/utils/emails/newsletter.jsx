@@ -13,18 +13,19 @@ export default function InscripcionConfirmacion() {
             <Text style={paragraph}>
               Se ha procesado su solicitud para la inscripción en el evento Ohh-Sansi.
             </Text>
-            <Button style={button} href="#">
+            <Button style={button} >
               Descargar orden de pago
             </Button>
+            <Img src="https://tecnocursosedu.com/wp-content/uploads/2024/10/ohsansi.jpg" alt="Logo OhSansi" />
             <Hr style={hr} />
             <Text style={paragraph}>
               Se publicará más información pronto. Mientras tanto, si tienes alguna pregunta, no dudes en comunicarte con nosotros a través de nuestras redes:
             </Text>
             <Text style={contactInfo}>
-              <Img src="https://cdn-icons-png.flaticon.com/512/733/733585.png" alt="WhatsApp" style={icon} /> +591 71486093
+              <Img src="https://cdn-icons-png.flaticon.com/512/733/733585.png" alt="WhatsApp" style={icon} />  +591 71486093
             </Text>
             <Text style={contactInfo}>
-              <Img src="https://cdn-icons-png.flaticon.com/512/732/732200.png" alt="Email" style={icon} /> softcraft2024@gmail.com
+              <Img src="https://cdn-icons-png.flaticon.com/512/732/732200.png" alt="Email" style={icon} />  softcraft2024@gmail.com
             </Text>
             <Text style={paragraph}>¡Te esperamos!</Text>
             <Text style={paragraph}>
@@ -77,6 +78,7 @@ const button = {
   display: "inline-block",
   padding: "12px 24px",
   margin: "20px 0",
+  cursor: "pointer",
 };
 
 const hr = {

@@ -5,6 +5,19 @@ import Step1Form from "./Step1Form";
 import Step2Form from "./Step2Form"; 
 import Step3Form from "./Step3Form";
 import "./MultiStepForm.css";
+
+//- - - - FOR EMAIL TEST - - - 
+import { sendEmail } from "../../api/sendMail";
+const llamarFuncion = async () => {
+  try {
+    const response = await sendEmail();
+    console.log("Correo enviado con éxito:", response);
+  } catch (error) {
+    console.error("Hubo un error enviando el correo:", error);
+  }
+};
+// - - - - - - - - - - 
+
 const MultiStepForm = () => {
   const [currentStep, setCurrentStep] = useState(1);
 
@@ -42,9 +55,7 @@ const MultiStepForm = () => {
         return <Step3Form />;
       case 4:
         return <div>Formulario de Pago (Paso 4)
-          <button onClick={async () => {
-            await fetch("../../api/sendMail", {method: "POST"});
-          }}>ForCorreo</button>
+          <button className="btn-general" onClick={llamarFuncion}>ForCorreo</button>
         </div>;
       default:
         return null;
