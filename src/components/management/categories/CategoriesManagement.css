@@ -18,4 +18,20 @@
   .category-container .button:hover {
     background-color: #35597e;
   }
+
+  .view-toggle-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+  
+  .view-toggle {
+    margin-left: 1rem;
+  }
+  
+  .view-toggle label {
+    font-weight: bold;
+    margin-right: 0.5rem;
+  }
   

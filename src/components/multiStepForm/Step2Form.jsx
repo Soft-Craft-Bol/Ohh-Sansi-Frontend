@@ -8,10 +8,30 @@ const areas = [
   { id: 3, nombre: "Física", descripcion: "Competencia de física", costo: 50 },
   { id: 4, nombre: "Química", descripcion: "Competencia de química", costo: 50 },
   { id: 5, nombre: "Biología", descripcion: "Competencia de biología", costo: 50 },
-];
+]; 
 
 const Step2Form = () => {
   const [seleccionadas, setSeleccionadas] = useState([]);
+
+  const [areas, setAreas] = useState([]);
+
+  useEffect(() => {
+      fetchAreas();
+    }, []);
+  
+    const fetchAreas = async () => {
+      try {
+        setIsLoading(true);
+        const response = await getAreas();
+        setAreas(response.data?.areas || []);
+      } catch (error) {
+        console.error("Error fetching areas:", error);
+        toast.error("Error al cargar las áreas existentes");
+        setAreas([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
   const toggleSeleccion = (id) => {
     setSeleccionadas((prev) => {
