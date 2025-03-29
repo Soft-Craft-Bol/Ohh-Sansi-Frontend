@@ -1,12 +1,41 @@
-import React, { useState } from "react";
-import "./Step1Form.css";
+import React from "react";
+import { Formik, Form } from "formik";
+import * as Yup from "yup";
+import InputText from "../inputs/InputText";
+import { ButtonPrimary } from "../button/ButtonPrimary";
+import SelectInput from "../selected/SelectInput";
 import useFetchNivelesEscolares from "../../hooks/NivelEscolar/useFetchNivelesEscolares";
 import useFetchDepartamentos from "../../hooks/departamento/useFetchDepartamentos";
 import useFetchMunicipios from "../../hooks/departamento/useFetchMunicipios";
 import useFetchColegio from "../../hooks/Colegio/useFetchColegio";
+import "./Step1Form.css";
 
-const Step1Form = ({ setIsStepValid }) => {
-  const [formData, setFormData] = useState({
+const validationSchema = Yup.object().shape({
+  nombre: Yup.string().required("El nombre es requerido"),
+  apellido: Yup.string().required("El apellido es requerido"),
+  documento: Yup.string(),
+  fechaNacimiento: Yup.date(),
+  departamento: Yup.string(),
+  municipio: Yup.string().when("departamento", {
+    is: (val) => val && val.length > 0,
+    then: Yup.string().required("Seleccione un municipio"),
+  }),
+  institucion: Yup.string().required("La institución es requerida"),
+  grado: Yup.string().required("El grado es requerido"),
+  email: Yup.string().email("Ingrese un email válido"),
+  telefono: Yup.string(),
+});
+
+
+const Step1Form = ({ onNext, formData = {}, setFormData }) => {
+  const { niveles, loading: loadingNiveles } = useFetchNivelesEscolares();
+  const { departamentos, loading: loadingDepartamentos } = useFetchDepartamentos();
+  const [selectedDepartamento, setSelectedDepartamento] = React.useState(formData.departamento || "");
+  const { municipios, loading: loadingMunicipios } = useFetchMunicipios(selectedDepartamento);
+  const [selectedMunicipio, setSelectedMunicipio] = React.useState(formData.municipio || "");
+  const { colegios, loading: loadingColegios } = useFetchColegio(selectedMunicipio);
+
+  const initialFormData = {
     nombre: "",
     apellido: "",
     documento: "",
@@ -17,187 +46,170 @@ const Step1Form = ({ setIsStepValid }) => {
     grado: "",
     email: "",
     telefono: "",
-  });
-
-  const { niveles, loading } = useFetchNivelesEscolares();
-  const { departamentos, loadingDepartamentos } = useFetchDepartamentos();
-  const [selectedDepartamento, setSelectedDepartamento] = useState(null);
-  const { municipios, loadingMunicipios } = useFetchMunicipios(selectedDepartamento);
-  const [ selectedMunicipio, setSelectedMunicipio] = useState(null);
-  const { colegios, loadingColegios } = useFetchColegio(selectedMunicipio);
-
-  
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    const updatedData = { ...formData, [name]: value }; // ← esto es clave
-    setFormData(updatedData);
-  
-    if (name === "departamento") {
-      setSelectedDepartamento(value);
-    }
-    if (name === "municipio") {
-      setSelectedMunicipio(value);
-    }
-  
-    const camposObligatorios = ["nombre", "apellido", "colegio", "grado"];
-    const esValido = camposObligatorios.every((campo) => updatedData[campo]?.trim() !== "");
-    setIsStepValid(esValido); // ← activa el botón "Siguiente"
-  };
-  
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("Datos del formulario:", formData);
-    alert("Formulario enviado correctamente");
+    ...formData, // Sobrescribe con los valores de formData si existen
   };
 
-  return (
-    <div className="step1-container">
-      <span className="step1-description">
-        Ingrese los datos del participante (Paso 1 de 4)
-      </span>
-        <div className="step1-grid">
-          <div className="step1-card">
-            <label>Nombre*</label>
-            <input
-              type="text"
-              name="nombre"
-              value={formData.nombre}
-              onChange={handleChange}
-              placeholder="Nombre del participante"
-            />
-          </div>
-          <div className="step1-card">
-            <label>Apellido*</label>
-            <input
-              type="text"
-              name="apellido"
-              value={formData.apellido}
-              onChange={handleChange}
-              placeholder="Apellido del participante"
-            />
-          </div>
-          <div className="step1-card">
-            <label>Documento de identidad</label>
-            <input
-              type="text"
-              name="documento"
-              value={formData.documento}
-              onChange={handleChange}
-              placeholder="Número de identificación"
-            />
-          </div>
-          <div className="step1-card">
-            <label>Fecha de nacimiento</label>
-            <input
-              type="date"
-              name="fechaNacimiento"
-              value={formData.fechaNacimiento}
-              onChange={handleChange}
-            />
-          </div>
-          <div className="step1-card">
-            <label>Departamento</label>
-            <select className="select" name="departamento" value={formData.departamento} onChange={handleChange}>
-              <option value="">Seleccione un departamento</option>
-              {loading ? (
-                <option>Cargando...</option>
-              ) : departamentos.length === 0 ? (
-                <option>No se encontraron departamentos</option>
-              ) : (
-                departamentos.map((departamento) => (
-                  <option key={departamento.idDepartamento} value={departamento.idDepartamento} >
-                    {departamento.nombreDepartamento}
-                  </option>
-                ))
-              )}
-            </select>
-          </div>
-          <div className="step1-card">
-            <label>Municipio</label>
-            <select
-              className="select"
-              name="municipio"
-              value={formData.municipio}
-              onChange={handleChange}
-            >
-              <option value="">Seleccione un municipio</option>
-              {loadingMunicipios ? (
-                <option>Cargando...</option>
-              ) : municipios.length === 0 ? (
-                <option>No se encontraron municipios</option>
-              ) : (
-                municipios.map((municipio) => (
-                  <option key={municipio.idMunicipio} value={municipio.idMunicipio}>
-                    {municipio.nombreMunicipio}
-                  </option>
-                ))
-              )}
-            </select>
-          </div>
-          <div className="step1-card">
-            <label>Colegio/Institución*</label>
-            <select
-              className="select"
-              name="colegio"
-              value={formData.colegio}
-              onChange={handleChange}
-            >
-              <option value="">Seleccione un colegio</option>
-              {loadingColegios ? (
-                <option>Cargando...</option>
-              ) : colegios.length === 0 ? (
-                <option>No se encontraron colegios</option>
-              ) : (
-                colegios.map((colegio) => (
-                  <option key={colegio.idColegio} value={colegio.idColegio}>
-                    {colegio.nombreColegio}-----{colegio.direccion}
-                  </option>
-                ))
-              )}
-            </select>
-          </div>
-          <div className="step1-card">
-            <label>Grado/Nivel*</label>
-            <select className="select" name="grado" value={formData.grado} onChange={handleChange}>
-              <option value="">Seleccione un grado</option>
-              {loading ? (
-                <option>Cargando...</option>
-              ) : niveles.length === 0 ? (
-                <option>No se encontraron niveles</option>
-              ) : (
-                niveles.map((nivel) => (
-                  <option key={nivel.idNivel} value={nivel.codigoNivel}>
-                    {nivel.nombreNivelEscolar}
-                  </option>
-                ))
-              )}
-            </select>
-          </div>
+  const handleSubmit = (values, { setSubmitting }) => {
+    setFormData({ ...formData, ...values });
+    onNext();
+    setSubmitting(false);
+  };
 
-          <div className="step1-card">
-            <label>Correo electrónico</label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="correo@ejemplo.com"
-            />
-          </div>
-          <div className="step1-card">
-            <label>Teléfono</label>
-            <input
-              type="tel"
-              name="telefono"
-              value={formData.telefono}
-              onChange={handleChange}
-              placeholder="Número de contacto"
-            />
-          </div>
+ // ... (imports y validación permanecen iguales)
 
-        </div>
-    </div>
+return (
+    <Formik
+      initialValues={initialFormData}
+      validationSchema={validationSchema}
+      onSubmit={handleSubmit}
+      enableReinitialize
+    >
+      {({ values, setFieldValue }) => (
+        <Form className="step1-container">
+          <span className="step1-description">
+            Ingrese los datos del participante (Paso 1 de 5)
+          </span>
+          
+          <div className="step1-grid">
+            {/* Nombre */}
+            <div className="field-container">
+              <InputText
+                label="Nombre"
+                name="nombre"
+                placeholder="Nombre del participante"
+                required
+              />
+            </div>
+            
+            {/* Apellido */}
+            <div className="field-container">
+              <InputText
+                label="Apellido"
+                name="apellido"
+                placeholder="Apellido del participante"
+                required
+              />
+            </div>
+            
+            {/* Documento */}
+            <div className="field-container">
+              <InputText
+                label="Documento de identidad"
+                name="documento"
+                placeholder="Número de identificación"
+              />
+            </div>
+            
+            {/* Fecha de Nacimiento */}
+            <div className="field-container">
+              <InputText
+                label="Fecha de nacimiento"
+                name="fechaNacimiento"
+                type="date"
+              />
+            </div>
+            
+            {/* Departamento */}
+            <div className="field-container">
+              <SelectInput
+                label="Departamento"
+                name="departamento"
+                options={departamentos.map(d => ({
+                  value: d.idDepartamento,
+                  label: d.nombreDepartamento
+                }))}
+                loading={loadingDepartamentos}
+                emptyMessage="No se encontraron departamentos"
+                onChange={(e) => {
+                  setFieldValue("departamento", e.target.value);
+                  setFieldValue("municipio", "");
+                  setSelectedDepartamento(e.target.value);
+                }}
+              />
+            </div>
+            
+            {/* Municipio */}
+            <div className="field-container">
+              <SelectInput
+                label="Municipio"
+                name="municipio"
+                options={municipios.map(m => ({
+                  value: m.idMunicipio,
+                  label: m.nombreMunicipio
+                }))}
+                loading={loadingMunicipios}
+                emptyMessage="No se encontraron municipios"
+                disabled={!values.departamento}
+                onChange={(e) => {
+                  setFieldValue("municipio", e.target.value);
+                  setSelectedMunicipio(e.target.value);
+                }}
+              />
+            </div>
+            
+            {/* Colegio/Institución */}
+            <div className="field-container">
+              <SelectInput
+                label="Colegio/Institución"
+                name="institucion"
+                options={colegios.map(c => ({
+                  value: c.idColegio,
+                  label: `${c.nombreColegio} - ${c.direccion}`
+                }))}
+                loading={loadingColegios}
+                emptyMessage="No se encontraron colegios"
+                disabled={!values.municipio}
+                required
+              />
+            </div>
+            
+            {/* Grado/Nivel */}
+            <div className="field-container">
+              <SelectInput
+                label="Grado/Nivel"
+                name="grado"
+                options={niveles.map(n => ({
+                  value: n.codigoNivel,
+                  label: n.nombreNivelEscolar
+                }))}
+                loading={loadingNiveles}
+                emptyMessage="No se encontraron niveles"
+                required
+              />
+            </div>
+            
+            {/* Email */}
+            <div className="field-container">
+              <InputText
+                label="Correo electrónico"
+                name="email"
+                type="email"
+                placeholder="correo@ejemplo.com"
+              />
+            </div>
+            
+            {/* Teléfono */}
+            <div className="field-container">
+              <InputText
+                label="Teléfono"
+                name="telefono"
+                type="tel"
+                placeholder="Número de contacto"
+              />
+            </div>
+            
+            {/* Botón - Ocupa ancho completo */}
+            <div className="field-container full-width">
+              <div className="form-actions">
+                <ButtonPrimary type="submit" buttonStyle="primary">
+                  Siguiente
+                </ButtonPrimary>
+              </div>
+            </div>
+          </div>
+        </Form>
+      )}
+    </Formik>
   );
 };
 

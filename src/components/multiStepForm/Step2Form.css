@@ -1,39 +1,51 @@
 .step2-container {
     padding: 1.5rem;
-    max-width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
     font-family: var(--poppins);
+    transition: all 0.3s ease;
+    background: #f7f7f7;
+    border-radius: 12px;
   }
   
-  .step2-title {
-    font-size: 1.25rem;
-    font-weight: 600;
+  .loading-message {
+    text-align: center;
+    padding: 2rem;
+    color: var(--blue);
   }
   
   .step2-description {
     color: var(--blue);
-    margin-bottom: 1rem;
-    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+    font-size: 1rem;
+    display: block;
+    font-family: var(--lato);
   }
   
   .step2-grid {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr)); /* 3 columnas */
-    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
   }
   
   .step2-card {
     border: 1px solid var(--dark-grey);
-    border-radius: 0.5rem;
-    padding: 1rem;
-    line-height: 1.5em;
+    border-radius: 0.75rem;
+    padding: 1.25rem;
     cursor: pointer;
     transition: all 0.3s ease;
     background-color: var(--light);
   }
   
+  .step2-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
   .step2-card.selected {
     border-color: var(--blue);
-    background-color: #b1bfe478; /* Fondo amarillo para cards seleccionadas */
+    background-color: rgba(3, 55, 113, 0.1);
   }
   
   .step2-card h3 {
@@ -41,29 +53,39 @@
     color: var(--blue);
     display: flex;
     align-items: center;
+    margin-bottom: 0.75rem;
+    font-family: var(--poppins);
   }
   
   .step2-card input[type="checkbox"] {
-    margin-right: 0.5rem;
-    accent-color: var(--blue); /* Color del checkbox */
+    margin-right: 0.75rem;
+    accent-color: var(--blue);
+    width: 1.1rem;
+    height: 1.1rem;
   }
   
   .step2-card p {
-    font-size: 0.875rem;
-    color: var(--blue);
+    font-size: 0.9rem;
+    color: var(--dark);
+    margin-bottom: 0.5rem;
+    font-family: var(--lato);
   }
   
   .step2-card .costo {
-    font-size: 0.875rem;
+    font-size: 0.9rem;
     font-weight: 600;
     color: var(--blue);
+    margin-top: 0.5rem;
+  }
+  
+  .step2-selected-container {
+    margin: 2rem 0;
   }
   
   .step2-selected-areas {
-    margin-top: 1.5rem;
-    padding: 1rem;
+    padding: 1.5rem;
     border: 1px solid var(--dark-grey);
-    border-radius: 0.5rem;
+    border-radius: 0.75rem;
     background-color: var(--light);
   }
   
@@ -71,34 +93,135 @@
     font-weight: 600;
     color: var(--blue);
     margin-bottom: 1rem;
+    font-family: var(--poppins);
   }
   
   .step2-selected-cards {
     display: flex;
     flex-direction: column;
     gap: 1rem;
+    margin-bottom: 1.5rem;
   }
   
   .step2-selected-card {
     border: 1px solid var(--dark-grey);
     border-radius: 0.5rem;
     padding: 1rem;
-    background-color: #e7f2f8;
+    background-color: rgba(207, 232, 255, 0.3);
     display: flex;
     justify-content: space-between;
     align-items: center;
+    transition: all 0.3s ease;
+  }
+  
+  .step2-selected-card h3 {
+    font-weight: 600;
+    color: var(--blue);
+    margin-bottom: 0.5rem;
   }
   
   .step2-selected-card button {
     background-color: var(--red);
     color: var(--light);
     border: none;
-    border-radius: 0.25rem;
+    border-radius: 0.5rem;
     padding: 0.5rem 1rem;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: all 0.3s ease;
+    font-family: var(--poppins);
+    font-size: 0.9rem;
+    white-space: nowrap;
   }
   
   .step2-selected-card button:hover {
     background-color: #c82333;
+  }
+  
+  .step2-total {
+    font-size: 1.25rem;
+    color: var(--blue);
+    text-align: right;
+    font-weight: 600;
+    font-family: var(--poppins);
+  }
+  
+  .step2-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 1.5rem;
+  }
+  
+  /* Estilos responsivos */
+  @media (max-width: 1024px) {
+    .step2-grid {
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 1.2rem;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .step2-container {
+      padding: 1.2rem;
+    }
+    
+    .step2-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .step2-selected-card {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+    
+    .step2-selected-card button {
+      align-self: flex-end;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .step2-container {
+      padding: 1rem;
+    }
+    
+    .step2-card {
+      padding: 1rem;
+    }
+    
+    .step2-selected-areas {
+      padding: 1rem;
+    }
+  }
+  
+  /* Estilos para el tema oscuro */
+  body.dark .step2-description {
+    color: var(--light-blue);
+  }
+  
+  body.dark .step2-card {
+    background-color: var(--light);
+    border-color: #334b75;
+  }
+  
+  body.dark .step2-card.selected {
+    background-color: rgba(3, 55, 113, 0.2);
+  }
+  
+  body.dark .step2-card h3,
+  body.dark .step2-card .costo {
+    color: var(--light-blue);
+  }
+  
+  body.dark .step2-card p {
+    color: rgba(255, 255, 255, 0.8);
+  }
+  
+  body.dark .step2-selected-areas {
+    background-color: var(--light);
+    border-color: #334b75;
+  }
+  
+  body.dark .step2-selected-card {
+    background-color: rgba(3, 55, 113, 0.1);
+    border-color: #334b75;
   }

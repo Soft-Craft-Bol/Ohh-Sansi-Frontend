@@ -1,97 +1,204 @@
 .multi-step-container {
-    font-family: sans-serif;
-    margin: 2em;
-    
-}
-
-.steps-indicator {
+    font-family: var(--poppins);
+    margin: 1.5rem;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+    transition: all 0.3s ease;
+  }
+  
+  .multi-step-container h1 {
+    color: var(--blue);
+    margin-bottom: 2rem;
+    text-align: center;
+    font-weight: 600;
+  }
+  
+  .steps-indicator {
     display: flex;
     justify-content: space-between;
     width: 100%;
-    justify-content: space-between;
     margin-bottom: 2rem;
     position: relative;
-}
-
-.steps-indicator::before {
+  }
+  
+  .steps-indicator::before {
     content: "";
     position: absolute;
     top: 45%;
     left: 0;
     right: 0;
-    height: 6px;
-    background: #ccc;
+    height: 4px;
+    background: var(--dark-grey);
     z-index: 1;
-}
-
-
-
-.steps-indicator::after {
+    border-radius: 2px;
+  }
+  
+  .steps-indicator::after {
     content: "";
     position: absolute;
     width: var(--progress-width);
     top: 45%;
     left: 0;
-    height: 6Px;
-    background: #033771;
+    height: 4px;
+    background: var(--blue);
     z-index: 2;
     transition: width 0.3s ease;
-}
-
-
-.step {
+    border-radius: 2px;
+  }
+  
+  .step {
     flex: 1;
     text-align: center;
-    padding: 0.8rem;
-    color: #999;
+    padding: 0.5rem;
+    color: var(--dark);
     position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
-    z-index: 3; 
-}
-
-.step-number {
-    background: #ccc;
-    color: #fff;
+    z-index: 3;
+    opacity: 0.7;
+  }
+  
+  .step-number {
+    background: var(--dark-grey);
+    color: var(--light);
     border-radius: 50%;
-    width: 40px;
-    height: 40px;
+    width: 32px;
+    height: 32px;
     display: flex;
     align-items: center;
     justify-content: center;
     margin-bottom: 0.5rem;
     position: relative;
-}
-
-.step.active .step-number {
-    background: #033771;
-}
-
-.step.completed .step-number {
-    background: #033771;
-}
-
-.step.completed {
-    color: #033771;
-}
-
-.step-text {
-    margin-top: 0.5rem;
     font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+  }
+  
+  .step.active {
+    opacity: 1;
+  }
+  
+  .step.active .step-number {
+    background: var(--blue);
+    transform: scale(1.1);
+  }
+  
+  .step.completed .step-number {
+    background: var(--blue);
+  }
+  
+  .step.completed {
+    color: var(--blue);
+    opacity: 1;
+  }
+  
+  .step-text {
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
     color: inherit;
-}
-
-.form-content {
-    background: #fff;
-    padding: 1rem;
-    border-radius: 0.5rem;
-    border: 1px solid #eee;
-}
-
-.buttons-container {
-    margin-top: 1rem;
+    font-family: var(--lato);
+    font-weight: 500;
+    transition: all 0.3s ease;
+  }
+  
+  .form-content {
+    background: var(--light);
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid var(--dark-grey);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+  }
+  
+  .buttons-container {
+    margin-top: 1.5rem;
     display: flex;
     gap: 1rem;
-    justify-content: flex-end;
-}
+    justify-content: space-between;
+  }
+  
+  /* Estilos responsivos */
+  @media (max-width: 768px) {
+    .multi-step-container {
+      margin: 1rem;
+    }
+    
+    .multi-step-container h1 {
+      font-size: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    .step {
+      padding: 0.5rem 0.3rem;
+    }
+    
+    .step-text {
+      font-size: 0.75rem;
+      white-space: nowrap;
+    }
+    
+    .form-content {
+      padding: 1rem;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .steps-indicator {
+      margin-bottom: 1.5rem;
+    }
+    
+    .steps-indicator::before,
+    .steps-indicator::after {
+      top: 30%;
+      height: 3px;
+    }
+    
+    .step-number {
+      width: 28px;
+      height: 28px;
+      font-size: 0.8rem;
+    }
+    
+    .step-text {
+      display: none;
+    }
+    
+    .buttons-container {
+      flex-direction: column-reverse;
+      gap: 0.75rem;
+    }
+    
+    .buttons-container button {
+      width: 100%;
+    }
+  }
+  
+  /* Estilos para el tema oscuro */
+  body.dark .multi-step-container h1 {
+    color: var(--light-blue);
+  }
+  
+  body.dark .steps-indicator::after {
+    background: var(--light-blue);
+  }
+  
+  body.dark .step.active .step-number,
+  body.dark .step.completed .step-number {
+    background: var(--light-blue);
+  }
+  
+  body.dark .step.completed {
+    color: var(--light-blue);
+  }
+  
+  body.dark .form-content {
+    background: var(--light);
+    border-color: #334b75;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  body.dark .step {
+    color: rgba(255, 255, 255, 0.7);
+  }
