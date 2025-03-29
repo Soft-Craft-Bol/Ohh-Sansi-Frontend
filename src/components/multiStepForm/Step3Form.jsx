@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
+import stepThreeSchema from "../../schemas/stepThreeValidate";
 import "./Step3Form.css";
-
+import { toast } from "sonner";
 
 const Step3Form = () => {
   const [formData, setFormData] = useState({
@@ -14,6 +15,7 @@ const Step3Form = () => {
   const [errors, setErrors] = useState({});
   const [isFormValid, setIsFormValid] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [touchedFields, setTouchedFields] = useState({}); // Nuevo estado para controlar los campos tocados
 
 
   useEffect(() => {
@@ -28,48 +30,46 @@ const Step3Form = () => {
     validateForm();
   }, [formData]);
 
-  const validateForm = () => {
-    let newErrors = {};
-  
-    if (formData.nombres && !/^[A-Za-z\s]+$/.test(formData.nombres)) {
-      newErrors.nombres = "Solo se permiten letras y espacios.";
+  const validateForm = async () => {
+    try {
+      await stepThreeSchema.validate(formData, { abortEarly: false });
+      setErrors({});
+      setIsFormValid(true);
+    } catch (error) {
+      const newErrors = {};
+      error.inner.forEach((err) => {
+        newErrors[err.path] = err.message;
+      });
+      setErrors(newErrors);
+      setIsFormValid(false);
     }
-  
-    if (formData.apellidos && !/^[A-Za-z\s]+$/.test(formData.apellidos)) {
-      newErrors.apellidos = "Solo se permiten letras y espacios.";
-    }
-  
-    if (formData.telefono && !/^\d+$/.test(formData.telefono)) {
-      newErrors.telefono = "Solo se permiten números.";
-    }
-  
-    if (formData.correo && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.correo)) {
-      newErrors.correo = "Formato de correo inválido.";
-    }
-  
-    // Validar el tipo de tutor solo si el usuario ha intentado enviar el formulario
-    if (isSubmitted && !formData.tipoTutor) {
-      newErrors.tipoTutor = "Seleccione un tipo de tutor.";
-    }
-  
-    setErrors(newErrors);
-    setIsFormValid(Object.keys(newErrors).length === 0);
   };
-  
-  
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleBlur = (e) => {
+    setTouchedFields({ ...touchedFields, [e.target.name]: true });
     validateForm();
-    if (isFormValid) {
-      alert("Formulario enviado correctamente.");
-      // BD 
-    } else {
-      alert("Corrija los errores antes de continuar.");
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitted(true);
+
+    try {
+      await stepThreeSchema.validate(formData, { abortEarly: false });
+      setErrors({});
+      // petitcion al Backend
+
+    } catch (error) {
+      const newErrors = {};
+      error.inner.forEach((err) => {
+        newErrors[err.path] = err.message;
+      });
+      setErrors(newErrors);
+      toast.error("Complete los campos con datos válidos")
     }
   };
 
@@ -88,10 +88,15 @@ const Step3Form = () => {
             name="nombres"
             value={formData.nombres}
             onChange={handleChange}
+            onBlur={handleBlur}
             placeholder="Ingrese el nombre del tutor"
-            className={errors.nombres ? "error-input" : "valid-input"}
+            className={`
+              ${errors.nombres && touchedFields.nombres ? "error-input" : ""}
+              ${!errors.nombres && touchedFields.nombres ? "valid-input" : ""}
+              default
+            `}
           />
-          {errors.nombres && <p className="error-message">{errors.nombres}</p>}
+          {errors.nombres && touchedFields.nombres && <p className="error-message">{errors.nombres}</p>}
         </div>
 
         <div className="step3-form-group">
@@ -101,10 +106,15 @@ const Step3Form = () => {
             name="apellidos"
             value={formData.apellidos}
             onChange={handleChange}
+            onBlur={handleBlur}
             placeholder="Ingrese el apellido del tutor"
-            className={errors.apellidos ? "error-input" : "valid-input"}
+            className={`
+              ${errors.apellidos && touchedFields.apellidos ? "error-input" : ""}
+              ${!errors.apellidos && touchedFields.apellidos ? "valid-input" : ""}
+              default
+            `}
           />
-          {errors.apellidos && <p className="error-message">{errors.apellidos}</p>}
+          {errors.apellidos && touchedFields.apellidos && <p className="error-message">{errors.apellidos}</p>}
         </div>
 
         <div className="step3-form-group">
@@ -114,10 +124,15 @@ const Step3Form = () => {
             name="telefono"
             value={formData.telefono}
             onChange={handleChange}
+            onBlur={handleBlur}
             placeholder="Ingrese el número telefónico del tutor"
-            className={errors.telefono ? "error-input" : "valid-input"}
+            className={`
+              ${errors.telefono && touchedFields.telefono ? "error-input" : ""}
+              ${!errors.telefono && touchedFields.telefono ? "valid-input" : ""}
+              default
+            `}
           />
-          {errors.telefono && <p className="error-message">{errors.telefono}</p>}
+          {errors.telefono && touchedFields.telefono && <p className="error-message">{errors.telefono}</p>}
         </div>
 
         <div className="step3-form-group">
@@ -127,10 +142,15 @@ const Step3Form = () => {
             name="correo"
             value={formData.correo}
             onChange={handleChange}
+            onBlur={handleBlur}
             placeholder="correo@ejemplo.com"
-            className={errors.correo ? "error-input" : "valid-input"}
+            className={`
+              ${errors.correo && touchedFields.correo ? "error-input" : ""}
+              ${!errors.correo && touchedFields.correo ? "valid-input" : ""}
+              default
+            `}
           />
-          {errors.correo && <p className="error-message">{errors.correo}</p>}
+          {errors.correo && touchedFields.correo && <p className="error-message">{errors.correo}</p>}
         </div>
 
         <div className="step3-form-group">
@@ -138,27 +158,31 @@ const Step3Form = () => {
           <select
             name="tipoTutor"
             value={formData.tipoTutor}
+            onBlur={handleBlur}
             onChange={handleChange}
-            className={errors.tipoTutor ? "error-input" : "valid-input"}
+            className={`
+              ${errors.tipoTutor && touchedFields.tipoTutor ? "error-input" : ""}
+              ${!errors.tipoTutor && touchedFields.tipoTutor ? "valid-input" : ""}
+              default
+            `}
           >
             <option value="">Seleccione el tipo de tutor</option>
             <option value="profesor">Profesor</option>
             <option value="asistente">Asistente</option>
           </select>
-          {errors.tipoTutor && <p className="error-message">{errors.tipoTutor}</p>}
+          {errors.tipoTutor && touchedFields.tipoTutor && <p className="error-message">{errors.tipoTutor}</p>}
+        </div>
+
+        <div className="step3-button-container">
+          <button
+            type="submit"
+            className={`step3-button ${isFormValid ? "active" : "disabled"}`}
+            disabled={!isFormValid}
+          >
+            Continuar a áreas de competencia
+          </button>
         </div>
       </form>
-
-      <div className="step3-button-container">
-        <button
-          type="submit"
-          className={`step3-button ${isFormValid ? "active" : "disabled"}`}
-          onClick={handleSubmit}
-          disabled={!isFormValid}
-        >
-          Continuar a áreas de competencia
-        </button>
-      </div>
     </div>
   );
 };
