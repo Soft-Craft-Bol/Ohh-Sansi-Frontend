@@ -4,6 +4,7 @@ import StepForm from "./StepForm";
 import Step1Form from "./Step1Form";
 import Step2Form from "./Step2Form"; 
 import Step3Form from "./Step3Form";
+import Step4Form from "./Step4Form";
 import "./MultiStepForm.css";
 
 //- - - - FOR EMAIL TEST - - - 
@@ -55,9 +56,11 @@ const MultiStepForm = () => {
       case 3:
         return <Step3Form />;
       case 4:
-        return <Step4Form />; // Aquí se agrega Step4Form
+        return <Step4Form />;
       case 5:
-        return <div>Formulario de Pago (Paso 5)</div>;
+        return <div>Formulario de Pago (Paso 5)
+          <button className="btn-general" onClick={llamarFuncion}>ForCorreo</button>
+        </div>;
       default:
         return null;
     }
