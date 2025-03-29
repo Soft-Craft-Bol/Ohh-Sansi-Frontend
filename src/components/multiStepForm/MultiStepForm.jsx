@@ -4,9 +4,7 @@ import StepForm from "./StepForm";
 import Step1Form from "./Step1Form";
 import Step2Form from "./Step2Form"; 
 import Step3Form from "./Step3Form";
-
 import "./MultiStepForm.css";
-
 const MultiStepForm = () => {
   const [currentStep, setCurrentStep] = useState(1);
 
@@ -44,7 +42,9 @@ const MultiStepForm = () => {
         return <Step3Form />;
       case 4:
         return <div>Formulario de Pago (Paso 4)
-          <button>ForCorreo</button>
+          <button onClick={async () => {
+            await fetch("../../api/sendMail", {method: "POST"});
+          }}>ForCorreo</button>
         </div>;
       default:
         return null;
