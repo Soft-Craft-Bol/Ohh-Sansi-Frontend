@@ -43,7 +43,9 @@ const MultiStepForm = () => {
       case 3:
         return <Step3Form />;
       case 4:
-        return <div>Formulario de Pago (Paso 4)</div>;
+        return <div>Formulario de Pago (Paso 4)
+          <button>ForCorreo</button>
+        </div>;
       default:
         return null;
     }
