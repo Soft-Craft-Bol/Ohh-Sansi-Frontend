@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import stepThreeSchema from "../../schemas/stepThreeValidate";
 import "./Step3Form.css";
 import InputText from "../inputs/InputText";
 import { ButtonPrimary } from "../button/ButtonPrimary";
@@ -14,6 +15,7 @@ const Step3Form = ({ onNextStep }) => {
   useEffect(() => {
     fetchData();
   }, []);
+  //jaja
 
   const initialValues = {
     idTipoTutor: "",

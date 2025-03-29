@@ -1,43 +1,34 @@
 import React, { useState } from "react";
-import InscriptionPeriods from "../management/fechas/InscriptionPeriods";
-import CategoriesManagement from "../management/categories/CategoriesManegement";
+import PropTypes from "prop-types";
 import "./Tabs.css";
-import FormArea from "../management/formArea/FormArea";
 
-const Tabs = () => {
-    const [activeTab, setActiveTab] = useState("categories");
+const Tabs = ({ tabList, renderTabContent }) => {
+  const [activeTab, setActiveTab] = useState(tabList[0]?.name);
 
-    return (
-        <div className="tabs-container">
-            <div className="tabs-header">
-                <button
-                    className={`tab-button ${activeTab === "areas" ? "active" : ""}`}
-                    onClick={() => setActiveTab("areas")}
-                >
-                    Areas
-                </button>
-                <button
-                    className={`tab-button ${activeTab === "categories" ? "active" : ""}`}
-                    onClick={() => setActiveTab("categories")}
-                >
-                    Categorías
-                </button>
-                <button
-                    className={`tab-button ${activeTab === "periods" ? "active" : ""}`}
-                    onClick={() => setActiveTab("periods")}
-                >
-                    Períodos de Inscripción
-                </button>
+  return (
+    <div className="tabs-container">
+      <div className="tabs-header">
+        {tabList.map((tab) => (
+          <button
+            key={tab.name}
+            className={`tab-button ${activeTab === tab.name ? "active" : ""}`}
+            onClick={() => setActiveTab(tab.name)}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
 
-            </div>
+      <div className="tabs-content">
+        {renderTabContent(activeTab)}
+      </div>
+    </div>
+  );
+};
 
-            <div className="tabs-content">
-                {activeTab === "areas" && <FormArea/>}
-                {activeTab === "categories" && <CategoriesManagement />}
-                {activeTab === "periods" && <InscriptionPeriods />}
-            </div>
-        </div>
-    );
+Tabs.propTypes = {
+  tabList: PropTypes.array.isRequired,
+  renderTabContent: PropTypes.func.isRequired,
 };
 
 export default Tabs;
