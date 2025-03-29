@@ -24,7 +24,8 @@ const MultiStepForm = () => {
   const steps = [
     { label: "Información básica" },
     { label: "Áreas de competencia" },
-    { label: "Tutores" },
+    { label: "Información de tutores" },
+    { label: "Asignación de tutor" },
     { label: "Pago" },
   ];
 
@@ -48,15 +49,15 @@ const MultiStepForm = () => {
   const getStepComponent = (step) => {
     switch (step) {
       case 1:
-        return <Step1Form/>;
+        return <Step1Form />;
       case 2:
         return <Step2Form />;
       case 3:
         return <Step3Form />;
       case 4:
-        return <div>Formulario de Pago (Paso 4)
-          <button className="btn-general" onClick={llamarFuncion}>ForCorreo</button>
-        </div>;
+        return <Step4Form />; // Aquí se agrega Step4Form
+      case 5:
+        return <div>Formulario de Pago (Paso 5)</div>;
       default:
         return null;
     }

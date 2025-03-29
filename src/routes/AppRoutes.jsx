@@ -7,6 +7,7 @@ import Layout from '../Layout/Layout';
 import MultiStepForm from '../components/multiStepForm/MultiStepForm';
 import ManagementPage from '../pages/admin/Management';
 import FormArea from "../components/management/formArea/FormArea";
+import { NotFound404 } from '../pages/404NotFound/NotFound404';
 
 
 const LoginUser = lazy(() => import('../pages/login/LoginUser'));
@@ -17,6 +18,7 @@ const AppRoutes = () => {
     <Routes>
       {/* Ruta pública */}
       <Route path="/login" element={<LoginUser />} />
+      <Route path="/*" element={<NotFound404/>} />
       {/*<Route path="/formulario" element= {<Layout><Formulario /></Layout>} />*/}
 
       {/* Ruta raíz protegida */}
