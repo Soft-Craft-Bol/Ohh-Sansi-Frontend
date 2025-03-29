@@ -56,7 +56,6 @@ const Step1Form = ({ setIsStepValid }) => {
       <span className="step1-description">
         Ingrese los datos del participante (Paso 1 de 4)
       </span>
-      <form onSubmit={handleSubmit}>
         <div className="step1-grid">
           <div className="step1-card">
             <label>Nombre*</label>
@@ -198,7 +197,6 @@ const Step1Form = ({ setIsStepValid }) => {
           </div>
 
         </div>
-      </form>
     </div>
   );
 };

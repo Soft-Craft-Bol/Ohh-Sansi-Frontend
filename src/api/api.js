@@ -50,3 +50,7 @@ export const getMunicipios = (id) => api.get(`/municipios/${id}`);
 export const getMunicipiosByDepartamento = (id) => api.get(`/municipios/departamento/${id}`);
 export const getColegiosByMunicipio = (id) => api.get(`/colegios/municipio/${id}`);
 export const registerFechas = (data) => api.post('/fechas/register-fechas', data);
+
+//TUTORES 
+export const getAllTutor = () => api.get('/tipo-tutor/findAllTipoTutor');
+export const registerTutor = (data) => api.post('/tutores/register-tutor', data);

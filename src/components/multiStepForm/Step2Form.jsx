@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./Step2Form.css";
 import { toast } from "sonner";
 
@@ -13,7 +13,7 @@ const areas = [
 const Step2Form = () => {
   const [seleccionadas, setSeleccionadas] = useState([]);
 
-  const [areas, setAreas] = useState([]);
+  //const [areas, setAreas] = useState([]);
 
   useEffect(() => {
       fetchAreas();
