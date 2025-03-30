@@ -59,4 +59,4 @@ export const getAllTutor = () => api.get('/tipo-tutor/findAllTipoTutor');
 export const registerTutor = (data) => api.post('/tutores/register-tutor', data);
 
 //CATEGORIAS 
-export const createCategory = (data) => api.post('/category', data);
+export const createCategory = (data) => api.post('/nivelescolar-categoria-area/register', data);

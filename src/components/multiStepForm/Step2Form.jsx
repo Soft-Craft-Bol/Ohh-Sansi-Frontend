@@ -4,8 +4,8 @@ import { ButtonPrimary } from "../button/ButtonPrimary";
 import "./Step2Form.css";
 import { getAreas } from "../../api/api";
 
-const Step2Form = ({ onNext, formData = {}, setFormData }) => {
-  const [seleccionadas, setSeleccionadas] = useState([]);
+const Step2Form = ({ onNext, onPrev, formData = {}, updateFormData }) => {
+  const [seleccionadas, setSeleccionadas] = useState(formData.areasCompetenciaEstudiante?.map(a => a.idArea) || []);
   const [areas, setAreas] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -37,7 +37,7 @@ const Step2Form = ({ onNext, formData = {}, setFormData }) => {
       } else if (prev.length < 2) {
         return [...prev, id];
       } else {
-        toast.error("Solo puede inscribirse a 2 áreas");
+        toast.error("Solo puede inscribirse a 2 áreas como máximo");
         return prev;
       }
     });
@@ -54,12 +54,23 @@ const Step2Form = ({ onNext, formData = {}, setFormData }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    setFormData({ ...formData, areasSeleccionadas: seleccionadas });
+    const areasSeleccionadas = areasActivas
+      .filter(area => seleccionadas.includes(area.idArea))
+      .map(area => ({ idArea: area.idArea }));
+    
+    updateFormData({ 
+      areasCompetenciaEstudiante: areasSeleccionadas,
+      costoTotal: totalCosto
+    });
     onNext();
   };
 
   if (isLoading) {
-    return <div className="loading-message">Cargando áreas...</div>;
+    return (
+      <div className="step2-container">
+        <div className="loading-message">Cargando áreas...</div>
+      </div>
+    );
   }
 
   return (
@@ -106,12 +117,13 @@ const Step2Form = ({ onNext, formData = {}, setFormData }) => {
                     </div>
                     <button 
                       type="button"
+                      className="remove-btn"
                       onClick={(e) => {
                         e.stopPropagation();
                         eliminarSeleccion(id);
                       }}
                     >
-                      Quitar
+                      ×
                     </button>
                   </div>
                 );
@@ -123,6 +135,14 @@ const Step2Form = ({ onNext, formData = {}, setFormData }) => {
       )}
       
       <div className="step2-actions">
+        <ButtonPrimary 
+          type="button"
+          buttonStyle="secondary"
+          onClick={onPrev}
+          className="mr-2"
+        >
+          Anterior
+        </ButtonPrimary>
         <ButtonPrimary 
           type="submit" 
           buttonStyle="primary"

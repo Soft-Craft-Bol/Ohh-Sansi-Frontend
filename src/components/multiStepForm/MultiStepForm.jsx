@@ -23,7 +23,8 @@ const MultiStepForm = () => {
       carnetIdentidadParticipante: null
     },
     areasCompetenciaEstudiante: [],
-    tutores: []
+    tutores: [],
+    costoTotal: 0
   });
 
   const steps = [
@@ -53,25 +54,39 @@ const MultiStepForm = () => {
     }
   };
 
-  // En el handleSubmit del MultiStepForm
-const handleSubmit = async () => {
+  const handleSubmit = async () => {
     try {
-      // Asegurarse de que los IDs sean números
+      // Preparar datos para enviar
       const dataToSend = {
-        ...formData,
         participante: {
           ...formData.participante,
-          idDepartamento: formData.participante.idDepartamento ? parseInt(formData.participante.idDepartamento) : null,
-          idMunicipio: formData.participante.idMunicipio ? parseInt(formData.participante.idMunicipio) : null,
-          idColegio: formData.participante.idColegio ? parseInt(formData.participante.idColegio) : null,
-          idNivelGradoEscolar: formData.participante.idNivelGradoEscolar ? parseInt(formData.participante.idNivelGradoEscolar) : null
-        }
+          idDepartamento: Number(formData.participante.idDepartamento),
+          idMunicipio: Number(formData.participante.idMunicipio),
+          idColegio: Number(formData.participante.idColegio),
+          idNivelGradoEscolar: Number(formData.participante.idNivelGradoEscolar)
+        },
+        areasCompetenciaEstudiante: formData.areasCompetenciaEstudiante,
+        tutores: formData.tutores,
+        costoTotal: formData.costoTotal
       };
-      
+
+      // Validación adicional antes de enviar
+      if (dataToSend.areasCompetenciaEstudiante.length === 0) {
+        toast.error("Debe seleccionar al menos un área");
+        setCurrentStep(2); // Redirigir al paso de áreas
+        return;
+      }
+
       const response = await inscripcionEstudiante(dataToSend);
       console.log("Registro exitoso:", response);
+      toast.success("Inscripción completada con éxito");
+      
+      // Aquí podrías redirigir a una página de confirmación
+      // navigate('/confirmacion');
+      
     } catch (error) {
       console.error("Error en el registro:", error);
+      toast.error("Error al completar la inscripción");
     }
   };
 
@@ -97,15 +112,45 @@ const handleSubmit = async () => {
           <div className="step5-container">
             <h3>Resumen y Pago</h3>
             <div className="summary-container">
-              <pre>{JSON.stringify(formData, null, 2)}</pre>
+              <div className="summary-section">
+                <h4>Información del participante:</h4>
+                <p>Nombre: {formData.participante.nombreParticipante} {formData.participante.apellidoPaterno} {formData.participante.apellidoMaterno}</p>
+                <p>Email: {formData.participante.correoElectronicoParticipante}</p>
+              </div>
+              
+              <div className="summary-section">
+                <h4>Áreas seleccionadas:</h4>
+                <ul>
+                  {formData.areasCompetenciaEstudiante.map((area, index) => {
+                    const areaInfo = formData.areasInfo?.find(a => a.idArea === area.idArea);
+                    return (
+                      <li key={index}>
+                        {areaInfo?.nombreArea} - Bs {areaInfo?.precioArea.toFixed(2)}
+                      </li>
+                    );
+                  })}
+                </ul>
+                <p className="total">Total a pagar: Bs {formData.costoTotal?.toFixed(2)}</p>
+              </div>
             </div>
-            <button 
-              type="button" 
-              className="btn-general primary" 
-              onClick={handleSubmit}
-            >
-              Finalizar Registro
-            </button>
+            
+            <div className="step5-actions">
+              <ButtonPrimary 
+                type="button" 
+                buttonStyle="secondary"
+                onClick={handlePrev}
+                className="mr-2"
+              >
+                Anterior
+              </ButtonPrimary>
+              <ButtonPrimary 
+                type="button" 
+                buttonStyle="primary" 
+                onClick={handleSubmit}
+              >
+                Confirmar y Pagar
+              </ButtonPrimary>
+            </div>
           </div>
         );
       default:
