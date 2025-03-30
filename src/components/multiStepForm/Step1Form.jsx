@@ -10,114 +10,65 @@ import useFetchMunicipios from "../../hooks/departamento/useFetchMunicipios";
 import useFetchColegio from "../../hooks/Colegio/useFetchColegio";
 import "./Step1Form.css";
 
-const inscripcionValidate = Yup.object().shape({
-  nombre: Yup.string()
-    .required('El nombre es requerido')
-    .min(2, 'Mínimo 2 caracteres')
-    .matches(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, 'Solo letras y espacios'),
-  
-  apellido: Yup.string()
-    .required('El apellido es requerido')
-    .min(2, 'Mínimo 2 caracteres')
-    .matches(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, 'Solo letras y espacios'),
-  
-  documento: Yup.string()
-    .required('Documento es requerido')
-    .matches(/^\d+$/, 'Solo números')
-    .min(6, 'Mínimo 6 dígitos')
-    .max(8, 'Máximo 8 dígitos'),
-  
-  departamento: Yup.string()
-    .required('Departamento es requerido'),
-  
-  municipio: Yup.string()
-    .required('Municipio es requerido'),
-  
-  institucion: Yup.string()
-    .required('Institución es requerida'),
-  
-  grado: Yup.string()
-    .required('Grado es requerido'),
-  
-  email: Yup.string()
-    .required('Correo electrónico es requerido')
-    .email('Correo electrónico inválido')
-    .matches(
-      /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-      'Formato de correo inválido'
-    )
-    .test('valid-domain', 'Dominio no permitido', (value) => {
-      if (!value) return false;
-      const validDomains = ['gmail.com', 'outlook.com', 'hotmail.com', 'yahoo.com', 'edu.pe'];
-      const [, domain] = value.split('@');
-      return domain && validDomains.some(d => domain.endsWith(d));
-    }),
-  
-  telefono: Yup.string()
-    .required('Teléfono es requerido')
-    .matches(/^\d{8}$/, 'Debe tener exactamente 8 dígitos'),
-  
-  fechaNacimiento: Yup.date()
-    .required('Fecha de nacimiento es requerida')
-    .max(new Date(), 'No puede ser fecha futura')
-    .min(new Date(1900, 0, 1), 'Fecha demasiado antigua')
-    .test('age-range', 'Edad no permitida', (value) => {
-      if (!value) return false;
-      const today = new Date();
-      const birthDate = new Date(value);
-      let age = today.getFullYear() - birthDate.getFullYear();
-      const monthDiff = today.getMonth() - birthDate.getMonth();
-      
-      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-        age--;
-      }
-      
-      return age >= 5 && age <= 100;
-    })
-});
-
-const Step1Form = ({ onNext, formData = {}, setFormData }) => {
+const Step1Form = ({ formData, updateFormData, onNext, onPrev }) => {
   const { niveles, loading: loadingNiveles } = useFetchNivelesEscolares();
   const { departamentos, loading: loadingDepartamentos } = useFetchDepartamentos();
-  const [selectedDepartamento, setSelectedDepartamento] = React.useState(formData.departamento || "");
+  console.log("Departamentos:", departamentos); // Verifica que los departamentos se carguen correctamente
+  const [selectedDepartamento, setSelectedDepartamento] = React.useState(formData.participante.idDepartamento || "");
   const { municipios, loading: loadingMunicipios } = useFetchMunicipios(selectedDepartamento);
-  const [selectedMunicipio, setSelectedMunicipio] = React.useState(formData.municipio || "");
+  const [selectedMunicipio, setSelectedMunicipio] = React.useState(formData.participante.idMunicipio || "");
   const { colegios, loading: loadingColegios } = useFetchColegio(selectedMunicipio);
 
+  // Versión corregida del schema de validación
+  const validationSchema = Yup.object().shape({
+    nombre: Yup.string().required("El nombre es requerido"),
+    apellido: Yup.string().required("El apellido es requerido"),
+    documento: Yup.string().nullable(),
+    fechaNacimiento: Yup.date().nullable(),
+    departamento: Yup.string().nullable(),
+    municipio: Yup.string()
+  .nullable()
+  .when("departamento", (departamento, schema) => {
+    return departamento ? schema.required("Seleccione un municipio") : schema;
+  }),
+
+
+    institucion: Yup.string().required("La institución es requerida"),
+    grado: Yup.string().required("El grado es requerido"),
+    email: Yup.string().email("Ingrese un email válido").nullable(),
+    telefono: Yup.string().nullable(),
+  });
+
   const initialFormData = {
-    nombre: "",
-    apellido: "",
-    documento: "",
-    fechaNacimiento: "",
-    departamento: "",
-    municipio: "",
-    institucion: "",
-    grado: "",
-    email: "",
-    telefono: "",
-    ...formData,
+    nombre: formData.participante?.nombreParticipante || "",
+    apellido: `${formData.participante?.apellidoPaterno || ""} ${formData.participante?.apellidoMaterno || ""}`.trim(),
+    documento: formData.participante?.carnetIdentidadParticipante || "",
+    fechaNacimiento: formData.participante?.fechaNacimiento || "",
+    departamento: formData.participante?.idDepartamento?.toString() || "",
+    municipio: formData.participante?.idMunicipio?.toString() || "",
+    institucion: formData.participante?.idColegio?.toString() || "",
+    grado: formData.participante?.idNivelGradoEscolar?.toString() || "",
+    email: formData.participante?.correoElectronicoParticipante || "",
+    telefono: ""
   };
 
-  const handleSubmit = (values, { setSubmitting }) => {
-    setFormData({ ...formData, ...values });
+  const handleSubmit = (values) => {
+    updateFormData({
+      participante: {
+        ...formData.participante,
+        nombreParticipante: values.nombre,
+        apellidoPaterno: values.apellido.split(' ')[0] || '',
+        apellidoMaterno: values.apellido.split(' ')[1] || '',
+        carnetIdentidadParticipante: values.documento || null,
+        fechaNacimiento: values.fechaNacimiento || null,
+        idDepartamento: values.departamento ? parseInt(values.departamento) : null,
+        idMunicipio: values.municipio ? parseInt(values.municipio) : null,
+        idColegio: values.institucion ? parseInt(values.institucion) : null,
+        idNivelGradoEscolar: values.grado ? parseInt(values.grado) : null,
+        correoElectronicoParticipante: values.email || null
+      }
+    });
     onNext();
-    setSubmitting(false);
-  };
-
-  const handleNumericInput = (e, setFieldValue, fieldName, maxLength) => {
-    const value = e.target.value.replace(/\D/g, '');
-    if (value.length <= maxLength) {
-      setFieldValue(fieldName, value);
-    }
-  };
-
-  const formatDate = (dateString) => {
-    if (!dateString) return '';
-    const date = new Date(dateString);
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
   };
 
   return (
@@ -127,14 +78,14 @@ const Step1Form = ({ onNext, formData = {}, setFormData }) => {
       onSubmit={handleSubmit}
       enableReinitialize
     >
-      {({ values, setFieldValue }) => (
+      {({ values, setFieldValue, isValid, isSubmitting }) => (
         <Form className="step1-container">
           <span className="step1-description">
             Ingrese los datos del participante (Paso 1 de 5)
           </span>
           
           <div className="step1-grid">
-            {/* Nombre */}
+            {/* Campos del formulario */}
             <div className="field-container">
               <InputText
                 label="Nombre"
@@ -150,7 +101,6 @@ const Step1Form = ({ onNext, formData = {}, setFormData }) => {
               />
             </div>
             
-            {/* Apellido */}
             <div className="field-container">
               <InputText
                 label="Apellido"
@@ -166,7 +116,6 @@ const Step1Form = ({ onNext, formData = {}, setFormData }) => {
               />
             </div>
             
-            {/* Documento */}
             <div className="field-container">
               <InputText
                 label="Documento de identidad"
@@ -179,7 +128,6 @@ const Step1Form = ({ onNext, formData = {}, setFormData }) => {
               />
             </div>
             
-            {/* Fecha de Nacimiento */}
             <div className="field-container">
               <InputText
                 label="Fecha de nacimiento"
@@ -192,13 +140,12 @@ const Step1Form = ({ onNext, formData = {}, setFormData }) => {
               />
             </div>
             
-            {/* Departamento */}
             <div className="field-container">
               <SelectInput
                 label="Departamento"
                 name="departamento"
                 options={departamentos.map(d => ({
-                  value: d.idDepartamento,
+                  value: d.idDepartamento.toString(),
                   label: d.nombreDepartamento
                 }))}
                 loading={loadingDepartamentos}
@@ -213,13 +160,12 @@ const Step1Form = ({ onNext, formData = {}, setFormData }) => {
               />
             </div>
             
-            {/* Municipio */}
             <div className="field-container">
               <SelectInput
                 label="Municipio"
                 name="municipio"
                 options={municipios.map(m => ({
-                  value: m.idMunicipio,
+                  value: m.idMunicipio.toString(),
                   label: m.nombreMunicipio
                 }))}
                 loading={loadingMunicipios}
@@ -234,13 +180,12 @@ const Step1Form = ({ onNext, formData = {}, setFormData }) => {
               />
             </div>
             
-            {/* Colegio/Institución */}
             <div className="field-container">
               <SelectInput
                 label="Colegio/Institución"
                 name="institucion"
                 options={colegios.map(c => ({
-                  value: c.idColegio,
+                  value: c.idColegio.toString(),
                   label: `${c.nombreColegio} - ${c.direccion}`
                 }))}
                 loading={loadingColegios}
@@ -252,13 +197,12 @@ const Step1Form = ({ onNext, formData = {}, setFormData }) => {
               />
             </div>
             
-            {/* Grado/Nivel */}
             <div className="field-container">
               <SelectInput
                 label="Grado/Nivel"
                 name="grado"
                 options={niveles.map(n => ({
-                  value: n.codigoNivel,
+                  value: n.idNivel.toString(),
                   label: n.nombreNivelEscolar
                 }))}
                 loading={loadingNiveles}
@@ -269,7 +213,6 @@ const Step1Form = ({ onNext, formData = {}, setFormData }) => {
               />
             </div>
             
-            {/* Email */}
             <div className="field-container">
               <InputText
                 label="Correo electrónico"
@@ -282,7 +225,6 @@ const Step1Form = ({ onNext, formData = {}, setFormData }) => {
               />
             </div>
             
-            {/* Teléfono */}
             <div className="field-container">
               <InputText
                 label="Teléfono"
@@ -296,6 +238,17 @@ const Step1Form = ({ onNext, formData = {}, setFormData }) => {
               />
             </div>
             
+            <div className="field-container full-width">
+              <div className="form-actions">
+                <ButtonPrimary 
+                  type="submit" 
+                  buttonStyle="primary"
+                  disabled={!isValid || isSubmitting}
+                >
+                  Siguiente
+                </ButtonPrimary>
+              </div>
+            </div>
           </div>
         </Form>
       )}
