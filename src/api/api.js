@@ -33,15 +33,29 @@ export const getInscripciones = () => api.get('/inscripciones');
 export const addInscripcion = (data) => api.post('/inscripciones', data);
 export const updateInscripcion = (data) => api.put('/inscripciones', data);
 export const deleteInscripcion = (id) => api.delete(`/inscripciones/${id}`);
+
+
+//area
 export const getAreas = () => api.get('/areas');
 export const addArea = (data) => api.post('/areas/register-area', data);
 export const updateArea = (id,data) => api.put(`/areas/${id}`, data);
 export const deleteArea = (id) => api.delete(`/areas/${id}`);
+
 export const registerParticipante = (data) => api.post('/participantes/register-participant', data);
-export const register = (data) => api.post('/register', data);
+export const register = (data) => api.post('/register', data)
+//Nivel escolar;
 export const getNivelEscolar = () => api.get('/nivelescolar');
+
 export const getDepartamentos = () => api.get('/departamento');
 export const getDepartamentoById = (id) => api.get(`/departamento/${id}`);
 export const getMunicipios = (id) => api.get(`/municipios/${id}`);
 export const getMunicipiosByDepartamento = (id) => api.get(`/municipios/departamento/${id}`);
 export const getColegiosByMunicipio = (id) => api.get(`/colegios/municipio/${id}`);
+export const registerFechas = (data) => api.post('/fechas/register-fechas', data);
+
+//TUTORES 
+export const getAllTutor = () => api.get('/tipo-tutor/findAllTipoTutor');
+export const registerTutor = (data) => api.post('/tutores/register-tutor', data);
+
+//CATEGORIAS 
+export const createCategory = (data) => api.post('/category', data);

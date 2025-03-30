@@ -1,0 +1,22 @@
+.category-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 10px;
+  }
+  
+  .category-card .active-badge {
+    background: green;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+  }
+  
+  .category-card .icon-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    margin-left: 10px;
+  }

@@ -1,0 +1,49 @@
+.select-component {
+    margin-bottom: 1rem;
+    width: 100%;
+  }
+  
+  .select-component label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--dark);
+  }
+  
+  .select-input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--dark-grey);
+    border-radius: 8px;
+    background: var(--light);
+    color: var(--dark);
+    font-family: var(--lato);
+    transition: all 0.3s ease;
+  }
+  
+  .select-input:focus {
+    outline: none;
+    border-color: var(--blue);
+    box-shadow: 0 0 0 2px rgba(3, 55, 113, 0.2);
+  }
+  
+  .error-message {
+    color: var(--red);
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+  }
+  
+  .required {
+    color: var(--red);
+  }
+  
+  /* Dark theme */
+  body.dark .select-input {
+    background: var(--light);
+    color: #fff;
+    border-color: #334b75;
+  }
+  
+  body.dark .select-component label {
+    color: rgba(255, 255, 255, 0.8);
+  }

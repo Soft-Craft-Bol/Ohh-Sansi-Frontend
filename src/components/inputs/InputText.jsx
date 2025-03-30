@@ -1,35 +1,30 @@
 import React, { useState } from "react";
 import { useField } from "formik";
-import "./InputText.css";
 import { FaEye, FaEyeSlash } from "react-icons/fa"; 
+import "./InputText.css";
 
 function InputText({ label, required, type = "text", as = "input", showCounter = false, ...props }) {
 
   const [field, meta] = useField(props);
   const [showPassword, setShowPassword] = useState(false);
 
-  const toggleShowPassword = () => {
-    setShowPassword(!showPassword);
-  };
-
   return (
     <div className="input-component">
       <label htmlFor={props.id || props.name}>
-        {label}
-        {required && <span className="required">*</span>}
+        {label} {required && <span className="required">*</span>}
       </label>
       <div className="input-wrapper">
         <input
           className="text-input"
           {...field}
           {...props}
-          type={showPassword ? "text" : type} 
+          type={type === "password" && showPassword ? "text" : type}
         />
         {type === "password" && (
           <button
             type="button"
             className="toggle-password-btn"
-            onClick={toggleShowPassword}
+            onClick={() => setShowPassword(!showPassword)}
             aria-label="Toggle password visibility"
           >
             {showPassword ? <FaEye /> : <FaEyeSlash />}
