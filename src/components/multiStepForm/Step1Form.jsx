@@ -10,68 +10,82 @@ import useFetchMunicipios from "../../hooks/departamento/useFetchMunicipios";
 import useFetchColegio from "../../hooks/Colegio/useFetchColegio";
 import "./Step1Form.css";
 
-const validationSchema = Yup.object().shape({
-  nombre: Yup.string().required("El nombre es requerido"),
-  apellido: Yup.string().required("El apellido es requerido"),
-  documento: Yup.string(),
-  fechaNacimiento: Yup.date(),
-  departamento: Yup.string(),
-  municipio: Yup.string().when("departamento", {
-    is: (val) => val && val.length > 0,
-    then: Yup.string().required("Seleccione un municipio"),
-  }),
-  institucion: Yup.string().required("La institución es requerida"),
-  grado: Yup.string().required("El grado es requerido"),
-  email: Yup.string().email("Ingrese un email válido"),
-  telefono: Yup.string(),
-});
-
-
-const Step1Form = ({ onNext, formData = {}, setFormData }) => {
+const Step1Form = ({ formData, updateFormData, onNext, onPrev }) => {
   const { niveles, loading: loadingNiveles } = useFetchNivelesEscolares();
   const { departamentos, loading: loadingDepartamentos } = useFetchDepartamentos();
-  const [selectedDepartamento, setSelectedDepartamento] = React.useState(formData.departamento || "");
+  console.log("Departamentos:", departamentos); // Verifica que los departamentos se carguen correctamente
+  const [selectedDepartamento, setSelectedDepartamento] = React.useState(formData.participante.idDepartamento || "");
   const { municipios, loading: loadingMunicipios } = useFetchMunicipios(selectedDepartamento);
-  const [selectedMunicipio, setSelectedMunicipio] = React.useState(formData.municipio || "");
+  const [selectedMunicipio, setSelectedMunicipio] = React.useState(formData.participante.idMunicipio || "");
   const { colegios, loading: loadingColegios } = useFetchColegio(selectedMunicipio);
 
+  // Versión corregida del schema de validación
+  const validationSchema = Yup.object().shape({
+    nombre: Yup.string().required("El nombre es requerido"),
+    apellido: Yup.string().required("El apellido es requerido"),
+    documento: Yup.string().nullable(),
+    fechaNacimiento: Yup.date().nullable(),
+    departamento: Yup.string().nullable(),
+    municipio: Yup.string()
+  .nullable()
+  .when("departamento", (departamento, schema) => {
+    return departamento ? schema.required("Seleccione un municipio") : schema;
+  }),
+
+
+    institucion: Yup.string().required("La institución es requerida"),
+    grado: Yup.string().required("El grado es requerido"),
+    email: Yup.string().email("Ingrese un email válido").nullable(),
+    telefono: Yup.string().nullable(),
+  });
+
   const initialFormData = {
-    nombre: "",
-    apellido: "",
-    documento: "",
-    fechaNacimiento: "",
-    departamento: "",
-    municipio: "",
-    institucion: "",
-    grado: "",
-    email: "",
-    telefono: "",
-    ...formData, // Sobrescribe con los valores de formData si existen
+    nombre: formData.participante?.nombreParticipante || "",
+    apellido: `${formData.participante?.apellidoPaterno || ""} ${formData.participante?.apellidoMaterno || ""}`.trim(),
+    documento: formData.participante?.carnetIdentidadParticipante || "",
+    fechaNacimiento: formData.participante?.fechaNacimiento || "",
+    departamento: formData.participante?.idDepartamento?.toString() || "",
+    municipio: formData.participante?.idMunicipio?.toString() || "",
+    institucion: formData.participante?.idColegio?.toString() || "",
+    grado: formData.participante?.idNivelGradoEscolar?.toString() || "",
+    email: formData.participante?.correoElectronicoParticipante || "",
+    telefono: ""
   };
 
-  const handleSubmit = (values, { setSubmitting }) => {
-    setFormData({ ...formData, ...values });
+  const handleSubmit = (values) => {
+    updateFormData({
+      participante: {
+        ...formData.participante,
+        nombreParticipante: values.nombre,
+        apellidoPaterno: values.apellido.split(' ')[0] || '',
+        apellidoMaterno: values.apellido.split(' ')[1] || '',
+        carnetIdentidadParticipante: values.documento || null,
+        fechaNacimiento: values.fechaNacimiento || null,
+        idDepartamento: values.departamento ? parseInt(values.departamento) : null,
+        idMunicipio: values.municipio ? parseInt(values.municipio) : null,
+        idColegio: values.institucion ? parseInt(values.institucion) : null,
+        idNivelGradoEscolar: values.grado ? parseInt(values.grado) : null,
+        correoElectronicoParticipante: values.email || null
+      }
+    });
     onNext();
-    setSubmitting(false);
   };
 
- // ... (imports y validación permanecen iguales)
-
-return (
+  return (
     <Formik
       initialValues={initialFormData}
       validationSchema={validationSchema}
       onSubmit={handleSubmit}
       enableReinitialize
     >
-      {({ values, setFieldValue }) => (
+      {({ values, setFieldValue, isValid, isSubmitting }) => (
         <Form className="step1-container">
           <span className="step1-description">
             Ingrese los datos del participante (Paso 1 de 5)
           </span>
           
           <div className="step1-grid">
-            {/* Nombre */}
+            {/* Campos del formulario */}
             <div className="field-container">
               <InputText
                 label="Nombre"
@@ -81,7 +95,6 @@ return (
               />
             </div>
             
-            {/* Apellido */}
             <div className="field-container">
               <InputText
                 label="Apellido"
@@ -91,7 +104,6 @@ return (
               />
             </div>
             
-            {/* Documento */}
             <div className="field-container">
               <InputText
                 label="Documento de identidad"
@@ -100,7 +112,6 @@ return (
               />
             </div>
             
-            {/* Fecha de Nacimiento */}
             <div className="field-container">
               <InputText
                 label="Fecha de nacimiento"
@@ -109,13 +120,12 @@ return (
               />
             </div>
             
-            {/* Departamento */}
             <div className="field-container">
               <SelectInput
                 label="Departamento"
                 name="departamento"
                 options={departamentos.map(d => ({
-                  value: d.idDepartamento,
+                  value: d.idDepartamento.toString(),
                   label: d.nombreDepartamento
                 }))}
                 loading={loadingDepartamentos}
@@ -128,13 +138,12 @@ return (
               />
             </div>
             
-            {/* Municipio */}
             <div className="field-container">
               <SelectInput
                 label="Municipio"
                 name="municipio"
                 options={municipios.map(m => ({
-                  value: m.idMunicipio,
+                  value: m.idMunicipio.toString(),
                   label: m.nombreMunicipio
                 }))}
                 loading={loadingMunicipios}
@@ -147,13 +156,12 @@ return (
               />
             </div>
             
-            {/* Colegio/Institución */}
             <div className="field-container">
               <SelectInput
                 label="Colegio/Institución"
                 name="institucion"
                 options={colegios.map(c => ({
-                  value: c.idColegio,
+                  value: c.idColegio.toString(),
                   label: `${c.nombreColegio} - ${c.direccion}`
                 }))}
                 loading={loadingColegios}
@@ -163,13 +171,12 @@ return (
               />
             </div>
             
-            {/* Grado/Nivel */}
             <div className="field-container">
               <SelectInput
                 label="Grado/Nivel"
                 name="grado"
                 options={niveles.map(n => ({
-                  value: n.codigoNivel,
+                  value: n.idNivel.toString(),
                   label: n.nombreNivelEscolar
                 }))}
                 loading={loadingNiveles}
@@ -178,7 +185,6 @@ return (
               />
             </div>
             
-            {/* Email */}
             <div className="field-container">
               <InputText
                 label="Correo electrónico"
@@ -188,7 +194,6 @@ return (
               />
             </div>
             
-            {/* Teléfono */}
             <div className="field-container">
               <InputText
                 label="Teléfono"
@@ -198,10 +203,13 @@ return (
               />
             </div>
             
-            {/* Botón - Ocupa ancho completo */}
             <div className="field-container full-width">
               <div className="form-actions">
-                <ButtonPrimary type="submit" buttonStyle="primary">
+                <ButtonPrimary 
+                  type="submit" 
+                  buttonStyle="primary"
+                  disabled={!isValid || isSubmitting}
+                >
                   Siguiente
                 </ButtonPrimary>
               </div>

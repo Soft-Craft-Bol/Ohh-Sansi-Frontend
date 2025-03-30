@@ -13,16 +13,18 @@ function SelectInput({ label, required, options, loading, emptyMessage, ...props
       <select className="select-input" {...field} {...props}>
         <option value="">Seleccione una opción</option>
         {loading ? (
-          <option>Cargando...</option>
-        ) : options.length === 0 ? (
-          <option>{emptyMessage || "No hay opciones disponibles"}</option>
-        ) : (
-          options.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))
-        )}
+  <option disabled>Cargando...</option>
+) : !Array.isArray(options) || options.length === 0 ? (
+  <option disabled>{emptyMessage || "No hay opciones disponibles"}</option>
+) : (
+  options.map((option) => (
+    <option key={option.value} value={option.value}>
+      {option.label}
+    </option>
+  ))
+)}
+
+
       </select>
       {meta.touched && meta.error ? (
         <div className="error-message">{meta.error}</div>
