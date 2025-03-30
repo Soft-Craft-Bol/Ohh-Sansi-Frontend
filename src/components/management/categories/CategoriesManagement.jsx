@@ -8,19 +8,34 @@ import { getNivelEscolar, getAreas, createCategory } from "../../../api/api";
 import { toast } from "sonner";
 import { IoCloseOutline } from "react-icons/io5";
 import "./CategoriesManagement.css";
+import SwitchTabs from "../../switch/SwitchTabs";
 
-const validationSchema = Yup.object().shape({
-  nombre: Yup.string().required("El nombre de la categoría es obligatorio"),
-  descripcion: Yup.string().required("La descripción es obligatoria"),
+// Esquema de validación unificado
+const unifiedSchema = Yup.object().shape({
+  flag: Yup.number().required(),
+  codCategory: Yup.string().when('flag', {
+    is: 2, // Categoría
+    then: Yup.string().required("El código de categoría es obligatorio"),
+    otherwise: Yup.string().notRequired()
+  }),
+  descripcion: Yup.string().when('flag', {
+    is: 2, // Categoría
+    then: Yup.string().required("La descripción es obligatoria"),
+    otherwise: Yup.string().notRequired()
+  }),
+  idArea: Yup.array().min(1, "Debe seleccionar al menos un área"),
+  grado: Yup.array().min(1, "Debe seleccionar al menos un grado"),
+  status: Yup.boolean()
 });
 
 const CategoriesManagement = () => {
-  const [categories, setCategories] = useState([]);
-  const [levels, setLevels] = useState([]);
-  const [areas, setAreas] = useState([]);
+  const [data, setData] = useState([]); // Datos combinados
+  const [nivelesEscolares, setNivelesEscolares] = useState([]); // Cambiado de levels a nivelesEscolares
+  const [areas, setAreas] = useState([]); // Todas las áreas sin filtrar
   const [selectedAreas, setSelectedAreas] = useState([]);
-  const [selectedLevels, setSelectedLevels] = useState([]);
+  const [selectedGrades, setSelectedGrades] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("categorias");
 
   useEffect(() => {
     fetchData();
@@ -29,12 +44,12 @@ const CategoriesManagement = () => {
   const fetchData = async () => {
     try {
       setIsLoading(true);
-      const [levelsRes, areasRes] = await Promise.all([
+      const [nivelesRes, areasRes] = await Promise.all([
         getNivelEscolar(),
         getAreas()
       ]);
-      setLevels(levelsRes.data || []);
-      setAreas((areasRes.data?.areas || []).filter(area => area.areaStatus));
+      setNivelesEscolares(nivelesRes.data || []);
+      setAreas(areasRes.data?.areas || []); // Mostrar todas las áreas sin filtrar
     } catch (error) {
       console.error("Error fetching data:", error);
       toast.error("Error al cargar los datos");
@@ -54,39 +69,34 @@ const CategoriesManagement = () => {
     );
   };
 
-  const toggleLevel = (levelId) => {
-    const level = levels.find(l => l.idNivel === levelId);
-    if (!level) return;
-
-    setSelectedLevels(prev => 
-      prev.some(l => l.idNivel === levelId) 
-        ? prev.filter(l => l.idNivel !== levelId) 
-        : [...prev, level]
+  const toggleGrade = (nivelId) => {
+    setSelectedGrades(prev => 
+      prev.includes(nivelId) 
+        ? prev.filter(id => id !== nivelId) 
+        : [...prev, nivelId]
     );
   };
 
   const handleSubmit = async (values, { resetForm }) => {
-    if (selectedAreas.length === 0 || selectedLevels.length === 0) {
-      toast.error("Debe seleccionar al menos un área y un nivel");
-      return;
-    }
-
     try {
-      const categoryData = {
-        ...values,
-        areas: selectedAreas.map(a => a.idArea),
-        niveles: selectedLevels.map(l => l.idNivel)
+      const payload = {
+        flag: activeTab === "categorias" ? 2 : 1,
+        codCategory: activeTab === "categorias" ? values.codCategory : "",
+        descripcion: activeTab === "categorias" ? values.descripcion : "",
+        idArea: selectedAreas.map(a => a.idArea),
+        grado: selectedGrades,
+        status: values.status
       };
 
-      const response = await createCategory(categoryData);
-      setCategories([...categories, response.data]);
-      toast.success("Categoría creada correctamente");
+      const response = await createCategory(payload);
+      setData([...data, response.data]);
+      toast.success(activeTab === "categorias" ? "Categoría creada correctamente" : "Nivel creado correctamente");
       resetForm();
       setSelectedAreas([]);
-      setSelectedLevels([]);
+      setSelectedGrades([]);
     } catch (error) {
-      console.error("Error creating category:", error);
-      toast.error("Error al crear la categoría");
+      console.error("Error creating:", error);
+      toast.error(`Error al crear ${activeTab === "categorias" ? "la categoría" : "el nivel"}`);
     }
   };
 
@@ -94,41 +104,59 @@ const CategoriesManagement = () => {
     return <div className="loading-message">Cargando datos...</div>;
   }
 
+  const tabs = [
+    { label: "Categorías", value: "categorias" },
+    { label: "Niveles", value: "niveles" }
+  ];
+
   return (
     <div className="category-container">
-      <h2>Gestión de Categorías</h2>
-      <p>Administre las categorías para los participantes</p>
+      <h2>Gestión de Categorías y Niveles</h2>
+      <p>Administre las categorías y niveles para los participantes</p>
+      
+      <SwitchTabs 
+        tabs={tabs} 
+        activeTab={activeTab}
+        onChange={setActiveTab}
+      />
 
       <Formik
         initialValues={{
-          nombre: "",
+          codCategory: "",
           descripcion: "",
-          isActive: false
+          status: true
         }}
-        validationSchema={validationSchema}
+        validationSchema={unifiedSchema}
         onSubmit={handleSubmit}
       >
         {({ values, setFieldValue }) => (
           <Form>
-            <InputText
-              label="Nombre de Categoría"
-              name="nombre"
-              placeholder="Ej: Categoría A"
-            />
-            
-            <InputText
-              label="Descripción"
-              name="descripcion"
-              placeholder="Breve descripción de la categoría"
-            />
+            {activeTab === "categorias" && (
+              <>
+                <InputText
+                  label="Código de Categoría"
+                  name="codCategory"
+                  placeholder="Ej: Guacamayo"
+                />
+                
+                <InputText
+                  label="Descripción"
+                  name="descripcion"
+                  placeholder="Breve descripción de la categoría"
+                />
+              </>
+            )}
 
             <div className="selection-container">
               <label>Áreas disponibles:</label>
-              <select onChange={(e) => toggleArea(parseInt(e.target.value))}>
+              <select 
+                onChange={(e) => toggleArea(parseInt(e.target.value))}
+                value=""
+              >
                 <option value="">Seleccione un área</option>
                 {areas.map(area => (
                   <option key={area.idArea} value={area.idArea}>
-                    {area.nombreArea} (Bs {area.precioArea.toFixed(2)})
+                    {area.nombreArea} (Bs {area.precioArea?.toFixed(2) || '0.00'})
                   </option>
                 ))}
               </select>
@@ -149,70 +177,98 @@ const CategoriesManagement = () => {
             </div>
 
             <div className="selection-container">
-              <label>Niveles disponibles:</label>
-              <select onChange={(e) => toggleLevel(parseInt(e.target.value))}>
-                <option value="">Seleccione un nivel</option>
-                {levels.map(level => (
-                  <option key={level.idNivel} value={level.idNivel}>
-                    {level.nombreNivelEscolar}
+              <label>Niveles escolares:</label>
+              <select 
+                onChange={(e) => toggleGrade(parseInt(e.target.value))}
+                value=""
+              >
+                <option value="">Seleccione un nivel escolar</option>
+                {nivelesEscolares.map(nivel => (
+                  <option key={nivel.idNivel} value={nivel.idNivel}>
+                    {nivel.nombreNivelEscolar}
                   </option>
                 ))}
               </select>
 
               <div className="selected-items">
                 <h4>Niveles seleccionados:</h4>
-                {selectedLevels.length === 0 ? (
+                {selectedGrades.length === 0 ? (
                   <p>No hay niveles seleccionados</p>
                 ) : (
-                  selectedLevels.map(level => (
-                    <span key={level.idNivel} className="selected-item" onClick={() => toggleLevel(level.idNivel)}>
-                      {level.nombreNivelEscolar}
-                      <IoCloseOutline size={16} color="red" />
-                    </span>
-                  ))
+                  selectedGrades.map(gradeId => {
+                    const nivel = nivelesEscolares.find(n => n.idNivel === gradeId);
+                    return (
+                      <span 
+                        key={gradeId} 
+                        className="selected-item" 
+                        onClick={() => toggleGrade(gradeId)}
+                      >
+                        {nivel?.nombreNivelEscolar || `Nivel ${gradeId}`}
+                        <IoCloseOutline size={16} color="red" />
+                      </span>
+                    );
+                  })
                 )}
               </div>
             </div>
 
             <Switch
-              label="Categoría activa"
-              checked={values.isActive}
-              onChange={() => setFieldValue("isActive", !values.isActive)}
+              label={activeTab === "categorias" ? "Categoría activa" : "Nivel activo"}
+              checked={values.status}
+              onChange={() => setFieldValue("status", !values.status)}
             />
 
             <ButtonPrimary type="submit">
-              Crear Categoría
+              {activeTab === "categorias" ? "Crear Categoría" : "Crear Nivel"}
             </ButtonPrimary>
           </Form>
         )}
       </Formik>
 
-      <h3>Categorías registradas</h3>
-      {categories.length > 0 ? (
+      <h3>{activeTab === "categorias" ? "Categorías" : "Niveles"} registrados</h3>
+      {data.filter(item => item.flag === (activeTab === "categorias" ? 2 : 1)).length > 0 ? (
         <div className="categories-list">
-          {categories.map(category => (
-            <div key={category.id} className="category-card">
-              <h4>{category.nombre}</h4>
-              <p>{category.descripcion}</p>
-              <div className="category-details">
-                <div>
-                  <strong>Áreas:</strong>
-                  {category.areas.map(area => (
-                    <span key={area.idArea}>{area.nombreArea}</span>
-                  ))}
-                </div>
-                <div>
-                  <strong>Niveles:</strong>
-                  {category.niveles.map(nivel => (
-                    <span key={nivel.idNivel}>{nivel.nombreNivelEscolar}</span>
-                  ))}
+          {data
+            .filter(item => item.flag === (activeTab === "categorias" ? 2 : 1))
+            .map(item => (
+              <div key={item.id} className="category-card">
+                {activeTab === "categorias" ? (
+                  <>
+                    <h4>{item.codCategory}</h4>
+                    <p>{item.descripcion}</p>
+                  </>
+                ) : (
+                  <h4>Nivel</h4>
+                )}
+                <div className="category-details">
+                  <div>
+                    <strong>Áreas:</strong>
+                    {item.idArea.map(id => {
+                      const area = areas.find(a => a.idArea === id);
+                      return area ? <span key={id}>{area.nombreArea}</span> : null;
+                    })}
+                  </div>
+                  <div>
+                    <strong>Niveles:</strong>
+                    {item.grado.map(gradeId => {
+                      const nivel = nivelesEscolares.find(n => n.idNivel === gradeId);
+                      return (
+                        <span key={gradeId}>
+                          {nivel?.nombreNivelEscolar || `Nivel ${gradeId}`}
+                        </span>
+                      );
+                    })}
+                  </div>
+                  <div>
+                    <strong>Estado:</strong>
+                    <span>{item.status ? "Activo" : "Inactivo"}</span>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
         </div>
       ) : (
-        <p>No hay categorías registradas.</p>
+        <p>No hay {activeTab === "categorias" ? "categorías" : "niveles"} registrados.</p>
       )}
     </div>
   );
