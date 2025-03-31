@@ -1,18 +1,39 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
 import InputText from "../../inputs/InputText";
 import Switch from "../../switch/Switch";
 import { ButtonPrimary } from "../../button/ButtonPrimary";
 import PeriodCard from "../../cards/PeriodCard";
+import { upsertFechas, getFechas } from "../../../api/api";
+import { toast } from "sonner";
 import "./InscriptionPeriods.css";
 
 const InscriptionPeriods = () => {
   const [periods, setPeriods] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const currentYear = new Date().getFullYear();
   const minDate = "2000-01-01";
   const maxDate = `${currentYear}-12-31`;
+
+
+  useEffect(() => {
+    fetchPeriods();
+  }, []);
+
+  const fetchPeriods = async () => {
+    try {
+      setLoading(true);
+      const response = await getFechas();
+      setPeriods(response.data.data || []);
+    } catch (error) {
+      console.error("Error fetching periods:", error);
+      toast.error("Error al cargar los períodos de inscripción");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const initialValues = {
     name: "",
@@ -29,21 +50,37 @@ const InscriptionPeriods = () => {
       .min(Yup.ref("startDate"), "Debe ser posterior a la fecha de inicio"),
   });
 
-  const handleSubmit = (values, { resetForm }) => {
-    const newPeriod = {
-      id: periods.length + 1,
-      name: values.name,
-      startDate: values.startDate,
-      endDate: values.endDate,
-      active: values.isActive,
-    };
+  const handleSubmit = async (values, { resetForm }) => {
+    try {
+      const newPeriod = {
+        nombre: values.name,
+        fechaInicioInscripcion: values.startDate,
+        fechaFinInscripcion: values.endDate,
+      };
 
-    setPeriods([...periods, newPeriod]);
-    resetForm();
+      const response = await upsertFechas(newPeriod);
+      setPeriods([...periods, response.data]);
+      toast.success("Período de inscripción creado correctamente");
+
+      resetForm();
+    } catch (error) {
+      console.error("Error creating period:", error);
+      toast.error("Error al crear el período de inscripción");
+    }
   };
 
-  const deactivatePeriod = (id) => {
-    setPeriods(periods.map(p => p.id === id ? { ...p, active: false } : p));
+  const deactivatePeriod = async (id) => {
+    try {
+      const updatedPeriods = periods.map((p) =>
+        p.id === id ? { ...p, estado: false } : p
+      );
+
+      setPeriods(updatedPeriods);
+      toast.success("Período desactivado correctamente");
+    } catch (error) {
+      console.error("Error deactivating period:", error);
+      toast.error("Error al desactivar el período");
+    }
   };
 
   return (
@@ -89,9 +126,25 @@ const InscriptionPeriods = () => {
       </Formik>
 
       <h3>Períodos configurados</h3>
-      {periods.map((period) => (
-        <PeriodCard key={period.id} period={period} onDeactivate={deactivatePeriod} />
-      ))}
+      {loading ? (
+        <p>Cargando períodos...</p>
+      ) : periods.length > 0 ? (
+        periods.map((period) => (
+          <PeriodCard
+            key={period.idPlazoInscripcion}
+            period={{
+              fechaInicioInscripcion: period.fechaInicioInscripcion,
+              fechaFinInscripcion: period.fechaFinInscripcion,
+              idPlazoInscripcion: period.idPlazoInscripcion,
+              active:period.fechaPlazoInscripcionActivo, 
+            }}
+            onDeactivate={() => deactivatePeriod(period.idPlazoInscripcion)}
+          />
+        ))
+      ) : (
+        <p>No hay períodos registrados.</p>
+      )}
+
     </div>
   );
 };
