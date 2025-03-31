@@ -5,6 +5,8 @@ import Step2Form from "./Step2Form";
 import Step3Form from "./Step3Form";
 import Step4Form from "./Step4Form";
 import { inscripcionEstudiante } from "../../api/api";
+import { ButtonPrimary } from "../button/ButtonPrimary";
+import { toast } from "sonner";
 import "./MultiStepForm.css";
 
 const MultiStepForm = () => {
@@ -24,6 +26,7 @@ const MultiStepForm = () => {
         },
         areasCompetenciaEstudiante: [],
         tutores: [],
+        asignaciones: {},
         costoTotal: 0
     });
 
@@ -65,23 +68,60 @@ const MultiStepForm = () => {
                     idNivelGradoEscolar: Number(formData.participante.idNivelGradoEscolar)
                 },
                 areasCompetenciaEstudiante: formData.areasCompetenciaEstudiante.map(a => ({
-                    idArea: a.idArea
+                    idArea: a.idArea,
+                    idTutor: formData.asignaciones[a.idArea]?.carnetIdentidadTutor
                 })),
                 tutores: formData.tutores,
                 costoTotal: formData.costoTotal
             };
-
+    
+            // Validación de áreas seleccionadas
             if (dataToSend.areasCompetenciaEstudiante.length === 0) {
                 toast.error("Debe seleccionar al menos un área");
                 setCurrentStep(2); 
                 return;
             }
-
+    
+            // Validación de tutores asignados
+            const areasSinTutor = dataToSend.areasCompetenciaEstudiante.filter(a => !a.idTutor);
+            if (areasSinTutor.length > 0) {
+                toast.error("Todas las áreas deben tener un tutor asignado");
+                setCurrentStep(4);
+                return;
+            }
+    
+            // Mostrar datos en consola antes de enviar
+            console.log("Datos a enviar:", {
+                ...dataToSend,
+                // Mostrar información más legible
+                participante: {
+                    ...dataToSend.participante,
+                    nombreCompleto: `${dataToSend.participante.nombreParticipante} ${dataToSend.participante.apellidoPaterno} ${dataToSend.participante.apellidoMaterno}`
+                },
+                areasConNombres: formData.areasCompetenciaEstudiante.map(a => {
+                    const areaInfo = formData.areasInfo?.find(ai => ai.idArea === a.idArea);
+                    const tutorAsignado = formData.asignaciones[a.idArea];
+                    return {
+                        nombreArea: areaInfo?.nombreArea,
+                        precio: areaInfo?.precioArea,
+                        tutor: tutorAsignado ? `${tutorAsignado.nombresTutor} ${tutorAsignado.apellidosTutor}` : null
+                    };
+                }),
+                tutoresDetallados: formData.tutores.map(t => ({
+                    nombreCompleto: `${t.nombresTutor} ${t.apellidosTutor}`,
+                    tipo: t.tipoTutorNombre,
+                    documento: t.carnetIdentidadTutor
+                }))
+            });
+    
             const response = await inscripcionEstudiante(dataToSend);
             console.log("Registro exitoso:", response);
             toast.success("Inscripción completada con éxito");
-
-
+            
+            // Aquí podrías redirigir a una página de éxito o resetear el formulario
+            // setCurrentStep(1);
+            // setFormData(initialFormData);
+    
         } catch (error) {
             console.error("Error en el registro:", error);
             toast.error("Error al completar la inscripción");
@@ -114,6 +154,7 @@ const MultiStepForm = () => {
                                 <h4>Información del participante:</h4>
                                 <p>Nombre: {formData.participante.nombreParticipante} {formData.participante.apellidoPaterno} {formData.participante.apellidoMaterno}</p>
                                 <p>Email: {formData.participante.correoElectronicoParticipante}</p>
+                                <p>Documento: {formData.participante.carnetIdentidadParticipante}</p>
                             </div>
 
                             <div className="summary-section">
@@ -121,9 +162,15 @@ const MultiStepForm = () => {
                                 <ul>
                                     {formData.areasCompetenciaEstudiante.map((area, index) => {
                                         const areaInfo = formData.areasInfo?.find(a => a.idArea === area.idArea);
+                                        const tutorAsignado = formData.asignaciones[area.idArea];
                                         return (
                                             <li key={index}>
                                                 {areaInfo?.nombreArea} - Bs {areaInfo?.precioArea.toFixed(2)}
+                                                {tutorAsignado && (
+                                                    <span className="tutor-assigned">
+                                                        (Tutor: {tutorAsignado.nombresTutor} {tutorAsignado.apellidosTutor})
+                                                    </span>
+                                                )}
                                             </li>
                                         );
                                     })}
@@ -146,7 +193,7 @@ const MultiStepForm = () => {
                                 buttonStyle="primary"
                                 onClick={handleSubmit}
                             >
-                                Confirmar y Pagar
+                                Finalizar Inscripción
                             </ButtonPrimary>
                         </div>
                     </div>
