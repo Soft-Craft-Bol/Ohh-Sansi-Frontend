@@ -68,7 +68,7 @@
 .selected-item {
   display: inline-flex;
   align-items: center;
-  background-color: rgba(3, 55, 113, 0.1);
+  background-color: rgba(12, 114, 230, 0.1);
   padding: 0.5rem 1rem;
   margin: 0.5rem;
   border-radius: 0.5rem;
@@ -76,6 +76,7 @@
   transition: all 0.3s ease;
   font-size: 0.9rem;
 }
+
 
 .selected-item:hover {
   background-color: rgba(3, 55, 113, 0.2);

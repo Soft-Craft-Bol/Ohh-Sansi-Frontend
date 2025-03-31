@@ -61,7 +61,7 @@ export const registerTutor = (data) => api.post('/tutores/register-tutor', data)
 
 //CATEGORIAS 
 export const createCategory = (data) => api.post('/nivelescolar-categoria-area/register', data);
-
+export const getCategories = () => api.get('/category');
 
 //Fechas de Inscripcion
 export const upsertFechas = (data) => api.post('/plazo-inscripcion', data);

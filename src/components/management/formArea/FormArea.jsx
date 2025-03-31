@@ -153,9 +153,9 @@ const FormArea = () => {
                 maxLength={50}
               />
               <p className="char-count">{formik.values.name.length}/50</p>
-              {formik.touched.name && formik.errors.name && (
+              {/* {formik.touched.name && formik.errors.name && (
                 <p className="error">{formik.errors.name}</p>
-              )}
+              )} */}
             </div>
 
             <div>
@@ -168,9 +168,9 @@ const FormArea = () => {
                 step="0.01"
                 min="0"
               />
-              {formik.touched.precioArea && formik.errors.precioArea && (
+             {/*  {formik.touched.precioArea && formik.errors.precioArea && (
                 <p className="error">{formik.errors.precioArea}</p>
-              )}
+              )} */}
             </div>
 
             <div>
@@ -180,6 +180,7 @@ const FormArea = () => {
                 placeholder="Breve descripción del área"
                 className="input"
                 maxLength={500}
+                required
                 {...formik.getFieldProps("description")}
               />
               <p className="char-count">{formik.values.description.length}/500</p>

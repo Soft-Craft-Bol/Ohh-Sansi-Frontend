@@ -4,7 +4,7 @@ import * as Yup from "yup";
 import InputText from "../../inputs/InputText";
 import Switch from "../../switch/Switch";
 import { ButtonPrimary } from "../../button/ButtonPrimary";
-import { getNivelEscolar, getAreas, createCategory } from "../../../api/api";
+import { getNivelEscolar, getAreas, createCategory, getCategories } from "../../../api/api";
 import { toast } from "sonner";
 import { IoCloseOutline } from "react-icons/io5";
 import "./CategoriesManagement.css";
@@ -24,7 +24,8 @@ const unifiedSchema = Yup.object().shape({
   descripcion: Yup.string()
     .when("flag", {
       is: 1, // Cambiado a 1 para categorías
-      then: (schema) => schema.required("La descripción es obligatoria"),
+      then: (schema) => schema.required("La descripción es obligatoria")
+      .matches(/^[a-zA-Z0-9\s.]*$/, "La descripción solo puede contener letras numeros y espacios"),
       otherwise: (schema) => schema.notRequired(),
     }),
   idArea: Yup.array()
@@ -63,6 +64,8 @@ const CategoriesManagement = () => {
       setIsLoading(false);
     }
   };
+
+  
 
   if (isLoading) {
     return <div className="loading-message">Cargando datos...</div>;
@@ -146,11 +149,12 @@ const CategoriesManagement = () => {
               {activeTab === "categorias" && (
                 <>
                   <InputText
-                    label="Código de Categoría"
+                    label="Nombre de la Categoría"
                     name="codCategory"
                     placeholder="Ej: GUACAMAYO (máx 10 caracteres)"
                     error={touched.codCategory && errors.codCategory}
                     maxLength={10}
+                    required
                   />
 
                   <InputText
@@ -158,6 +162,7 @@ const CategoriesManagement = () => {
                     name="descripcion"
                     placeholder="Breve descripción de la categoría"
                     error={touched.descripcion && errors.descripcion}
+                    required
                   />
                 </>
               )}
@@ -202,12 +207,12 @@ const CategoriesManagement = () => {
               </div>
 
               <div className="selection-container">
-                <label>Niveles escolares:</label>
+                <label>Grados escolares:</label>
                 <select
                   onChange={(e) => toggleGrade(parseInt(e.target.value))}
                   value=""
                 >
-                  <option value="">Seleccione un nivel escolar</option>
+                  <option value="">Seleccione un grado escolar</option>
                   {nivelesEscolares.map(nivel => (
                     <option key={nivel.idNivel} value={nivel.idNivel}>
                       {nivel.nombreNivelEscolar}
@@ -216,9 +221,9 @@ const CategoriesManagement = () => {
                 </select>
 
                 <div className="selected-items">
-                  <h4>Niveles seleccionados:</h4>
+                  <h4>Grados seleccionados:</h4>
                   {values.nivelesEscolares.length === 0 ? (
-                    <p>No hay niveles seleccionados</p>
+                    <p>No hay grados seleccionados</p>
                   ) : (
                     values.nivelesEscolares.map(gradeId => {
                       const nivel = nivelesEscolares.find(n => n.idNivel === gradeId);
