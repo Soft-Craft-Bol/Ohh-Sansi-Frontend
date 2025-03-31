@@ -150,6 +150,50 @@
     justify-content: flex-end;
     margin-top: 1.5rem;
   }
+
+  .area-source {
+    font-size: 0.8rem;
+    font-weight: normal;
+    margin-left: 8px;
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+  
+  .area-source.nivel {
+    background-color: #e3f2fd;
+    color: #1565c0;
+  }
+  
+  .area-source.categoría {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+  }
+  
+  .step2-card h3,
+  .step2-selected-card h3 {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .no-areas-message {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 2rem;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    margin: 1rem 0;
+    color: #6c757d;
+    font-size: 1.1rem;
+  }
+  
+  .loading-message {
+    text-align: center;
+    padding: 2rem;
+    color: #6c757d;
+    font-size: 1.1rem;
+  }
   
   /* Estilos responsivos */
   @media (max-width: 1024px) {

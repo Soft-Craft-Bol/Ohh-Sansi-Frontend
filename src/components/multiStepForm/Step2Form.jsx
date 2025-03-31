@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { ButtonPrimary } from "../button/ButtonPrimary";
 import "./Step2Form.css";
-import { getAreaByIdGrade } from "../../api/api"; // Importa el nuevo endpoint
+import { getAreaByIdGrade } from "../../api/api";
 
 const Step2Form = ({ onNext, onPrev, formData = {}, updateFormData }) => {
   const [seleccionadas, setSeleccionadas] = useState(
@@ -16,7 +16,7 @@ const Step2Form = ({ onNext, onPrev, formData = {}, updateFormData }) => {
       fetchAreasByGrade();
     } else {
       toast.error("Primero seleccione un grado/nivel en el paso anterior");
-      onPrev(); // Regresa al paso anterior si no hay grado seleccionado
+      onPrev();
     }
   }, [formData.participante?.idNivelGradoEscolar]);
 
@@ -25,27 +25,10 @@ const Step2Form = ({ onNext, onPrev, formData = {}, updateFormData }) => {
       setIsLoading(true);
       const response = await getAreaByIdGrade(formData.participante.idNivelGradoEscolar);
       
-      // Extraemos las áreas del response
-      const areasFromResponse = response.data?.areasCategorias || [];
+      // Combinamos y procesamos ambas listas de áreas
+      const combinedAreas = processAreas(response.data);
       
-      // Eliminamos duplicados (por si hay áreas en múltiples categorías)
-      const uniqueAreas = [];
-      const seenAreas = new Set();
-      
-      areasFromResponse.forEach(area => {
-        if (!seenAreas.has(area.idArea)) {
-          seenAreas.add(area.idArea);
-          uniqueAreas.push({
-            idArea: area.idArea,
-            nombreArea: area.nombreArea,
-            precioArea: area.precioArea,
-            descripcionArea: area.descripcionArea,
-            nombreCortoArea: area.nombreCortoArea
-          });
-        }
-      });
-      
-      setAreas(uniqueAreas);
+      setAreas(combinedAreas);
     } catch (error) {
       console.error("Error fetching areas by grade:", error);
       toast.error("Error al cargar las áreas para este grado");
@@ -53,6 +36,49 @@ const Step2Form = ({ onNext, onPrev, formData = {}, updateFormData }) => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Función para combinar y procesar las áreas de ambas fuentes
+  const processAreas = (data) => {
+    const seenAreas = new Set();
+    const uniqueAreas = [];
+    
+    // Procesar áreas directas (de 'areas')
+    if (data.areas && Array.isArray(data.areas)) {
+      data.areas.forEach(area => {
+        if (!seenAreas.has(area.idArea)) {
+          seenAreas.add(area.idArea);
+          uniqueAreas.push({
+            ...area,
+            source: 'Nivel', // Indica que viene del nivel escolar
+            categoria: null // No pertenece a categoría
+          });
+        }
+      });
+    }
+    
+    // Procesar áreas de categorías (de 'areasCategorias')
+    if (data.areasCategorias && Array.isArray(data.areasCategorias)) {
+      data.areasCategorias.forEach(areaCat => {
+        if (!seenAreas.has(areaCat.idArea)) {
+          seenAreas.add(areaCat.idArea);
+          uniqueAreas.push({
+            idArea: areaCat.idArea,
+            nombreArea: areaCat.nombreArea,
+            precioArea: areaCat.precioArea,
+            descripcionArea: areaCat.descripcionArea,
+            nombreCortoArea: areaCat.nombreCortoArea,
+            source: 'Categoría', // Indica que viene de categoría
+            categoria: {
+              id: areaCat.idCategoria,
+              nombre: areaCat.codigoCategoria
+            }
+          });
+        }
+      });
+    }
+    
+    return uniqueAreas;
   };
 
   const toggleSeleccion = (id) => {
@@ -84,13 +110,15 @@ const Step2Form = ({ onNext, onPrev, formData = {}, updateFormData }) => {
       .map(area => ({ 
         idArea: area.idArea,
         nombreArea: area.nombreArea,
-        precioArea: area.precioArea
+        precioArea: area.precioArea,
+        source: area.source,
+        categoria: area.categoria
       }));
     
     updateFormData({ 
       areasCompetenciaEstudiante: areasSeleccionadas,
       costoTotal: totalCosto,
-      areasInfo: areas // Guardamos toda la info de áreas para usar en el resumen
+      areasInfo: areas
     });
     onNext();
   };
@@ -125,6 +153,9 @@ const Step2Form = ({ onNext, onPrev, formData = {}, updateFormData }) => {
                   className="mr-2"
                 />
                 {area.nombreArea}
+                <span className={`area-source ${area.source.toLowerCase()}`}>
+                  ({area.source}{area.categoria ? `: ${area.categoria.nombre}` : ''})
+                </span>
               </h3>
               <p>{area.descripcionArea}</p>
               <p className="costo">Costo: Bs {area.precioArea.toFixed(2)}</p>
@@ -147,7 +178,12 @@ const Step2Form = ({ onNext, onPrev, formData = {}, updateFormData }) => {
                 return (
                   <div key={id} className="step2-selected-card">
                     <div>
-                      <h3>{area.nombreArea}</h3>
+                      <h3>
+                        {area.nombreArea}
+                        <span className={`area-source ${area.source.toLowerCase()}`}>
+                          ({area.source}{area.categoria ? `: ${area.categoria.nombre}` : ''})
+                        </span>
+                      </h3>
                       <p>{area.descripcionArea}</p>
                       <p className="costo">Costo: Bs {area.precioArea.toFixed(2)}</p>
                     </div>
