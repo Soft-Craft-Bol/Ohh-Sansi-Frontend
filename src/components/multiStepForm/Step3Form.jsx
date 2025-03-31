@@ -1,21 +1,21 @@
 import { useState, useEffect } from "react";
-import stepThreeSchema from "../../schemas/stepThreeValidate";
 import "./Step3Form.css";
 import InputText from "../inputs/InputText";
 import { ButtonPrimary } from "../button/ButtonPrimary";
-import { getAllTutor, registerTutor } from "../../api/api"; 
+import { getAllTutor } from "../../api/api"; 
 import registerTutorValidationSchema from "../../schemas/registerTutorValidate";
 import { Formik, Form } from "formik";
 import { toast } from "sonner";
 
-const Step3Form = ({ onNextStep }) => { 
+const Step3Form = ({ onNext, onPrev, formData = {}, updateFormData }) => {
   const [tipoTutores, setTipoTutores] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [tutoresLocales, setTutoresLocales] = useState(formData.tutores || []);
+  const MAX_TUTORES = 2; // Límite máximo de tutores
   
   useEffect(() => {
     fetchData();
   }, []);
-  //jaja
 
   const initialValues = {
     idTipoTutor: "",
@@ -41,148 +41,204 @@ const Step3Form = ({ onNextStep }) => {
     }
   };
 
-  const handleSubmit = async (values, { resetForm }) => {
-    setIsSubmitting(true);
-    try {
-      const tutorData = {
-        idTipoTutor: Number(values.idTipoTutor),
-        emailTutor: values.emailTutor,
-        nombresTutor: values.nombresTutor,
-        apellidosTutor: values.apellidosTutor,
-        telefono: values.telefono,
-        carnetIdentidadTutor: values.carnetIdentidadTutor,
-      };
-
-      const response = await registerTutor(tutorData);
-      
-      toast.success("Tutor registrado exitosamente");
-      resetForm();
-      
-      // Si es parte de un wizard, pasar al siguiente paso
-      if (onNextStep) onNextStep();
-      
-    } catch (error) {
-      console.error("Error registering tutor:", error);
-      toast.error(error.response?.data?.message || "Error al registrar tutor");
-    } finally {
-      setIsSubmitting(false);
+  const agregarTutor = (tutor, { resetForm }) => {
+    // Verificar si ya se alcanzó el límite máximo
+    if (tutoresLocales.length >= MAX_TUTORES) {
+      toast.error(`Solo puede registrar un máximo de ${MAX_TUTORES} tutores`);
+      return;
     }
+
+    // Verificar si ya existe un tutor con el mismo CI
+    const existe = tutoresLocales.some(t => 
+      t.carnetIdentidadTutor === tutor.carnetIdentidadTutor
+    );
+    
+    if (existe) {
+      toast.error("Ya existe un tutor con este número de documento");
+      return;
+    }
+
+    // Buscar el nombre del tipo de tutor
+    const tipoTutor = tipoTutores.find(t => t.idTipoTutor === Number(tutor.idTipoTutor));
+    
+    const nuevoTutor = {
+      ...tutor,
+      idTipoTutor: Number(tutor.idTipoTutor),
+      tipoTutorNombre: tipoTutor?.nombreTipoTutor || "Sin tipo"
+    };
+
+    setTutoresLocales([...tutoresLocales, nuevoTutor]);
+    resetForm();
+    toast.success("Tutor agregado localmente");
+    
+    // Mostrar mensaje si se alcanza el límite
+    if (tutoresLocales.length + 1 >= MAX_TUTORES) {
+      toast.info(`Ha alcanzado el límite máximo de ${MAX_TUTORES} tutores`);
+    }
+  };
+
+  const eliminarTutor = (index) => {
+    const nuevosTutores = [...tutoresLocales];
+    nuevosTutores.splice(index, 1);
+    setTutoresLocales(nuevosTutores);
+    toast.success("Tutor eliminado");
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    updateFormData({ tutores: tutoresLocales });
+    onNext();
   };
 
   return (
     <div className="step3-container">
-      <h2 className="step3-title">Asignación de Tutores</h2>
+      <h2 className="step3-title">Registro de Tutores</h2>
       <p className="step3-description">
-        Complete la información de los tutores (Paso 3 de 5)
+        Agregue los tutores del participante (Paso 3 de 5) - Máximo {MAX_TUTORES}
       </p>
       
-      <Formik
-        initialValues={initialValues}
-        validationSchema={registerTutorValidationSchema}
-        onSubmit={handleSubmit}
-        enableReinitialize
-      >
-        {(formik) => (
-          <Form className="step3-form">
-            {/* Campo para seleccionar tipo de tutor */}
-            <div className="step3-form-group">
-              <label>Tipo de Tutor*</label>
-              <select
-                name="idTipoTutor"
-                value={formik.values.idTipoTutor}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                className="step3-select"
-              >
-                <option value="">Seleccione un tipo</option>
-                {tipoTutores.map((tipo) => (
-                  <option key={tipo.idTipoTutor} value={tipo.idTipoTutor}>
-                    {tipo.nombreTipoTutor}
-                  </option>
-                ))}
-              </select>
-              {formik.touched.idTipoTutor && formik.errors.idTipoTutor && (
-                <div className="error-message">{formik.errors.idTipoTutor}</div>
-              )}
-            </div>
+      <div className="step3-content">
+        {/* Formulario para agregar nuevos tutores */}
+        <div className="step3-form-container">
+          <Formik
+            initialValues={initialValues}
+            validationSchema={registerTutorValidationSchema}
+            onSubmit={agregarTutor}
+            enableReinitialize
+          >
+            {(formik) => (
+              <Form className="step3-form">
+                <div className="step3-form-group">
+                  <label>Tipo de Tutor*</label>
+                  <select
+                    name="idTipoTutor"
+                    value={formik.values.idTipoTutor}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    className="step3-select"
+                  >
+                    <option value="">Seleccione un tipo</option>
+                    {tipoTutores.map((tipo) => (
+                      <option key={tipo.idTipoTutor} value={tipo.idTipoTutor}>
+                        {tipo.nombreTipoTutor}
+                      </option>
+                    ))}
+                  </select>
+                  {formik.touched.idTipoTutor && formik.errors.idTipoTutor && (
+                    <div className="error-message">{formik.errors.idTipoTutor}</div>
+                  )}
+                </div>
 
-            <div className="step3-form-group">
-              <InputText
-                name="nombresTutor"
-                label="Nombres del profesor o tutor*"
-                type="text"
-                placeholder="Ingrese el nombre del tutor"
-                value={formik.values.nombresTutor}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                error={formik.touched.nombresTutor && formik.errors.nombresTutor}
-              />
-            </div>
+                <div className="step3-form-group">
+                  <InputText
+                    name="nombresTutor"
+                    label="Nombres*"
+                    type="text"
+                    placeholder="Nombres del tutor"
+                  />
+                </div>
 
-            <div className="step3-form-group">
-              <InputText
-                name="apellidosTutor"
-                label="Apellidos del profesor o tutor*"
-                type="text"
-                placeholder="Ingrese el apellido del tutor"
-                value={formik.values.apellidosTutor}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                error={formik.touched.apellidosTutor && formik.errors.apellidosTutor}
-              />
-            </div>
+                <div className="step3-form-group">
+                  <InputText
+                    name="apellidosTutor"
+                    label="Apellidos*"
+                    type="text"
+                    placeholder="Apellidos del tutor"
+                  />
+                </div>
 
-            <div className="step3-form-group">
-              <InputText
-                name="emailTutor"
-                label="Correo electrónico del profesor o tutor*"
-                type="email"
-                placeholder="Ingrese el correo electrónico del tutor"
-                value={formik.values.emailTutor}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                error={formik.touched.emailTutor && formik.errors.emailTutor}
-              />
-            </div>
+                <div className="step3-form-group">
+                  <InputText
+                    name="emailTutor"
+                    label="Correo electrónico*"
+                    type="email"
+                    placeholder="Correo del tutor"
+                  />
+                </div>
 
-            <div className="step3-form-group">
-              <InputText
-                name="telefono"
-                label="Teléfono del profesor o tutor*"
-                type="text"
-                placeholder="Ingrese el número telefónico del tutor"
-                value={formik.values.telefono}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                error={formik.touched.telefono && formik.errors.telefono}
-              />
-            </div>
+                <div className="step3-form-group">
+                  <InputText
+                    name="telefono"
+                    label="Teléfono*"
+                    type="text"
+                    placeholder="Teléfono del tutor"
+                  />
+                </div>
 
-            <div className="step3-form-group">
-              <InputText
-                name="carnetIdentidadTutor"
-                label="Número de documento del profesor o tutor*"
-                type="text"
-                placeholder="Ingrese el número de documento del tutor"
-                value={formik.values.carnetIdentidadTutor}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                error={formik.touched.carnetIdentidadTutor && formik.errors.carnetIdentidadTutor}
-              />
-            </div>
+                <div className="step3-form-group">
+                  <InputText
+                    name="carnetIdentidadTutor"
+                    label="N° de documento*"
+                    type="text"
+                    placeholder="Documento del tutor"
+                  />
+                </div>
 
-            <div className="step3-button-container">
-              <ButtonPrimary
-                type="submit"
-                buttonStyle="primary"
-                disabled={!formik.isValid || isSubmitting}
-              >
-                {isSubmitting ? 'Registrando...' : 'Continuar a áreas de competencia'}
-              </ButtonPrimary>
-            </div>
-          </Form>
-        )}
-      </Formik>
+                <div className="step3-button-container">
+                  <ButtonPrimary
+                    type="submit"
+                    buttonStyle="primary"
+                    disabled={!formik.isValid || isSubmitting || tutoresLocales.length >= MAX_TUTORES}
+                  >
+                    {tutoresLocales.length >= MAX_TUTORES ? 
+                      'Límite alcanzado' : 
+                      'Agregar Tutor'}
+                  </ButtonPrimary>
+                </div>
+              </Form>
+            )}
+          </Formik>
+        </div>
+
+        {/* Lista de tutores agregados */}
+        <div className="step3-tutores-list">
+          <h3>Tutores Actuales ({tutoresLocales.length}/{MAX_TUTORES})</h3>
+          
+          {tutoresLocales.length === 0 ? (
+            <p className="no-tutores-message">No hay tutores agregados aún</p>
+          ) : (
+            <ul className="tutores-container">
+              {tutoresLocales.map((tutor, index) => (
+                <li key={index} className="tutor-card">
+                  <div className="tutor-info">
+                    <h4>{tutor.tipoTutorNombre}</h4>
+                    <p><strong>Nombre:</strong> {tutor.nombresTutor} {tutor.apellidosTutor}</p>
+                    <p><strong>Email:</strong> {tutor.emailTutor}</p>
+                    <p><strong>Teléfono:</strong> {tutor.telefono}</p>
+                    <p><strong>Documento:</strong> {tutor.carnetIdentidadTutor}</p>
+                  </div>
+                  <button
+                    type="button"
+                    className="remove-tutor-btn"
+                    onClick={() => eliminarTutor(index)}
+                  >
+                    × Eliminar
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
+
+      {/* Botones de navegación */}
+      <div className="step3-navigation">
+        <ButtonPrimary 
+          type="button"
+          buttonStyle="secondary"
+          onClick={onPrev}
+        >
+          Anterior
+        </ButtonPrimary>
+        <ButtonPrimary 
+          type="button"
+          buttonStyle="primary"
+          onClick={handleSubmit}
+          disabled={tutoresLocales.length === 0}
+        >
+          Siguiente
+        </ButtonPrimary>
+      </div>
     </div>
   );
 };
