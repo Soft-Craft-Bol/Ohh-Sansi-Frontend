@@ -2,33 +2,58 @@ import React, { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { ButtonPrimary } from "../button/ButtonPrimary";
 import "./Step2Form.css";
-import { getAreas } from "../../api/api";
+import { getAreaByIdGrade } from "../../api/api"; // Importa el nuevo endpoint
 
 const Step2Form = ({ onNext, onPrev, formData = {}, updateFormData }) => {
-  const [seleccionadas, setSeleccionadas] = useState(formData.areasCompetenciaEstudiante?.map(a => a.idArea) || []);
+  const [seleccionadas, setSeleccionadas] = useState(
+    formData.areasCompetenciaEstudiante?.map(a => a.idArea) || []
+  );
   const [areas, setAreas] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    fetchAreas();
-  }, []);
+    if (formData.participante?.idNivelGradoEscolar) {
+      fetchAreasByGrade();
+    } else {
+      toast.error("Primero seleccione un grado/nivel en el paso anterior");
+      onPrev(); // Regresa al paso anterior si no hay grado seleccionado
+    }
+  }, [formData.participante?.idNivelGradoEscolar]);
 
-  const fetchAreas = async () => {
+  const fetchAreasByGrade = async () => {
     try {
       setIsLoading(true);
-      const response = await getAreas();
-      setAreas(response.data?.areas || []);
+      const response = await getAreaByIdGrade(formData.participante.idNivelGradoEscolar);
+      
+      // Extraemos las áreas del response
+      const areasFromResponse = response.data?.areasCategorias || [];
+      
+      // Eliminamos duplicados (por si hay áreas en múltiples categorías)
+      const uniqueAreas = [];
+      const seenAreas = new Set();
+      
+      areasFromResponse.forEach(area => {
+        if (!seenAreas.has(area.idArea)) {
+          seenAreas.add(area.idArea);
+          uniqueAreas.push({
+            idArea: area.idArea,
+            nombreArea: area.nombreArea,
+            precioArea: area.precioArea,
+            descripcionArea: area.descripcionArea,
+            nombreCortoArea: area.nombreCortoArea
+          });
+        }
+      });
+      
+      setAreas(uniqueAreas);
     } catch (error) {
-      console.error("Error fetching areas:", error);
-      toast.error("Error al cargar las áreas existentes");
+      console.error("Error fetching areas by grade:", error);
+      toast.error("Error al cargar las áreas para este grado");
       setAreas([]);
     } finally {
       setIsLoading(false);
     }
   };
-
-  // Filtrar solo áreas activas
-  const areasActivas = areas.filter(area => area.areaStatus === true);
 
   const toggleSeleccion = (id) => {
     setSeleccionadas((prev) => {
@@ -48,19 +73,24 @@ const Step2Form = ({ onNext, onPrev, formData = {}, updateFormData }) => {
   };
 
   const totalCosto = seleccionadas.reduce((acc, id) => {
-    const area = areasActivas.find((a) => a.idArea === id);
+    const area = areas.find((a) => a.idArea === id);
     return acc + (area ? area.precioArea : 0);
   }, 0);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const areasSeleccionadas = areasActivas
+    const areasSeleccionadas = areas
       .filter(area => seleccionadas.includes(area.idArea))
-      .map(area => ({ idArea: area.idArea }));
+      .map(area => ({ 
+        idArea: area.idArea,
+        nombreArea: area.nombreArea,
+        precioArea: area.precioArea
+      }));
     
     updateFormData({ 
       areasCompetenciaEstudiante: areasSeleccionadas,
-      costoTotal: totalCosto
+      costoTotal: totalCosto,
+      areasInfo: areas // Guardamos toda la info de áreas para usar en el resumen
     });
     onNext();
   };
@@ -68,7 +98,7 @@ const Step2Form = ({ onNext, onPrev, formData = {}, updateFormData }) => {
   if (isLoading) {
     return (
       <div className="step2-container">
-        <div className="loading-message">Cargando áreas...</div>
+        <div className="loading-message">Cargando áreas para este grado...</div>
       </div>
     );
   }
@@ -80,25 +110,31 @@ const Step2Form = ({ onNext, onPrev, formData = {}, updateFormData }) => {
       </span>
       
       <div className="step2-grid">
-        {areasActivas.map((area) => (
-          <div
-            key={area.idArea}
-            className={`step2-card ${seleccionadas.includes(area.idArea) ? "selected" : ""}`}
-            onClick={() => toggleSeleccion(area.idArea)}
-          >
-            <h3>
-              <input
-                type="checkbox"
-                checked={seleccionadas.includes(area.idArea)}
-                onChange={() => toggleSeleccion(area.idArea)}
-                className="mr-2"
-              />
-              {area.nombreArea}
-            </h3>
-            <p>{area.descripcionArea}</p>
-            <p className="costo">Costo: Bs {area.precioArea.toFixed(2)}</p>
+        {areas.length > 0 ? (
+          areas.map((area) => (
+            <div
+              key={area.idArea}
+              className={`step2-card ${seleccionadas.includes(area.idArea) ? "selected" : ""}`}
+              onClick={() => toggleSeleccion(area.idArea)}
+            >
+              <h3>
+                <input
+                  type="checkbox"
+                  checked={seleccionadas.includes(area.idArea)}
+                  onChange={() => toggleSeleccion(area.idArea)}
+                  className="mr-2"
+                />
+                {area.nombreArea}
+              </h3>
+              <p>{area.descripcionArea}</p>
+              <p className="costo">Costo: Bs {area.precioArea.toFixed(2)}</p>
+            </div>
+          ))
+        ) : (
+          <div className="no-areas-message">
+            No hay áreas disponibles para este grado. Por favor seleccione otro grado.
           </div>
-        ))}
+        )}
       </div>
       
       {seleccionadas.length > 0 && (
@@ -107,7 +143,7 @@ const Step2Form = ({ onNext, onPrev, formData = {}, updateFormData }) => {
             <h3>Áreas seleccionadas:</h3>
             <div className="step2-selected-cards">
               {seleccionadas.map((id) => {
-                const area = areasActivas.find((a) => a.idArea === id);
+                const area = areas.find((a) => a.idArea === id);
                 return (
                   <div key={id} className="step2-selected-card">
                     <div>
@@ -146,7 +182,7 @@ const Step2Form = ({ onNext, onPrev, formData = {}, updateFormData }) => {
         <ButtonPrimary 
           type="submit" 
           buttonStyle="primary"
-          disabled={seleccionadas.length === 0}
+          disabled={seleccionadas.length === 0 || areas.length === 0}
         >
           Siguiente
         </ButtonPrimary>
