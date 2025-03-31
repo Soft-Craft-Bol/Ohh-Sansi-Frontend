@@ -1,22 +1,34 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaThLarge, FaChartPie, FaQuestionCircle, FaCog, FaSignOutAlt } from "react-icons/fa";
 import { PiClipboardTextFill } from "react-icons/pi";
 import { MdOutlinePayment } from "react-icons/md";
 import { signOut } from "../../utils/authFuntions";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import "./Sidebar.css";
 import logoOhSansi from "../../assets/img/sansi-logo-only.png";
 
 const Sidebar = ({ isSidebarVisible }) => {
   const [activeMenu, setActiveMenu] = useState("dashboard");
+  const location = useLocation();
 
   const handleLogout = () => {
     signOut();
   };
 
-  const handleMenuClick = (menu) => {
-    setActiveMenu(menu);
-  };
+  useEffect(() => {
+    const currentPath = location.pathname;  // Obtén la ruta actual
+    if (currentPath === "/home") {
+      setActiveMenu("dashboard");
+    } else if (currentPath === "/form") {
+      setActiveMenu("analytics");
+    } else if (currentPath === "/management") {
+      setActiveMenu("store");
+    } else if (currentPath === "/registro-areas") {
+      setActiveMenu("message");
+    } else if (currentPath === "/inicio") {
+      setActiveMenu("team");
+    }
+  }, [location]);
 
   return (
     <section id="sidebar" className={!isSidebarVisible ? "hide" : ""}>
