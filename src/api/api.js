@@ -41,6 +41,7 @@ export const getAreas = () => api.get('/areas');
 export const addArea = (data) => api.post('/areas/register-area', data);
 export const updateArea = (id,data) => api.put(`/areas/${id}`, data);
 export const deleteArea = (id) => api.delete(`/areas/${id}`);
+export const getAreaByIdGrade = (id) => api.get(`/nivelescolar-categoria-area/areas-categorias/${id}`);
 
 export const registerParticipante = (data) => api.post('/participantes/register-participant', data);
 export const register = (data) => api.post('/register', data)
@@ -59,4 +60,13 @@ export const getAllTutor = () => api.get('/tipo-tutor/findAllTipoTutor');
 export const registerTutor = (data) => api.post('/tutores/register-tutor', data);
 
 //CATEGORIAS 
-export const createCategory = (data) => api.post('/category', data);
+export const createCategory = (data) => api.post('/nivelescolar-categoria-area/register', data);
+
+
+//Fechas de Inscripcion
+export const upsertFechas = (data) => api.post('/plazo-inscripcion', data);
+export const getFechas = () => api.get('/plazo-inscripcion');
+export const updateFechas = (id, data) => api.put(`/plazo-inscripcion/${id}`, data);
+export const deleteFechas = (id) => api.delete(`/plazo-inscripcion/${id}`);
+export const getFechasById = (id) => api.get(`/plazo-inscripcion/${id}`);
+export const getLastActiveFechas = () => api.get('/plazo-inscripcion/activo');
