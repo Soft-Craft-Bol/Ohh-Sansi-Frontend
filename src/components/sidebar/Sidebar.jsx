@@ -41,31 +41,31 @@ const Sidebar = ({ isSidebarVisible }) => {
 
       <ul className="side-menu top">
         <li className={activeMenu === "dashboard" ? "active" : ""}>
-          <Link to="/home" className="link" onClick={() => handleMenuClick("dashboard")}>
+          <Link to="/home" className="link">
             <FaThLarge className="icon" />
             <span className="text">Página Principal</span>
           </Link>
         </li>
         <li className={activeMenu === "analytics" ? "active" : ""}>
-          <Link to="/form" className="link" onClick={() => handleMenuClick("analytics")}>
+          <Link to="/form" className="link">
             <PiClipboardTextFill className="icon" />
             <span className="text">Inscripciones</span>
           </Link>
         </li>
         <li className={activeMenu === "store" ? "active" : ""}>
-          <Link to="/management" className="link" onClick={() => handleMenuClick("store")}>
+          <Link to="/management" className="link">
             <MdOutlinePayment className="icon" />
             <span className="text">Administracion de olimpiadas</span>
           </Link>
         </li>
         <li className={activeMenu === "message" ? "active" : ""}>
-          <Link to="/registro-areas" className="link" onClick={() => handleMenuClick("message")}>
+          <Link to="/registro-areas" className="link">
             <FaChartPie className="icon" />
             <span className="text">Reportes</span>
           </Link>
         </li>
         <li className={activeMenu === "team" ? "active" : ""}>
-          <Link to="/inicio" className="link" onClick={() => handleMenuClick("team")}>
+          <Link to="/inicio" className="link">
             <FaQuestionCircle className="icon" />
             <span className="text">Ayuda</span>
           </Link>
