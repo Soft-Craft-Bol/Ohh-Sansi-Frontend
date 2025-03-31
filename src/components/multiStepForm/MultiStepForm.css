@@ -118,6 +118,119 @@
     gap: 1rem;
     justify-content: space-between;
   }
+
+  /* Agrega esto al archivo MultiStepForm.css */
+
+.step5-container {
+    background-color: #ffffff;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    margin-top: 1.5rem;
+  }
+  
+  .step5-container h3 {
+    font-size: 1.75rem;
+    color: #033771;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    font-weight: 600;
+  }
+  
+  .summary-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+  }
+  
+  .summary-section {
+    background-color: #f8fafc;
+    padding: 1.5rem;
+    border-radius: 8px;
+    border-left: 4px solid #033771;
+  }
+  
+  .summary-section h4 {
+    color: #033771;
+    margin-top: 0;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+    font-weight: 500;
+  }
+  
+  .summary-section p {
+    margin: 0.5rem 0;
+    color: #333;
+    line-height: 1.5;
+  }
+  
+  .summary-section ul {
+    padding-left: 1.25rem;
+    margin: 0.75rem 0;
+  }
+  
+  .summary-section li {
+    margin-bottom: 0.5rem;
+    color: #333;
+  }
+  
+  .tutor-assigned {
+    display: block;
+    font-size: 0.85rem;
+    color: #555;
+    margin-top: 0.25rem;
+    font-style: italic;
+  }
+  
+  .total {
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: #033771;
+    margin-top: 1rem !important;
+  }
+  
+  .step5-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #eaeef2;
+  }
+  
+  /* Responsive */
+  @media (max-width: 768px) {
+    .step5-container {
+      padding: 1.5rem;
+    }
+    
+    .step5-container h3 {
+      font-size: 1.5rem;
+    }
+    
+    .summary-container {
+      grid-template-columns: 1fr;
+    }
+    
+    .step5-actions {
+      flex-direction: column;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .step5-container {
+      padding: 1rem;
+    }
+    
+    .step5-container h3 {
+      font-size: 1.3rem;
+    }
+    
+    .summary-section {
+      padding: 1rem;
+    }
+  }
   
   /* Estilos responsivos */
   @media (max-width: 768px) {
