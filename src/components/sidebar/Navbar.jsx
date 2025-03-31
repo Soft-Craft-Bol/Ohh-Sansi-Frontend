@@ -43,6 +43,14 @@ const Navbar = () => {
       <i className='bx bx-menu' onClick={toggleSidebar}>
         {isSidebarVisible ? <FaBars /> : <FaBars />} {/* Icono dinámico */}
       </i>
+      <form action="#" className={isSearchVisible ? 'show' : ''}>
+        <div className="form-input">
+          <input type="search" placeholder="Buscar..." />
+          <button type="submit" className="search-btn" onClick={toggleSearch}>
+            {isSearchVisible ? <FaTimes /> : <FaSearch />} {/* Icono dinámico */}
+          </button>
+        </div>
+      </form>
       <input
         type="checkbox"
         id="switch-mode"
