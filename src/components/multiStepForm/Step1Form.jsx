@@ -38,7 +38,7 @@ const Step1Form = ({ formData = {}, updateFormData, onNext }) => {
       fechaNacimiento: Yup.date()
         .nullable()
         .max(new Date(), "No puede ser fecha futura")
-        .test('age', 'Edad debe estar entre 5 y 100 años', function(value) {
+        .test('age', 'Se debe tener entre 4 y 99 años', function(value) {
           if (!value) return true;
           const today = new Date();
           const birthDate = new Date(value);
@@ -65,7 +65,7 @@ const Step1Form = ({ formData = {}, updateFormData, onNext }) => {
       email: Yup.string()
         .nullable()
         .email("Ingrese un email válido")
-        .test('domain', 'Dominio no permitido', value => {
+        .test('domain', 'Correo no válido', value => {
           if (!value) return true;
           const validDomains = ['gmail.com', 'outlook.com', 'hotmail.com', 'yahoo.com', 'edu.pe'];
           const [, domain] = value.split('@');
