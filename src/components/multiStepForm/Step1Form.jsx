@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
+import { Toaster, toast } from "sonner";
 import InputText from "../inputs/InputText";
 import { ButtonPrimary } from "../button/ButtonPrimary";
 import SelectInput from "../selected/SelectInput";
@@ -33,9 +34,11 @@ const Step1Form = ({ formData, updateFormData, onNext}) => {
   };
 
   const handleSubmit = (values) => {
+    localStorage.setItem("step1FormData", JSON.stringify(values));
+
     updateFormData({
       participante: {
-        ...formData.participante,
+        ...formData?.participante,
         nombreParticipante: values.nombre,
         apellidoPaterno: values.apellido.split(' ')[0] || '',
         apellidoMaterno: values.apellido.split(' ')[1] || '',
@@ -45,11 +48,17 @@ const Step1Form = ({ formData, updateFormData, onNext}) => {
         idMunicipio: values.municipio ? parseInt(values.municipio) : null,
         idColegio: values.institucion ? parseInt(values.institucion) : null,
         idNivelGradoEscolar: values.grado ? parseInt(values.grado) : null,
-        correoElectronicoParticipante: values.email || null
-      }
+        correoElectronicoParticipante: values.email || null,
+        telefonoParticipante: values.telefono || null,
+      },
     });
+
+    // Toaster
+    toast.success("Datos guardados correctamente. Pasando al siguiente paso...");
+
     onNext();
   };
+
 
   return (
     <Formik

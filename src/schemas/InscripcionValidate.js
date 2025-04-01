@@ -1,7 +1,6 @@
-
 import * as Yup from 'yup';
 
-const inscripcionSchema = Yup.object().shape({
+const inscripcionValidate = Yup.object().shape({
   nombre: Yup.string()
     .required('El nombre es requerido')
     .matches(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, 'El nombre solo puede contener letras y espacios')
@@ -15,12 +14,20 @@ const inscripcionSchema = Yup.object().shape({
 
     .min(2, 'El apellido debe tener al menos 2 caracteres'),
   institucion: Yup.string()
-    .required('La institución es requerida'),
+    .required('Institución es requerida'),
+  
   grado: Yup.string()
-    .required('El grado es requerido'),
+    .required('Grado es requerido'),
+  
   email: Yup.string()
-    .email('Ingrese un correo electrónico válido')
-    .required('El correo electrónico es requerido'),
+    .email('Correo electrónico inválido')
+    .test('valid-domain', 'Dominio no permitido', (value) => {
+      if (!value) return true;
+      const validDomains = ['gmail.com', 'outlook.com', 'hotmail.com', 'yahoo.com', 'edu.pe'];
+      const [, domain] = value.split('@');
+      return validDomains.some(d => domain?.endsWith(d));
+    }),
+  
   telefono: Yup.string()
     .required('El teléfono es requerido')
     .matches(/^[0-9]+$/, 'El teléfono debe contener solo números')
@@ -40,4 +47,4 @@ const inscripcionSchema = Yup.object().shape({
     .min(new Date('2005-01-01'), 'La fecha de nacimiento no puede ser anterior a 2005'),
 });
 
-export default inscripcionSchema;
+export default inscripcionValidate;
