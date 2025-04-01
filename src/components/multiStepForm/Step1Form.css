@@ -15,6 +15,12 @@
   font-family: var(--lato);
 }
 
+.step1-actions{
+  display: flex;
+  justify-content: end;
+  flex-wrap: wrap;
+}
+
 .step1-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -51,5 +57,9 @@
   
   .step1-grid {
     gap: 1rem;
+  }
+
+  .step1-actions{
+    justify-content: center;
   }
 }

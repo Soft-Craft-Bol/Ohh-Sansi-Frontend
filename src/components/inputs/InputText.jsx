@@ -3,9 +3,8 @@ import { useField } from "formik";
 import { FaEye, FaEyeSlash } from "react-icons/fa"; 
 import "./InputText.css";
 
-function InputText({ label, required, type = "text", as = "input", showCounter = false, ...props }) {
-
-  const [field, meta] = useField(props);
+function InputText({ label, required, type = "text", as = "input", showCounter = false, maxLength, ...props }) {
+  const [field, meta, helpers] = useField(props);
   const [showPassword, setShowPassword] = useState(false);
 
   return (
@@ -15,10 +14,15 @@ function InputText({ label, required, type = "text", as = "input", showCounter =
       </label>
       <div className="input-wrapper">
         <input
-          className="text-input"
+          className={`text-input ${meta.touched && meta.error ? "input-error" : ""}`}
           {...field}
           {...props}
           type={type === "password" && showPassword ? "text" : type}
+          maxLength={maxLength}
+          onBlur={(e) => {
+            field.onBlur(e); // Disparar validación al salir del campo
+            helpers.setTouched(true); // Asegurar que se muestre el error
+          }}
         />
         {type === "password" && (
           <button
@@ -31,9 +35,15 @@ function InputText({ label, required, type = "text", as = "input", showCounter =
           </button>
         )}
       </div>
-      {meta.touched && meta.error ? (
-        <div className="error-message">{meta.error}</div>
-      ) : null}
+      {/* Muestra el mensaje de error */}
+      {meta.touched && meta.error && <div className="error-message">{meta.error}</div>}
+
+      {/* Contador de caracteres */}
+      {showCounter && maxLength && (
+        <div className="char-counter">
+          {field.value.length} / {maxLength}
+        </div>
+      )}
     </div>
   );
 }

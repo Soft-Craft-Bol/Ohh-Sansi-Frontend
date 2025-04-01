@@ -25,7 +25,7 @@ const unifiedSchema = Yup.object().shape({
     .when("flag", {
       is: 1, // Cambiado a 1 para categorías
       then: (schema) => schema.required("La descripción es obligatoria")
-      .matches(/^[a-zA-Z0-9\s.]*$/, "La descripción solo puede contener letras numeros y espacios"),
+        .matches(/^[a-zA-Z0-9\s.]*$/, "La descripción solo puede contener letras numeros y espacios"),
       otherwise: (schema) => schema.notRequired(),
     }),
   idArea: Yup.array()
@@ -65,7 +65,29 @@ const CategoriesManagement = () => {
     }
   };
 
-  
+  useEffect(() => {
+    if (data.length === 0) {
+      fetchCategories();
+    }
+  }, []);
+
+
+  const fetchCategories = async () => {
+    try {
+      setIsLoading(true);
+      const response = await getCategories();
+      console.log("Categorías obtenidas:", response.data); // Asegúrate de que los datos son correctos
+      setData(response.data?.categorias || []); // Asegúrate de asignar correctamente los datos
+    } catch (error) {
+      console.error("Error al obtener categorías:", error);
+      toast.error("Error al cargar las categorías");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+
+
 
   if (isLoading) {
     return <div className="loading-message">Cargando datos...</div>;
@@ -260,46 +282,23 @@ const CategoriesManagement = () => {
       </Formik>
 
       <h3>{activeTab === "categorias" ? "Categorías" : "Niveles"} registrados</h3>
-      {data.filter(item => item.flag === (activeTab === "categorias" ? 1 : 2)).length > 0 ? (
+      {data.length > 0 ? (
         <div className="categories-list">
-          {data
-            .filter(item => item.flag === (activeTab === "categorias" ? 1 : 2))
-            .map((item, index) => (
-              <div key={index} className="category-card">
-                {activeTab === "categorias" ? (
-                  <>
-                    <h4>{item.codCategory}</h4>
-                    <p>{item.descripcion}</p>
-                  </>
-                ) : (
-                  <h4>Nivel</h4>
-                )}
-                <div className="category-details">
-                  <div>
-                    <strong>Áreas:</strong>
-                    {item.idArea?.map(id => {
-                      const area = areas.find(a => a.idArea === id);
-                      return area ? <span key={id}>{area.nombreArea}</span> : null;
-                    })}
-                  </div>
-                  <div>
-                    <strong>Niveles:</strong>
-                    {item.grado?.map(gradeId => {
-                      const nivel = nivelesEscolares.find(n => n.idNivel === gradeId);
-                      return (
-                        <span key={gradeId}>
-                          {nivel?.nombreNivelEscolar || `Nivel ${gradeId}`}
-                        </span>
-                      );
-                    })}
-                  </div>
-                  <div>
-                    <strong>Estado:</strong>
-                    <span>{item.status ? "Activo" : "Inactivo"}</span>
-                  </div>
+          {data.map((item, index) => (
+            <div key={index} className="category-card">
+              <h4>{activeTab === "categorias" ? item.codigoCategoria : "Nivel"}</h4>
+              <div className="category-details">
+                <div>
+                  <strong>Área:</strong>
+                  {areas.find(a => a.idArea === item.idArea)?.nombreArea || "Desconocida"}
+                </div>
+                <div>
+                  <strong>Estado:</strong>
+                  <span>{item.status ? "Activo" : "Inactivo"}</span>
                 </div>
               </div>
-            ))}
+            </div>
+          ))}
         </div>
       ) : (
         <p>No hay {activeTab === "categorias" ? "categorías" : "niveles"} registrados.</p>

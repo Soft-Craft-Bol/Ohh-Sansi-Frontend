@@ -8,36 +8,16 @@ import useFetchNivelesEscolares from "../../hooks/NivelEscolar/useFetchNivelesEs
 import useFetchDepartamentos from "../../hooks/departamento/useFetchDepartamentos";
 import useFetchMunicipios from "../../hooks/departamento/useFetchMunicipios";
 import useFetchColegio from "../../hooks/Colegio/useFetchColegio";
+import inscripcionSchema from "../../schemas/InscripcionValidate";
 import "./Step1Form.css";
 
-const Step1Form = ({ formData, updateFormData, onNext, onPrev }) => {
+const Step1Form = ({ formData, updateFormData, onNext}) => {
   const { niveles, loading: loadingNiveles } = useFetchNivelesEscolares();
   const { departamentos, loading: loadingDepartamentos } = useFetchDepartamentos();
-  console.log("Departamentos:", departamentos); // Verifica que los departamentos se carguen correctamente
   const [selectedDepartamento, setSelectedDepartamento] = React.useState(formData.participante.idDepartamento || "");
   const { municipios, loading: loadingMunicipios } = useFetchMunicipios(selectedDepartamento);
   const [selectedMunicipio, setSelectedMunicipio] = React.useState(formData.participante.idMunicipio || "");
   const { colegios, loading: loadingColegios } = useFetchColegio(selectedMunicipio);
-
-  // Versión corregida del schema de validación
-  const validationSchema = Yup.object().shape({
-    nombre: Yup.string().required("El nombre es requerido"),
-    apellido: Yup.string().required("El apellido es requerido"),
-    documento: Yup.string().nullable(),
-    fechaNacimiento: Yup.date().nullable(),
-    departamento: Yup.string().nullable(),
-    municipio: Yup.string()
-  .nullable()
-  .when("departamento", (departamento, schema) => {
-    return departamento ? schema.required("Seleccione un municipio") : schema;
-  }),
-
-
-    institucion: Yup.string().required("La institución es requerida"),
-    grado: Yup.string().required("El grado es requerido"),
-    email: Yup.string().email("Ingrese un email válido").nullable(),
-    telefono: Yup.string().nullable(),
-  });
 
   const initialFormData = {
     nombre: formData.participante?.nombreParticipante || "",
@@ -59,8 +39,8 @@ const Step1Form = ({ formData, updateFormData, onNext, onPrev }) => {
         nombreParticipante: values.nombre,
         apellidoPaterno: values.apellido.split(' ')[0] || '',
         apellidoMaterno: values.apellido.split(' ')[1] || '',
-        carnetIdentidadParticipante: values.documento || null,
-        fechaNacimiento: values.fechaNacimiento || null,
+        carnetIdentidadParticipante: values.documento,
+        fechaNacimiento: values.fechaNacimiento,
         idDepartamento: values.departamento ? parseInt(values.departamento) : null,
         idMunicipio: values.municipio ? parseInt(values.municipio) : null,
         idColegio: values.institucion ? parseInt(values.institucion) : null,
@@ -74,16 +54,17 @@ const Step1Form = ({ formData, updateFormData, onNext, onPrev }) => {
   return (
     <Formik
       initialValues={initialFormData}
-      validationSchema={validationSchema}
+      validationSchema={inscripcionSchema}
       onSubmit={handleSubmit}
-      enableReinitialize
+      validateOnBlur={true}
+      validateOnChange={true}
     >
       {({ values, setFieldValue, isValid, isSubmitting }) => (
         <Form className="step1-container">
           <span className="step1-description">
             Ingrese los datos del participante (Paso 1 de 5)
           </span>
-          
+
           <div className="step1-grid">
             {/* Campos del formulario */}
             <div className="field-container">
@@ -94,7 +75,7 @@ const Step1Form = ({ formData, updateFormData, onNext, onPrev }) => {
                 required
               />
             </div>
-            
+
             <div className="field-container">
               <InputText
                 label="Apellido"
@@ -103,23 +84,25 @@ const Step1Form = ({ formData, updateFormData, onNext, onPrev }) => {
                 required
               />
             </div>
-            
+
             <div className="field-container">
               <InputText
                 label="Documento de identidad"
                 name="documento"
                 placeholder="Número de identificación"
+                required
               />
             </div>
-            
+
             <div className="field-container">
               <InputText
                 label="Fecha de nacimiento"
                 name="fechaNacimiento"
                 type="date"
+                required
               />
             </div>
-            
+
             <div className="field-container">
               <SelectInput
                 label="Departamento"
@@ -135,9 +118,10 @@ const Step1Form = ({ formData, updateFormData, onNext, onPrev }) => {
                   setFieldValue("municipio", "");
                   setSelectedDepartamento(e.target.value);
                 }}
+                required
               />
             </div>
-            
+
             <div className="field-container">
               <SelectInput
                 label="Municipio"
@@ -153,9 +137,10 @@ const Step1Form = ({ formData, updateFormData, onNext, onPrev }) => {
                   setFieldValue("municipio", e.target.value);
                   setSelectedMunicipio(e.target.value);
                 }}
+                required
               />
             </div>
-            
+
             <div className="field-container">
               <SelectInput
                 label="Colegio/Institución"
@@ -170,7 +155,7 @@ const Step1Form = ({ formData, updateFormData, onNext, onPrev }) => {
                 required
               />
             </div>
-            
+
             <div className="field-container">
               <SelectInput
                 label="Grado/Nivel"
@@ -184,29 +169,31 @@ const Step1Form = ({ formData, updateFormData, onNext, onPrev }) => {
                 required
               />
             </div>
-            
+
             <div className="field-container">
               <InputText
                 label="Correo electrónico"
                 name="email"
                 type="email"
                 placeholder="correo@ejemplo.com"
+                required
               />
             </div>
-            
+
             <div className="field-container">
               <InputText
                 label="Teléfono"
                 name="telefono"
                 type="tel"
                 placeholder="Número de contacto"
+                required
               />
             </div>
-            
+
             <div className="field-container full-width">
-              <div className="form-actions">
-                <ButtonPrimary 
-                  type="submit" 
+              <div className="step1-actions">
+                <ButtonPrimary
+                  type="submit"
                   buttonStyle="primary"
                   disabled={!isValid || isSubmitting}
                 >

@@ -70,3 +70,7 @@ export const updateFechas = (id, data) => api.put(`/plazo-inscripcion/${id}`, da
 export const deleteFechas = (id) => api.delete(`/plazo-inscripcion/${id}`);
 export const getFechasById = (id) => api.get(`/plazo-inscripcion/${id}`);
 export const getLastActiveFechas = () => api.get('/plazo-inscripcion/activo');
+
+
+//EMAILS
+export const sendEmail = (data) => api.post('/email/send', data);
