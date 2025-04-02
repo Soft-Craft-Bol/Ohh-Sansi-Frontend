@@ -6,7 +6,7 @@ import userCircle from '../../assets/img/user-circle.svg';
 const Navbar = () => {
   const [isSearchVisible, setIsSearchVisible] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [isSidebarVisible, setIsSidebarVisible] = useState(true);
+  const [isSidebarVisible, setIsSidebarVisible] = useState(true); // Sidebar abierto por defecto
 
   const toggleSearch = () => {
     if (window.innerWidth < 576) {
@@ -16,14 +16,14 @@ const Navbar = () => {
 
   const toggleDarkMode = () => {
     setIsDarkMode(!isDarkMode);
-    document.body.classList.toggle('dark', !isDarkMode); // Corregido el estado
+    document.body.classList.toggle('dark', !isDarkMode);
   };
 
   const toggleSidebar = () => {
     setIsSidebarVisible(!isSidebarVisible);
     const sidebar = document.getElementById('sidebar');
     if (sidebar) {
-      sidebar.classList.toggle('hide');
+      sidebar.classList.toggle('hide', !isSidebarVisible);
     }
   };
 
@@ -41,16 +41,8 @@ const Navbar = () => {
   return (
     <nav>
       <i className='bx bx-menu' onClick={toggleSidebar}>
-        {isSidebarVisible ? <FaBars /> : <FaBars />} {/* Icono dinámico */}
+        <FaBars />
       </i>
-      <form action="#" className={isSearchVisible ? 'show' : ''}>
-        <div className="form-input">
-          <input type="search" placeholder="Buscar..." />
-          <button type="submit" className="search-btn" onClick={toggleSearch}>
-            {isSearchVisible ? <FaTimes /> : <FaSearch />} {/* Icono dinámico */}
-          </button>
-        </div>
-      </form>
       <input
         type="checkbox"
         id="switch-mode"
@@ -59,12 +51,12 @@ const Navbar = () => {
         onChange={toggleDarkMode}
       />
       <label htmlFor="switch-mode" className="switch-mode">
-        {isDarkMode ? <FaSun /> : <FaMoon />} {/* Icono dinámico */}
+        {isDarkMode ? <FaSun /> : <FaMoon />} 
       </label>
-      <a href="#" className="notification">
+      {/* <a href="#" className="notification">
         <FaBell />
         <span className="num">8</span>
-      </a>
+      </a> */}
       <a href="#" className="profile">
         <img src={userCircle} alt="Profile" />
       </a>

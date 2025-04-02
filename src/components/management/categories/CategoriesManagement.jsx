@@ -66,18 +66,14 @@ const CategoriesManagement = () => {
   };
 
   useEffect(() => {
-    if (data.length === 0) {
-      fetchCategories();
-    }
+    fetchCategories();
   }, []);
-
 
   const fetchCategories = async () => {
     try {
       setIsLoading(true);
       const response = await getCategories();
-      console.log("Categorías obtenidas:", response.data); // Asegúrate de que los datos son correctos
-      setData(response.data?.categorias || []); // Asegúrate de asignar correctamente los datos
+      setData(response.data.data);
     } catch (error) {
       console.error("Error al obtener categorías:", error);
       toast.error("Error al cargar las categorías");
@@ -85,8 +81,6 @@ const CategoriesManagement = () => {
       setIsLoading(false);
     }
   };
-
-
 
 
   if (isLoading) {
@@ -286,16 +280,21 @@ const CategoriesManagement = () => {
         <div className="categories-list">
           {data.map((item, index) => (
             <div key={index} className="category-card">
-              <h4>{activeTab === "categorias" ? item.codigoCategoria : "Nivel"}</h4>
+              <h4>
+                {activeTab === "categorias" ? item.codigoCategoria : "Nivel"}
+              </h4>
               <div className="category-details">
                 <div>
                   <strong>Área:</strong>
-                  {areas.find(a => a.idArea === item.idArea)?.nombreArea || "Desconocida"}
+                  {areas?.length > 0
+                    ? (areas.find((a) => a.idArea === item.idArea)?.nombreArea ||
+                      "Desconocida")
+                    : "Cargando..."}
                 </div>
-                <div>
+                {/* <div>
                   <strong>Estado:</strong>
-                  <span>{item.status ? "Activo" : "Inactivo"}</span>
-                </div>
+                  <span>{item?.status ? "Activo" : "Inactivo"}</span>
+                </div> */}
               </div>
             </div>
           ))}
