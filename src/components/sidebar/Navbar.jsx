@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaBars, FaSearch, FaTimes, FaBell, FaMoon, FaSun } from 'react-icons/fa';
 import './Navbar.css';
+import userCircle from '../../assets/img/user-circle.svg';
 
 const Navbar = () => {
   const [isSearchVisible, setIsSearchVisible] = useState(false);
@@ -42,10 +43,9 @@ const Navbar = () => {
       <i className='bx bx-menu' onClick={toggleSidebar}>
         {isSidebarVisible ? <FaBars /> : <FaBars />} {/* Icono dinámico */}
       </i>
-      <a href="#" className="nav-link">Categories</a>
       <form action="#" className={isSearchVisible ? 'show' : ''}>
         <div className="form-input">
-          <input type="search" placeholder="Search..." />
+          <input type="search" placeholder="Buscar..." />
           <button type="submit" className="search-btn" onClick={toggleSearch}>
             {isSearchVisible ? <FaTimes /> : <FaSearch />} {/* Icono dinámico */}
           </button>
@@ -66,7 +66,7 @@ const Navbar = () => {
         <span className="num">8</span>
       </a>
       <a href="#" className="profile">
-        <img src="../../assets/img/people.png" alt="Profile" />
+        <img src={userCircle} alt="Profile" />
       </a>
     </nav>
   );

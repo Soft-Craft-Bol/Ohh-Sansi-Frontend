@@ -1,0 +1,131 @@
+.tabs-container {
+  width: calc(100% - 2rem);
+  margin: 1.5rem auto;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  background: var(--light);
+  transition: all 0.3s ease;
+}
+
+.tabs-header {
+  display: flex;
+  justify-content: space-around;
+  border-bottom: 2px solid var(--dark-grey);
+  flex-wrap: wrap;
+}
+
+.tab-button {
+  flex: 1 1 auto;
+  padding: 1rem 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-family: var(--poppins);
+  color: var(--dark);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  text-align: center;
+  min-width: 120px;
+}
+
+.tab-button.active {
+  color: var(--blue);
+  font-weight: 600;
+}
+
+.tab-button.active::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 50%;
+  height: 3px;
+  background: var(--blue);
+  transform: translateX(-50%);
+  border-radius: 10px;
+}
+
+.tab-button:hover {
+  color: var(--blue);
+  background: rgba(3, 55, 113, 0.05);
+}
+
+.tabs-content {
+  padding: 1.5rem;
+  background: var(--light);
+}
+
+/* Estilos responsivos */
+@media (max-width: 768px) {
+  .tabs-container {
+    width: calc(100% - 1rem);
+    margin: 1rem auto;
+    border-radius: 8px;
+  }
+  
+  .tabs-header {
+    flex-direction: row;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 50px;
+  }
+  
+  .tabs-header::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .tab-button {
+    flex: none;
+    padding: 0.8rem 0.5rem;
+    font-size: 0.8rem;
+    min-width: 100px;
+    white-space: nowrap;
+  }
+  
+  .tabs-content {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .tab-button {
+    min-width: 80px;
+    font-size: 0.75rem;
+    padding: 0.7rem 0.3rem;
+  }
+  
+  .tab-button.active::after {
+    width: 70%;
+    height: 2px;
+  }
+}
+
+/* Estilos para el tema oscuro */
+body.dark .tabs-container {
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+body.dark .tab-button {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+body.dark .tab-button:hover {
+  color: var(--light-blue);
+  background: rgba(207, 232, 255, 0.1);
+}
+
+body.dark .tab-button.active {
+  color: var(--light-blue);
+}
+
+body.dark .tab-button.active::after {
+  background: var(--light-blue);
+}
+
+body.dark .tabs-header {
+  border-bottom-color: #334b75;
+}

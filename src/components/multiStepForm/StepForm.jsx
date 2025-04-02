@@ -1,36 +1,28 @@
 import React from "react";
 import { ButtonPrimary } from "../button/ButtonPrimary";
 
-const StepForm = ({ title, fields, onNext, onPrev, isLastStep }) => {
+const StepForm = ({ title, onNext, onPrev, isLastStep, isNextDisabled, children }) => {
+
   return (
     <div className="step-content">
       <h2>{title}</h2>
       <div className="fields-container">
-        {fields.map((field, index) => (
-          <input
-            key={index}
-            type={field.type}
-            placeholder={field.placeholder}
-            name={field.name}
-            required={field.required}
-          />
-        ))}
+        {children} 
       </div>
       <div className="buttons-container">
         {onPrev && (
-          <ButtonPrimary
-            buttonStyle="secondary"
-            onClick={onPrev}
-          >
+          <ButtonPrimary buttonStyle="secondary" onClick={onPrev}>
             Anterior
           </ButtonPrimary>
         )}
         <ButtonPrimary
-          buttonStyle="primary" 
+          buttonStyle="primary"
           onClick={onNext}
+          disabled={isNextDisabled}
         >
           {isLastStep ? "Finalizar" : "Siguiente"}
-        </ButtonPrimary>
+      </ButtonPrimary>
+
       </div>
     </div>
   );

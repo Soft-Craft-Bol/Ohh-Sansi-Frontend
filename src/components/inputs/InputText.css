@@ -6,7 +6,7 @@
     display: block;
     margin-bottom: 0.5rem;
     font-weight: 500;
-    color: #333; /* Reemplazo de --color-text-primary */
+    color: var(--blue); /* Reemplazo de --color-text-primary */
   }
   
   .input-component .required {
@@ -83,7 +83,7 @@
   
   /* Dark mode styles */
   body.dark .text-input {
-    background-color: #2d2d2d; /* Reemplazo de --sidebar-color */
+    background-color: #e2e2e2bf; /* Reemplazo de --sidebar-color */
     border-color: #999; /* Reemplazo de --color-text-quaternary */
   }
   
