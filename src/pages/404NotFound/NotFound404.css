@@ -1,0 +1,114 @@
+/* Estilos de la página 404 (NotFound404) */
+
+/* Contenedor principal de la página 404 */
+.notfound-404__container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 1.5rem;
+    overflow: hidden;
+    z-index: 1;
+  }
+  
+  /* Contenedor del contenido central */
+  .notfound-404__content {
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+    max-width: 472px;
+    text-align: center;
+  }
+  
+  /* Título de la página 404 */
+  .notfound-404__title {
+    margin-bottom: 2rem;
+    font-weight: 700;
+    font-size: 1.25rem;
+    color: #2d3748; /* Gray 800 */
+  }
+  
+  .notfound-404__title--dark {
+    color: rgba(255, 255, 255, 0.9); /* Dark mode */
+    font-size: 1.875rem;
+  }
+  
+  /* Imagenes de error */
+  .notfound-404__image {
+    display: block;
+    margin: 0 auto;
+  }
+  
+  .notfound-404__image--dark {
+    display: none;
+  }
+  
+  .notfound-404__image--light {
+    display: block;
+  }
+  
+  .notfound-404__image--dark-mode {
+    display: block;
+  }
+  
+  /* Texto de error */
+  .notfound-404__message {
+    margin-top: 2.5rem;
+    margin-bottom: 1.5rem;
+    font-size: 1rem;
+    color: #4a5568; /* Gray 700 */
+  }
+  
+  .notfound-404__message--dark {
+    color: #cbd5e0; /* Gray 400 (Dark Mode) */
+  }
+  
+  /* Enlace de regreso */
+  .notfound-404__link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.5rem;
+    border: 1px solid #e2e8f0; /* Gray 300 */
+    background-color: #ffffff;
+    padding: 0.875rem 1.25rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #4a5568; /* Gray 700 */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s, color 0.3s;
+  }
+  
+  .notfound-404__link:hover {
+    background-color: #f7fafc; /* Gray 50 */
+    color: #2d3748; /* Darker gray */
+  }
+  
+  .notfound-404__link--dark {
+    border-color: #2d3748; /* Gray 800 */
+    background-color: #2d3748; /* Dark background */
+    color: #cbd5e0; /* Light text */
+  }
+  
+  .notfound-404__link--dark:hover {
+    background-color: #edf2f7; /* Light gray */
+    color: #e2e8f0; /* Gray 300 */
+  }
+  
+  /* Footer */
+  .notfound-404__footer {
+    position: absolute;
+    font-size: 0.875rem;
+    text-align: center;
+    color: #4a5568; /* Gray 500 */
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  
+  .notfound-404__footer--dark {
+    color: #cbd5e0; /* Light gray (Dark mode) */
+  }
+  
