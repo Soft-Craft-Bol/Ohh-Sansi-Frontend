@@ -291,10 +291,10 @@ const CategoriesManagement = () => {
                       "Desconocida")
                     : "Cargando..."}
                 </div>
-                <div>
+                {/* <div>
                   <strong>Estado:</strong>
                   <span>{item?.status ? "Activo" : "Inactivo"}</span>
-                </div>
+                </div> */}
               </div>
             </div>
           ))}

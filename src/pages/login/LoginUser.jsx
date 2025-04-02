@@ -65,7 +65,7 @@ const LoginUser = () => {
           photo: result.data.photo,
         });
 
-        navigate('/home');
+        navigate('/form');
         window.location.reload();
       } else {
         setLoginError('Usuario o contraseña incorrectos.');

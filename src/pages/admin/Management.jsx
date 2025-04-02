@@ -3,7 +3,6 @@ import Tabs from "../../components/tabs/Tabs";
 import FormArea from "../../components/management/formArea/FormArea";
 import CategoriesManagement from "../../components/management/categories/CategoriesManagement";
 import InscriptionPeriods from "../../components/management/fechas/InscriptionPeriods";
-import CostsManagement from "../../components/management/costos/CostsManagement";
 import "./Management.css";
 
 const ManagementPage = () => {
@@ -11,7 +10,6 @@ const ManagementPage = () => {
     { name: "areas", label: "Áreas" },
     { name: "categories", label: "Categorías" },
     { name: "periods", label: "Períodos de Inscripción" },
-    { name: "costs", label: "Costos de Inscripción" },
   ];
 
   const renderTabContent = (activeTab) => {
@@ -22,8 +20,6 @@ const ManagementPage = () => {
         return <CategoriesManagement />;
       case "periods":
         return <InscriptionPeriods />;
-        case "costs":
-        return <CostsManagement />;
       default:
         return null;
     }

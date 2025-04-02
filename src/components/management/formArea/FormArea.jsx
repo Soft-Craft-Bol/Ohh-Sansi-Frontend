@@ -57,14 +57,18 @@ const FormArea = () => {
   const handleSubmit = async (values, { resetForm }) => {
     setIsSubmitting(true);
     try {
+      // Eliminar espacios innecesarios y poner en formato adecuado
+      const nombreLimpio = values.name.trim().replace(/\s+/g, ' ');
+      const nombreCapitalizado = nombreLimpio.charAt(0).toUpperCase() + nombreLimpio.slice(1).toLowerCase();
+      
       const areaData = {
-        nombreArea: values.name,
+        nombreArea: nombreCapitalizado,
         precioArea: parseFloat(values.precioArea),
-        nombreCortoArea: generateShortName(values.name),
-        descripcionArea: values.description,
+        nombreCortoArea: generateShortName(nombreCapitalizado),
+        descripcionArea: values.description.trim(),
         areaStatus: values.isActive
       };
-
+  
       if (editingId) {
         const response = await updateArea(editingId, areaData);
         setAreas(areas.map(area => 
@@ -78,19 +82,20 @@ const FormArea = () => {
         toast.success("Área registrada con éxito");
         fetchAreas();
       }
-      
+  
       resetForm();
       setEditingId(null);
     } catch (error) {
       console.error("Error submitting form:", error);
       const errorMessage = error.response?.data?.message || 
-                         error.message || 
-                         (editingId ? "Error al actualizar el área" : "Error al registrar el área");
+                           error.message || 
+                           (editingId ? "Error al actualizar el área" : "Error al registrar el área");
       toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
   };
+  
 
   const handleDeleteArea = async (id) => {
     if (window.confirm("¿Estás seguro de que deseas eliminar esta área?")) {
@@ -246,7 +251,7 @@ const FormArea = () => {
                     <p className="area-name">{area.nombreArea}</p>
                     <p className="area-desc">{area.descripcionArea}</p>
                     <p className="area-price">
-  Precio: {area.precioArea != null ? `$${Number(area.precioArea).toFixed(2)}` : 'No definido'}
+  Precio: {area.precioArea != null ? `Bs${Number(area.precioArea).toFixed(2)}` : 'No definido'}
 </p>
                     <p className="area-short">Código: {area.nombreCortoArea}</p>
                   </div>

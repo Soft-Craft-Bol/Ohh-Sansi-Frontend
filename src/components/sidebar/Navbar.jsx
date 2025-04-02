@@ -53,10 +53,10 @@ const Navbar = () => {
       <label htmlFor="switch-mode" className="switch-mode">
         {isDarkMode ? <FaSun /> : <FaMoon />} 
       </label>
-      <a href="#" className="notification">
+      {/* <a href="#" className="notification">
         <FaBell />
         <span className="num">8</span>
-      </a>
+      </a> */}
       <a href="#" className="profile">
         <img src={userCircle} alt="Profile" />
       </a>

@@ -40,12 +40,12 @@ const Sidebar = ({ isSidebarVisible }) => {
       </Link>
 
       <ul className="side-menu top">
-        <li className={activeMenu === "dashboard" ? "active" : ""}>
+        {/* <li className={activeMenu === "dashboard" ? "active" : ""}>
           <Link to="/home" className="link">
             <FaThLarge className="icon" />
             <span className="text">Página Principal</span>
           </Link>
-        </li>
+        </li> */}
         <li className={activeMenu === "analytics" ? "active" : ""}>
           <Link to="/form" className="link">
             <PiClipboardTextFill className="icon" />
@@ -58,7 +58,7 @@ const Sidebar = ({ isSidebarVisible }) => {
             <span className="text">Administracion de olimpiadas</span>
           </Link>
         </li>
-        <li className={activeMenu === "message" ? "active" : ""}>
+        {/* <li className={activeMenu === "message" ? "active" : ""}>
           <Link to="/registro-areas" className="link">
             <FaChartPie className="icon" />
             <span className="text">Reportes</span>
@@ -69,16 +69,16 @@ const Sidebar = ({ isSidebarVisible }) => {
             <FaQuestionCircle className="icon" />
             <span className="text">Ayuda</span>
           </Link>
-        </li>
+        </li> */}
       </ul>
 
       <ul className="side-menu">
-        <li>
+        {/* <li>
           <Link to="/inicio" className="link">
             <FaCog className="icon" />
             <span className="text">Configuraciones</span>
           </Link>
-        </li>
+        </li> */}
         <li>
           <button onClick={handleLogout} className="logout">
             <FaSignOutAlt className="icon" />

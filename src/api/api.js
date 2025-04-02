@@ -6,9 +6,9 @@ const api = axios.create({
     baseURL: baseURL,
     responseType: 'json',
     withCredentials: true, 
-    timeout: 60000,
+    timeout: 100000,
   });
-  
+  //comgit 
 
 
 api.interceptors.request.use((config) => {
