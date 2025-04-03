@@ -7,40 +7,40 @@
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.form-container h2, h3 {
+.form-container .form-container h2, h3 {
   text-align: center;
 }
 
-.form {
+.form-container .form {
   display: flex;
   flex-direction: column;
   gap: 15px;
 }
 
-.input {
+.form-container .input {
   width: 100%;
   padding: 8px;
   border: 1px solid #ccc;
   border-radius: 4px;
 }
 
-.error {
+.form-container .error {
   color: red;
   font-size: 12px;
 }
 
-.toggle-container {
+.form-container .toggle-container {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.toggle-info {
+.form-container .toggle-info {
   font-size: 12px;
   color: gray;
 }
 
-.submit-btn {
+.form-container .submit-btn {
   width: 100%;
   padding: 10px;
   background-color: #007bff;
@@ -50,15 +50,15 @@
   cursor: pointer;
 }
 
-.submit-btn:disabled {
+.form-container .submit-btn:disabled {
   background-color: #ccc;
 }
 
-.area-list {
+.form-container .area-list {
   margin-top: 20px;
 }
 
-.area-item {
+.form-container .area-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -67,25 +67,25 @@
   border-radius: 10px;
   margin-top: 10px;
 }
-.area-text {
+.form-container .area-text {
   flex: 1;
 }
-.area-actions {
+.form-container .area-actions {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-.area-name {
+.form-container .area-name {
   font-weight: bold;
 }
 
-.area-desc {
+.form-container .area-desc {
   font-size: 14px;
   color: gray;
 }
 
-.status {
+.form-container .form-container .status {
   padding: 6px 12px;
   border-radius: 8px;
   font-size: 14px;
@@ -93,29 +93,29 @@
   white-space: nowrap;
 }
 
-.active {
+.form-container  .active {
   background: #c3e6cb;
   color: #155724;
-}
+} 
 
-.inactive {
+.form-container .inactive {
   background: #f8d7da;
   color: #721c24;
 }
 
-.action-icon {
+.form-container .action-icon {
   cursor: pointer;
   font-size: 16px;
 }
 
-.action-icon.edit {
+.form-container .action-icon.edit {
   color: #333;
 }
 
-.action-icon.delete {
+.form-container .action-icon.delete {
   color: #dc3545;
 }
-.char-count {
+.form-container .char-count {
   font-size: 12px;
   color: gray;
   text-align: right;

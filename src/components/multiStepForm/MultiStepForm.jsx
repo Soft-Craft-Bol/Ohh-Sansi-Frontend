@@ -10,6 +10,10 @@ import "./MultiStepForm.css";
 const MultiStepForm = () => {
   const [currentStep, setCurrentStep] = useState(1);
 
+  const setIsStepValid = (isValid) => {
+    
+  }
+
   const steps = [
     { label: "Información básica" },
     { label: "Áreas de competencia" },
