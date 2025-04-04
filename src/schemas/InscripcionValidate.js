@@ -32,9 +32,7 @@ const inscripcionValidate = Yup.object().shape({
     .required('El teléfono es requerido')
     .matches(/^[0-9]+$/, 'El teléfono debe contener solo números')
     .test('no-espacios', 'El nombre no puede contener solo espacios', (value) => value && value.trim().length > 0)
-
-    .max(8, 'El teléfono no puede tener más de 10 dígitos')
-    .max(15, 'El teléfono no puede tener más de 15 dígitos'),
+    .max(8, 'El teléfono no puede tener más de 8 dígitos'),
   documento: Yup.string()
     .required('El documento de identidad es requerido')
     .test('no-espacios', 'El nombre no puede contener solo espacios', (value) => value && value.trim().length > 0)

@@ -4,15 +4,18 @@ import FormArea from "../../components/management/formArea/FormArea";
 import CategoriesManagement from "../../components/management/categories/CategoriesManagement";
 import InscriptionPeriods from "../../components/management/fechas/InscriptionPeriods";
 import CostsManagement from "../../components/management/costos/CostsManagement";
+import GestionPeriod from "../../components/management/gestion/GestionPeriod";
 import "./Management.css";
 
 const ManagementPage = () => {
-  const tabList = [
-    { name: "areas", label: "Áreas" },
-    { name: "categories", label: "Categorías" },
-    { name: "periods", label: "Períodos de Inscripción" },
-    { name: "costs", label: "Costos de Inscripción" },
-  ];
+  const tabs = [
+    { id: "periods", label: "⏳ Periodos" },        
+    { id: "categories", label: "🗂 Categorías" },  
+    { id: "areas", label: "📍 Áreas" },           
+    { id: "costs", label: "💵 Costos" },          
+    { id: "payments", label: "💳 Pagos" }        
+];
+
 
   const renderTabContent = (activeTab) => {
     switch (activeTab) {
@@ -21,9 +24,9 @@ const ManagementPage = () => {
       case "categories":
         return <CategoriesManagement />;
       case "periods":
-        return <InscriptionPeriods />;
+        return <GestionPeriod />;
         case "costs":
-        return <CostsManagement />;
+          return <CostsManagement />;
       default:
         return null;
     }
@@ -35,7 +38,8 @@ const ManagementPage = () => {
         <h1>Administración</h1>
         <p>Gestiona las areas, niveles/categorías, fechas de inscripcion y costos de inscripción</p>
       </header>
-      <Tabs tabList={tabList} renderTabContent={renderTabContent} />
+      <Tabs tabs={tabs} renderTabContent={renderTabContent} />
+
     </div>
   );
 };

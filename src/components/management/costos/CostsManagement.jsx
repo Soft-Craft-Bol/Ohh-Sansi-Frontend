@@ -1,10 +1,11 @@
 import React, { useState } from "react";
-import { useFormik } from "formik";
+import { Form, useFormik } from "formik";
 import * as Yup from "yup";
 import { toast } from "sonner";
-import Table from "../../table/Table"; // Asegúrate de que este componente esté bien configurado
+import InputText from "../../inputs/InputText";
 import "./CostsManagement.css";
 import { FaEdit } from "react-icons/fa";
+import SelectInput from "../../selected/SelectInput";
 
 const costFormSchema = Yup.object({
   areaId: Yup.number().positive("Seleccione un área").required("Área es obligatoria"),
@@ -83,7 +84,7 @@ const CostsManagement = () => {
     ...cost,
     actions: (
       <button onClick={() => handleEdit(cost)} className="btn-edit">
-        <FaEdit /> 
+        <FaEdit />
       </button>
     ),
   }));
@@ -105,70 +106,70 @@ const CostsManagement = () => {
         </button>
       </div>
 
-      {activeTab === "register" && (
-        <div className="costs-card">
-          <div className="costs-card-header">
-            <h2>Gestión de Costos por Área</h2>
-            <p>Administre los costos de inscripción para cada área</p>
-          </div>
-          <div className="costs-card-content">
-            <form onSubmit={formik.handleSubmit} className="costs-form">
-              {/* Formulario de creación o edición */}
-              <div className="costs-form-group">
-                <label htmlFor="areaId">Área de competencia*</label>
-                <select
-                  id="areaId"
-                  name="areaId"
-                  value={formik.values.areaId}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
+      <Formik
+        initialValues={initialValues}
+        validationSchema={areaValidationSchema}
+        onSubmit={handleSubmit}
+        enableReinitialize
+      >
+        {(formik) => (
+          <Form className="form">
+            <div>
+              <label>Descripción</label>
+              <textarea
+                name="description"
+                placeholder="Breve descripción del área"
+                className="input"
+                maxLength={500}
+                required
+                {...formik.getFieldProps("description")}
+              />
+              <p className="char-count">{formik.values.description.length}/500</p>
+              {formik.touched.description && formik.errors.description && (
+                <p className="error">{formik.errors.description}</p>
+              )}
+            </div>
+
+            <div className="toggle-container">
+              <label>
+                Área activa
+                <p className="toggle-info">
+                  Desactivar si no está disponible para inscripción
+                </p>
+              </label>
+              <input
+                type="checkbox"
+                name="isActive"
+                checked={formik.values.isActive}
+                onChange={formik.handleChange}
+              />
+            </div>
+
+            <div className="form-actions">
+              <ButtonPrimary
+                type="submit"
+                buttonStyle="primary"
+                disabled={!formik.isValid || isSubmitting}
+              >
+                {editingId ? 'Actualizar área' : 'Añadir área'}
+              </ButtonPrimary>
+              
+              {editingId && (
+                <ButtonPrimary
+                  type="button"
+                  buttonStyle="secondary"
+                  onClick={() => {
+                    formik.resetForm();
+                    setEditingId(null);
+                  }}
                 >
-                  <option value="0">Seleccione un área</option>
-                  <option value="1">Área 1</option>
-                  <option value="2">Área 2</option>
-                </select>
-                {formik.touched.areaId && formik.errors.areaId && (
-                  <div className="costs-error">{formik.errors.areaId}</div>
-                )}
-              </div>
-
-              <div className="costs-form-group">
-                <label htmlFor="cost">Costo (en bolivianos)*</label>
-                <input
-                  type="number"
-                  id="cost"
-                  name="cost"
-                  placeholder="Ej: 50 para Bs 50.00"
-                  value={formik.values.cost}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                />
-                {formik.touched.cost && formik.errors.cost && (
-                  <div className="costs-error">{formik.errors.cost}</div>
-                )}
-              </div>
-
-
-              <div className="costs-form-actions">
-                {editingId !== null && (
-                  <button type="button" onClick={handleCancelEdit} className="btn-outline">
-                    Cancelar
-                  </button>
-                )}
-                <button type="submit" className="costs-btn-primary">
-                  {editingId !== null ? "Actualizar costo" : "Añadir costo"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {activeTab === "table" && (
-        <div className="costs-table">
-          <Table data={data} columns={columns} />
-        </div>
-      )}
+                  Cancelar edición
+                </ButtonPrimary>
+              )}
+            </div>
+          </Form>
+        )}
+      </Formik>
     </div>
   );
 };

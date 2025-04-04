@@ -157,22 +157,6 @@ const FormArea = () => {
                 <p className="error">{formik.errors.name}</p>
               )} */}
             </div>
-
-            <div>
-              <InputText
-                label="Precio del área"
-                name="precioArea"
-                type="number"
-                required
-                placeholder="Ej: 5.00"
-                step="0.01"
-                min="0"
-              />
-             {/*  {formik.touched.precioArea && formik.errors.precioArea && (
-                <p className="error">{formik.errors.precioArea}</p>
-              )} */}
-            </div>
-
             <div>
               <label>Descripción</label>
               <textarea

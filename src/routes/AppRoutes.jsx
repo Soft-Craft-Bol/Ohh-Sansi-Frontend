@@ -11,7 +11,6 @@ import { NotFound404 } from '../pages/404NotFound/NotFound404';
 
 
 const LoginUser = lazy(() => import('../pages/login/LoginUser'));
-//const Formulario = lazy(() => import('../components/formulario/Formulario'));
 
 const AppRoutes = () => {
   return (
@@ -19,73 +18,35 @@ const AppRoutes = () => {
       {/* Ruta pública */}
       <Route path="/login" element={<LoginUser />} />
       <Route path="/*" element={<NotFound404/>} />
-      {/*<Route path="/formulario" element= {<Layout><Formulario /></Layout>} />*/}
 
       {/* Ruta raíz protegida */}
-      <Route
-        path="/"
-        element={
-          <PrivateRoute>
-            <MainContent />
-          </PrivateRoute>
-        }
-      />
+      <Route path="/" element={<PrivateRoute><Layout><MainContent /></Layout></PrivateRoute>}/>
+
 
       {/* Otras rutas protegidas */}
       <Route
         path="/home"
-        element={
-          <PrivateRoute>
-            <Layout>
-              <MainContent />
-            </Layout>
-          </PrivateRoute>
-        }
+        element={<PrivateRoute><Layout><MainContent /></Layout></PrivateRoute>}
       />
       <Route
         path="/inicio"
-        element={
-          <PrivateRoute>
-            <Layout>
-              <Inicio />
-            </Layout>
-          </PrivateRoute>
-        }
+        element={<PrivateRoute><Layout><Inicio /></Layout></PrivateRoute>}
       />
 
       <Route
         path="/form"
-        element={
-          <PrivateRoute>
-            <Layout>
-              <MultiStepForm />
-            </Layout>
-          </PrivateRoute>
-        }
+        element={<PrivateRoute><Layout><MultiStepForm /></Layout></PrivateRoute>}
       />
 
       <Route
         path="/management"
-        element={
-          <PrivateRoute>
-            <Layout>
-              <ManagementPage />
-            </Layout>
-          </PrivateRoute>
-        }
+        element={<PrivateRoute><Layout><ManagementPage /></Layout></PrivateRoute>}
       />
 
     <Route
       path="/registro-materias"
-      element={
-        <PrivateRoute>
-          <Layout>
-            <FormArea />
-          </Layout>
-        </PrivateRoute>
-      }
+      element={<PrivateRoute><Layout><FormArea /></Layout></PrivateRoute>}
     />
-
     </Routes>
   );
 };

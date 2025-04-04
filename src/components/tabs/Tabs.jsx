@@ -1,18 +1,22 @@
 import React, { useState } from "react";
-import PropTypes from "prop-types";
 import "./Tabs.css";
 
-const Tabs = ({ tabList, renderTabContent }) => {
-  const [activeTab, setActiveTab] = useState(tabList[0]?.name);
+const Tabs = ({ tabs, onTabChange, renderTabContent }) => {
+  const [activeTab, setActiveTab] = useState(tabs[0].id);
+
+  const handleTabClick = (tabId) => {
+    setActiveTab(tabId);
+    onTabChange && onTabChange(tabId); // Notify parent component
+  };
 
   return (
     <div className="tabs-container">
       <div className="tabs-header">
-        {tabList.map((tab) => (
+        {tabs.map((tab) => (
           <button
-            key={tab.name}
-            className={`tab-button ${activeTab === tab.name ? "active" : ""}`}
-            onClick={() => setActiveTab(tab.name)}
+            key={tab.id}
+            className={`tab-button ${activeTab === tab.id ? "active" : ""}`}
+            onClick={() => handleTabClick(tab.id)}
           >
             {tab.label}
           </button>
@@ -24,11 +28,6 @@ const Tabs = ({ tabList, renderTabContent }) => {
       </div>
     </div>
   );
-};
-
-Tabs.propTypes = {
-  tabList: PropTypes.array.isRequired,
-  renderTabContent: PropTypes.func.isRequired,
 };
 
 export default Tabs;
