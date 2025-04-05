@@ -216,7 +216,6 @@ const Step1Form = ({ formData, updateFormData, onNext}) => {
                       });
                     }
                   }}
-                  
                 >
                   Siguiente
                 </ButtonPrimary>
