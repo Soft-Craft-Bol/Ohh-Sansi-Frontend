@@ -19,16 +19,19 @@ li {
 	--lato: 'Lato', sans-serif;
 
 	--light: #F9F9F9;
+	--lighter: #ffffff;
 	--blue: #033771;
 	--light-blue: #CFE8FF;
-  --dark-grey: #E2E2E2;
-  --red: #EA0613;
-  --yellow: #C8D444;
-	--grey: #eee; 
+	--light-blue2: #F4F9FF;
+	--dark-grey: #E2E2E2;
+	--red: #EA0613;
+	--yellow: #C8D444;
+	--grey: #eee;
 	--light-yellow: #FFF2C6;
-  --dark: #342E37;/* DES */
-	--orange: #FD7238;/* DES */
-	--light-orange: #FFE0D3;/* DES */
+	--dark: #342E37;
+	--orange: #FD7238;
+	--light-orange: #FFE0D3;
+	--border-gray: rgb(0, 0, 0, 20%);
 }
 
 html {
@@ -36,8 +39,8 @@ html {
 }
 
 body.dark {
-	--light: #1B2431;
-	--grey: #273142;
+	--light: #13305a;
+	--grey: #334b75;
 	--dark: #6D6E70;
 }
 
@@ -46,5 +49,6 @@ body {
 	overflow-x: hidden;
 }
 
-
-
+main{
+	padding: 0 0 0 0;
+}

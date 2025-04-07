@@ -1,0 +1,88 @@
+.management-page {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--grey);
+  transition: background-color 0.3s ease;
+}
+
+.management-header {
+  padding: 1.5rem 1rem;
+  background: var(--blue);
+  color: var(--light);
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  font-family: var(--poppins);
+}
+
+.management-header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.management-header p {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  opacity: 0.9;
+  font-family: var(--lato);
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.tabs-container-wrapper {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+}
+
+.management-page {
+  transition: background-color 0.3s ease;
+}
+.management-header {
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Estilos responsivos */
+@media (max-width: 768px) {
+  .management-header {
+    padding: 1.2rem 0.8rem;
+  }
+  
+  .management-header h1 {
+    font-size: 1.3rem;
+  }
+  
+  .management-header p {
+    font-size: 0.85rem;
+    padding: 0 0.5rem;
+  }
+  
+  .tabs-container-wrapper {
+    padding: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .management-header {
+    padding: 1rem 0.5rem;
+  }
+  
+  .management-header h1 {
+    font-size: 1.2rem;
+  }
+  
+  .management-header p {
+    font-size: 0.8rem;
+    margin-top: 0.3rem;
+  }
+  
+  .tabs-container-wrapper {
+    padding: 0.5rem;
+  }
+}
+

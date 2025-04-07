@@ -1,13 +1,25 @@
-import React from 'react';
-import { Navigate } from 'react-router-dom';
+import React , {useEffect, useState}from 'react';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from './AuthProvider';
 
 const PrivateRoute = ({ children }) => {
-    const { isAuthenticated } = useAuth();
-    console.log('isAuthenticated:', isAuthenticated); 
+    const { isAuthenticated, tokenValid } = useAuth();
+    const location = useLocation();
+
+    const [isLoading, setIsLoading] = useState(true);
+  
+    useEffect(() => {
+      if (isAuthenticated || !tokenValid) {
+        setIsLoading(false);  
+      }
+    }, [isAuthenticated, tokenValid]);
+  
+    if (isLoading) {
+      return <div>Loading...</div>;  
+    }
   
     if (!isAuthenticated) {
-      return <Navigate to="/login" />;
+      return <Navigate to="/login" state={{ from: location }} replace />;
     }
   
     return children;

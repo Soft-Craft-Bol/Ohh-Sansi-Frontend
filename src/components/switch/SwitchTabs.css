@@ -1,0 +1,27 @@
+.switch-container {
+    display: flex;
+    background: var(--grey);
+    padding: 4px;
+    border-radius: 8px;
+    width: fit-content;
+  }
+  
+  .switch-tab {
+    padding: 8px 16px;
+    border: none;
+    background: transparent;
+    font-family: var(--poppins);
+    font-size: 14px;
+    color: #6D6E70;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+  }
+  
+  .switch-tab.active {
+    background: var(--light);
+    color: black;
+    font-weight: bold;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+  }
+  

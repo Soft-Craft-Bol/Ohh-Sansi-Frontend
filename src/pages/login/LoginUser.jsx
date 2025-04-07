@@ -6,7 +6,7 @@ import { loginUser } from '../../api/api';
 import loadImage from '../../assets/ImagesApp';
 import { validationSchema } from '../../schemas/LoginValidate';
 import { saveToken, saveUser } from '../../utils/authFuntions';
-import { parseJwt } from '../../utils/Auth';
+import { parseJwt } from '../../utils/authJson';
 import InputText from '../../components/inputs/InputText';
 import { ButtonPrimary } from '../../components/button/ButtonPrimary';
 import { useAuth } from '../../context/AuthProvider';
@@ -65,7 +65,7 @@ const LoginUser = () => {
           photo: result.data.photo,
         });
 
-        navigate('/home');
+        navigate('/form');
         window.location.reload();
       } else {
         setLoginError('Usuario o contraseña incorrectos.');

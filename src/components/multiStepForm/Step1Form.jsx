@@ -1,205 +1,219 @@
-import React, { useState } from "react";
-import "./Step1Form.css";
+import React, { useEffect } from "react";
+import { Formik, Form } from "formik";
+import * as Yup from "yup";
+import { Toaster, toast } from "sonner";
+import InputText from "../inputs/InputText";
+import { ButtonPrimary } from "../button/ButtonPrimary";
+import SelectInput from "../selected/SelectInput";
 import useFetchNivelesEscolares from "../../hooks/NivelEscolar/useFetchNivelesEscolares";
 import useFetchDepartamentos from "../../hooks/departamento/useFetchDepartamentos";
 import useFetchMunicipios from "../../hooks/departamento/useFetchMunicipios";
 import useFetchColegio from "../../hooks/Colegio/useFetchColegio";
+import inscripcionSchema from "../../schemas/InscripcionValidate";
+import "./Step1Form.css";
 
-const Step1Form = ({ setIsStepValid }) => {
-  const [formData, setFormData] = useState({
-    nombre: "",
-    apellido: "",
-    documento: "",
-    fechaNacimiento: "",
-    departamento: "",
-    municipio: "",
-    institucion: "",
-    grado: "",
-    email: "",
-    telefono: "",
-  });
+const Step1Form = ({ formData, updateFormData, onNext}) => {
+  const { niveles, loading: loadingNiveles } = useFetchNivelesEscolares();
+  const { departamentos, loading: loadingDepartamentos } = useFetchDepartamentos();
+  const [selectedDepartamento, setSelectedDepartamento] = React.useState(formData.participante.idDepartamento || "");
+  const { municipios, loading: loadingMunicipios } = useFetchMunicipios(selectedDepartamento);
+  const [selectedMunicipio, setSelectedMunicipio] = React.useState(formData.participante.idMunicipio || "");
+  const { colegios, loading: loadingColegios } = useFetchColegio(selectedMunicipio);
 
-  const { niveles, loading } = useFetchNivelesEscolares();
-  const { departamentos, loadingDepartamentos } = useFetchDepartamentos();
-  const [selectedDepartamento, setSelectedDepartamento] = useState(null);
-  const { municipios, loadingMunicipios } = useFetchMunicipios(selectedDepartamento);
-  const [ selectedMunicipio, setSelectedMunicipio] = useState(null);
-  const { colegios, loadingColegios } = useFetchColegio(selectedMunicipio);
-
-  
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    const updatedData = { ...formData, [name]: value }; // ← esto es clave
-    setFormData(updatedData);
-  
-    if (name === "departamento") {
-      setSelectedDepartamento(value);
-    }
-    if (name === "municipio") {
-      setSelectedMunicipio(value);
-    }
-  
-    const camposObligatorios = ["nombre", "apellido", "colegio", "grado"];
-    const esValido = camposObligatorios.every((campo) => updatedData[campo]?.trim() !== "");
-    setIsStepValid(esValido); // ← activa el botón "Siguiente"
+  const initialFormData = {
+    nombre: formData.participante?.nombreParticipante || "",
+    apellido: `${formData.participante?.apellidoPaterno || ""} ${formData.participante?.apellidoMaterno || ""}`.trim(),
+    documento: formData.participante?.carnetIdentidadParticipante || "",
+    fechaNacimiento: formData.participante?.fechaNacimiento || "",
+    departamento: formData.participante?.idDepartamento?.toString() || "",
+    municipio: formData.participante?.idMunicipio?.toString() || "",
+    institucion: formData.participante?.idColegio?.toString() || "",
+    grado: formData.participante?.idNivelGradoEscolar?.toString() || "",
+    email: formData.participante?.correoElectronicoParticipante || "",
+    telefono: ""
   };
-  
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("Datos del formulario:", formData);
-    alert("Formulario enviado correctamente");
+  const handleSubmit = (values) => {
+    localStorage.setItem("step1FormData", JSON.stringify(values));
+
+    updateFormData({
+      participante: {
+        ...formData?.participante,
+        nombreParticipante: values.nombre,
+        apellidoPaterno: values.apellido.split(' ')[0] || '',
+        apellidoMaterno: values.apellido.split(' ')[1] || '',
+        carnetIdentidadParticipante: values.documento,
+        fechaNacimiento: values.fechaNacimiento,
+        idDepartamento: values.departamento ? parseInt(values.departamento) : null,
+        idMunicipio: values.municipio ? parseInt(values.municipio) : null,
+        idColegio: values.institucion ? parseInt(values.institucion) : null,
+        idNivelGradoEscolar: values.grado ? parseInt(values.grado) : null,
+        correoElectronicoParticipante: values.email || null,
+        telefonoParticipante: values.telefono || null,
+      },
+    });
+
+    // Toaster
+    toast.success("Datos guardados correctamente. Pasando al siguiente paso...");
+
+    onNext();
   };
+
 
   return (
-    <div className="step1-container">
-      <span className="step1-description">
-        Ingrese los datos del participante (Paso 1 de 4)
-      </span>
-      <form onSubmit={handleSubmit}>
-        <div className="step1-grid">
-          <div className="step1-card">
-            <label>Nombre*</label>
-            <input
-              type="text"
-              name="nombre"
-              value={formData.nombre}
-              onChange={handleChange}
-              placeholder="Nombre del participante"
-            />
-          </div>
-          <div className="step1-card">
-            <label>Apellido*</label>
-            <input
-              type="text"
-              name="apellido"
-              value={formData.apellido}
-              onChange={handleChange}
-              placeholder="Apellido del participante"
-            />
-          </div>
-          <div className="step1-card">
-            <label>Documento de identidad</label>
-            <input
-              type="text"
-              name="documento"
-              value={formData.documento}
-              onChange={handleChange}
-              placeholder="Número de identificación"
-            />
-          </div>
-          <div className="step1-card">
-            <label>Fecha de nacimiento</label>
-            <input
-              type="date"
-              name="fechaNacimiento"
-              value={formData.fechaNacimiento}
-              onChange={handleChange}
-            />
-          </div>
-          <div className="step1-card">
-            <label>Departamento</label>
-            <select className="select" name="departamento" value={formData.departamento} onChange={handleChange}>
-              <option value="">Seleccione un departamento</option>
-              {loading ? (
-                <option>Cargando...</option>
-              ) : departamentos.length === 0 ? (
-                <option>No se encontraron departamentos</option>
-              ) : (
-                departamentos.map((departamento) => (
-                  <option key={departamento.idDepartamento} value={departamento.idDepartamento} >
-                    {departamento.nombreDepartamento}
-                  </option>
-                ))
-              )}
-            </select>
-          </div>
-          <div className="step1-card">
-            <label>Municipio</label>
-            <select
-              className="select"
-              name="municipio"
-              value={formData.municipio}
-              onChange={handleChange}
-            >
-              <option value="">Seleccione un municipio</option>
-              {loadingMunicipios ? (
-                <option>Cargando...</option>
-              ) : municipios.length === 0 ? (
-                <option>No se encontraron municipios</option>
-              ) : (
-                municipios.map((municipio) => (
-                  <option key={municipio.idMunicipio} value={municipio.idMunicipio}>
-                    {municipio.nombreMunicipio}
-                  </option>
-                ))
-              )}
-            </select>
-          </div>
-          <div className="step1-card">
-            <label>Colegio/Institución*</label>
-            <select
-              className="select"
-              name="colegio"
-              value={formData.colegio}
-              onChange={handleChange}
-            >
-              <option value="">Seleccione un colegio</option>
-              {loadingColegios ? (
-                <option>Cargando...</option>
-              ) : colegios.length === 0 ? (
-                <option>No se encontraron colegios</option>
-              ) : (
-                colegios.map((colegio) => (
-                  <option key={colegio.idColegio} value={colegio.idColegio}>
-                    {colegio.nombreColegio}-----{colegio.direccion}
-                  </option>
-                ))
-              )}
-            </select>
-          </div>
-          <div className="step1-card">
-            <label>Grado/Nivel*</label>
-            <select className="select" name="grado" value={formData.grado} onChange={handleChange}>
-              <option value="">Seleccione un grado</option>
-              {loading ? (
-                <option>Cargando...</option>
-              ) : niveles.length === 0 ? (
-                <option>No se encontraron niveles</option>
-              ) : (
-                niveles.map((nivel) => (
-                  <option key={nivel.idNivel} value={nivel.codigoNivel}>
-                    {nivel.nombreNivelEscolar}
-                  </option>
-                ))
-              )}
-            </select>
-          </div>
+    <Formik
+      initialValues={initialFormData}
+      validationSchema={inscripcionSchema}
+      onSubmit={handleSubmit}
+      validateOnBlur={true}
+      validateOnChange={true}
+    >
+      {({ values, setFieldValue, isValid, isSubmitting }) => (
+        <Form className="step1-container">
+          <span className="step1-description">
+            Ingrese los datos del participante (Paso 1 de 5)
+          </span>
 
-          <div className="step1-card">
-            <label>Correo electrónico</label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="correo@ejemplo.com"
-            />
-          </div>
-          <div className="step1-card">
-            <label>Teléfono</label>
-            <input
-              type="tel"
-              name="telefono"
-              value={formData.telefono}
-              onChange={handleChange}
-              placeholder="Número de contacto"
-            />
-          </div>
+          <div className="step1-grid">
+            {/* Campos del formulario */}
+            <div className="field-container">
+              <InputText
+                label="Nombre"
+                name="nombre"
+                placeholder="Nombre del participante"
+                required
+              />
+            </div>
 
-        </div>
-      </form>
-    </div>
+            <div className="field-container">
+              <InputText
+                label="Apellido"
+                name="apellido"
+                placeholder="Apellido del participante"
+                required
+              />
+            </div>
+
+            <div className="field-container">
+              <InputText
+                label="Documento de identidad"
+                name="documento"
+                placeholder="Número de identificación"
+                required
+              />
+            </div>
+
+            <div className="field-container">
+              <InputText
+                label="Fecha de nacimiento"
+                name="fechaNacimiento"
+                type="date"
+                required
+              />
+            </div>
+
+            <div className="field-container">
+              <SelectInput
+                label="Departamento"
+                name="departamento"
+                options={departamentos.map(d => ({
+                  value: d.idDepartamento.toString(),
+                  label: d.nombreDepartamento
+                }))}
+                loading={loadingDepartamentos}
+                emptyMessage="No se encontraron departamentos"
+                onChange={(e) => {
+                  setFieldValue("departamento", e.target.value);
+                  setFieldValue("municipio", "");
+                  setSelectedDepartamento(e.target.value);
+                }}
+                required
+              />
+            </div>
+
+            <div className="field-container">
+              <SelectInput
+                label="Municipio"
+                name="municipio"
+                options={municipios.map(m => ({
+                  value: m.idMunicipio.toString(),
+                  label: m.nombreMunicipio
+                }))}
+                loading={loadingMunicipios}
+                emptyMessage="No se encontraron municipios"
+                disabled={!values.departamento}
+                onChange={(e) => {
+                  setFieldValue("municipio", e.target.value);
+                  setSelectedMunicipio(e.target.value);
+                }}
+                required
+              />
+            </div>
+
+            <div className="field-container">
+              <SelectInput
+                label="Colegio/Institución"
+                name="institucion"
+                options={colegios.map(c => ({
+                  value: c.idColegio.toString(),
+                  label: `${c.nombreColegio} - ${c.direccion}`
+                }))}
+                loading={loadingColegios}
+                emptyMessage="No se encontraron colegios"
+                disabled={!values.municipio}
+                required
+              />
+            </div>
+
+            <div className="field-container">
+              <SelectInput
+                label="Grado/Nivel"
+                name="grado"
+                options={niveles.map(n => ({
+                  value: n.idNivel.toString(),
+                  label: n.nombreNivelEscolar
+                }))}
+                loading={loadingNiveles}
+                emptyMessage="No se encontraron niveles"
+                required
+              />
+            </div>
+
+            <div className="field-container">
+              <InputText
+                label="Correo electrónico"
+                name="email"
+                type="email"
+                placeholder="correo@ejemplo.com"
+                required
+              />
+            </div>
+
+            <div className="field-container">
+              <InputText
+                label="Teléfono"
+                name="telefono"
+                type="tel"
+                placeholder="Número de contacto"
+                required
+              />
+            </div>
+
+            <div className="field-container full-width">
+              <div className="step1-actions">
+                <ButtonPrimary
+                  type="submit"
+                  buttonStyle="primary"
+                  disabled={!isValid || isSubmitting}
+                >
+                  Siguiente
+                </ButtonPrimary>
+              </div>
+            </div>
+          </div>
+        </Form>
+      )}
+    </Formik>
   );
 };
 

@@ -1,54 +1,65 @@
 .step1-container {
-    padding: 1.5rem;
-    max-width: 100%;
-    font-family: var(--poppins);
-    
+  padding: 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  font-family: var(--poppins);
+  transition: all 0.3s ease;
+  border-radius: 12px;
+}
+
+.step1-description {
+  color: var(--blue);
+  margin-bottom: 1.5rem;
+  font-size: 1rem;
+  display: block;
+  font-family: var(--lato);
+}
+
+.step1-actions{
+  display: flex;
+  justify-content: end;
+  flex-wrap: wrap;
+}
+
+.step1-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+}
+
+.field-container {
+  grid-column: span 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.field-container.full-width {
+  grid-column: 1 / -1;
+}
+
+/* Estilos responsivos */
+@media (max-width: 768px) {
+  .step1-grid {
+    grid-template-columns: 1fr;
   }
   
-  .step1-description {
-    color: var(--blue);
-    margin-bottom: 1rem;
-    font-size: 0.9rem;
+  .field-container {
+    grid-column: span 1 !important;
+  }
+}
+
+/* Ajustes para pantallas pequeñas */
+@media (max-width: 480px) {
+  .step1-container {
+    padding: 1rem;
   }
   
   .step1-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr)); /* 2 columnas */
     gap: 1rem;
   }
-  
-  .step1-card {
-    border: 1px solid var(--dark-grey);
-    border-radius: 0.5rem;
-    padding: 1rem;
-    line-height: 1.5em;
-    background-color: var(--light);
+
+  .step1-actions{
+    justify-content: center;
   }
-  
-  .step1-card label {
-    font-weight: 600;
-    color: var(--blue);
-    display: block;
-    margin-bottom: 0.5rem;
-  }
-  
-  .step1-card input {
-    width: 100%;
-    padding: 0.5rem;
-    border: 1px solid var(--dark-grey);
-    border-radius: 0.25rem;
-    font-size: 0.875rem;
-  }
-  
-  .step1-card input:focus {
-    border-color: var(--blue);
-    outline: none;
-  }
-  
-  .select {
-    width: 100%;
-    padding: 0.5rem;
-    border: 1px solid var(--dark-grey);
-    border-radius: 0.25rem;
-    font-size: 0.875rem;
-  }
+}

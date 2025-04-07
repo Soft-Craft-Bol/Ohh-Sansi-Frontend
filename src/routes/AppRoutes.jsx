@@ -4,8 +4,11 @@ import PrivateRoute from '../context/PrivateRoute';
 import MainContent from '../components/sidebar/Main';
 import Inicio from '../pages/home/Inicio';
 import Layout from '../Layout/Layout';
+import OrdenDePago from '../pages/ordenDePago/OrdenDePago';
 import MultiStepForm from '../components/multiStepForm/MultiStepForm';
-import FormArea from "../components/forms/formArea/FormArea";
+import ManagementPage from '../pages/admin/Management';
+import FormArea from "../components/management/formArea/FormArea";
+import { NotFound404 } from '../pages/404NotFound/NotFound404';
 
 
 const LoginUser = lazy(() => import('../pages/login/LoginUser'));
@@ -16,6 +19,7 @@ const AppRoutes = () => {
     <Routes>
       {/* Ruta pública */}
       <Route path="/login" element={<LoginUser />} />
+      <Route path="/*" element={<NotFound404/>} />
       {/*<Route path="/formulario" element= {<Layout><Formulario /></Layout>} />*/}
 
       {/* Ruta raíz protegida */}
@@ -33,29 +37,40 @@ const AppRoutes = () => {
         path="/home"
         element={
           <PrivateRoute>
-          <Layout>
-            <MainContent/>
+            <Layout>
+              <MainContent />
             </Layout>
           </PrivateRoute>
         }
       />
-       <Route
+      <Route
         path="/inicio"
         element={
           <PrivateRoute>
-          <Layout>
-            <Inicio/>
+            <Layout>
+              <Inicio />
             </Layout>
           </PrivateRoute>
         }
       />
 
-    <Route
+      <Route
         path="/form"
         element={
           <PrivateRoute>
-          <Layout>
-            <MultiStepForm/>
+            <Layout>
+              <MultiStepForm />
+            </Layout>
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/management"
+        element={
+          <PrivateRoute>
+            <Layout>
+              <ManagementPage />
             </Layout>
           </PrivateRoute>
         }
@@ -71,10 +86,21 @@ const AppRoutes = () => {
         </PrivateRoute>
       }
     />
+    <Route
+      path="/orden-de-pago"
+      element={
+        <PrivateRoute>
+          <Layout>
+            <OrdenDePago />
+          </Layout>
+        </PrivateRoute>
+      }
+    />
+
+      {/* Ruta de error 404 */}
+      <Route path="*" element={<NotFound404 />} />
 
     </Routes>
-    
-    
   );
 };
 

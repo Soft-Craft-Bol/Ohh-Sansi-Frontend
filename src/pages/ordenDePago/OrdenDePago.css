@@ -1,0 +1,119 @@
+@import '../../App.css';
+.orden-de-pago {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--grey);
+  transition: background-color 0.3s ease;
+  padding: 0px;
+  padding-bottom: 100px;
+}
+.top-container{
+  margin-top: 3vh;
+  margin-right: 8vh;
+  margin-left: 8vh;
+}
+.buscador-codigo {
+  color: #002c5f;
+  margin-top: 20px;
+}
+
+.input-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 0;
+  background-color: var(--lighter);
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--grey);
+  max-width: 300px;
+}
+
+.input-container input {
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 14px;
+  height: 1.5rem;
+  flex: 1;
+}
+
+.search-icon {
+  color: var(--blue);
+  font-size: 16px;
+  cursor: pointer;
+}
+.cont-cod-int{
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+}
+.code-text{
+  font-size: 1.3rem;
+  margin-right: 0.5rem;
+}
+.codigo-introducido {
+  font-size: 1.4rem;
+  font-style: italic;
+  font-weight: bolder;
+  color: var(--blue);
+}
+.info-container {
+  margin: 20px 8vh;
+  display: flex;
+  justify-content: center;
+}
+
+.info-box {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  background-color: var(--light-blue2);
+  border: 1px solid var(--border-gray);
+  border-radius: 10px;
+  padding: 20px 30px;
+  color: var(--blue);
+}
+
+.resumen,
+.pago {
+  flex: 1;
+}
+
+.resumen h3,
+.pago h3 {
+  margin-bottom: 12px;
+  font-size: 1.1rem;
+  color: var(--dark-blue);
+}
+
+.resumen p,
+.pago p {
+  margin: 6px 0;
+  font-size: 0.95rem;
+}
+
+.bold-blue {
+  color: var(--blue);
+  font-weight: bold;
+}
+
+.big-bold-blue {
+  font-size: 1.3rem;
+  font-weight: 1000;
+  font-style: italic;
+  color: var(--blue);
+}
+
+.divider {
+  width: 1px;
+  background-color: var(--border-gray);
+  margin: 0 30px;
+}
+.orden-detail{
+  margin: 0px 8vh;
+  display: flex;
+  justify-content: center;
+}
