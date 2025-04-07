@@ -6,12 +6,14 @@ import { getAllTutor } from "../../api/api";
 import registerTutorValidationSchema from "../../schemas/registerTutorValidate";
 import { Formik, Form } from "formik";
 import { toast } from "sonner";
+import SelectInput from "../selected/SelectInput";
+import Swal from "sweetalert2";
 
 const Step3Form = ({ onNext, onPrev, formData = {}, updateFormData }) => {
   const [tipoTutores, setTipoTutores] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [tutoresLocales, setTutoresLocales] = useState(formData.tutores || []);
-  const MAX_TUTORES = 2; // Límite máximo de tutores
+  const MAX_TUTORES = 2;
   
   useEffect(() => {
     fetchData();
@@ -42,7 +44,6 @@ const Step3Form = ({ onNext, onPrev, formData = {}, updateFormData }) => {
   };
 
   const agregarTutor = (tutor, { resetForm }) => {
-    // Verificar si ya se alcanzó el límite máximo
     if (tutoresLocales.length >= MAX_TUTORES) {
       toast.error(`Solo puede registrar un máximo de ${MAX_TUTORES} tutores`);
       return;
@@ -109,68 +110,68 @@ const Step3Form = ({ onNext, onPrev, formData = {}, updateFormData }) => {
             {(formik) => (
               <Form className="step3-form">
                 <div className="step3-form-group">
-                  <label>Tipo de Tutor*</label>
-                  <select
+                  <SelectInput
+                    label="Tipo de Tutor"
                     name="idTipoTutor"
+                    options={tipoTutores.map((tipo) => ({
+                      value: tipo.idTipoTutor,
+                      label: tipo.nombreTipoTutor,
+                    }))}
                     value={formik.values.idTipoTutor}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                     className="step3-select"
-                  >
-                    <option value="">Seleccione un tipo</option>
-                    {tipoTutores.map((tipo) => (
-                      <option key={tipo.idTipoTutor} value={tipo.idTipoTutor}>
-                        {tipo.nombreTipoTutor}
-                      </option>
-                    ))}
-                  </select>
-                  {formik.touched.idTipoTutor && formik.errors.idTipoTutor && (
-                    <div className="error-message">{formik.errors.idTipoTutor}</div>
-                  )}
+                    required
+                  />
                 </div>
 
                 <div className="step3-form-group">
                   <InputText
                     name="nombresTutor"
-                    label="Nombres*"
+                    label="Nombres"
                     type="text"
                     placeholder="Nombres del tutor"
+                    required
                   />
                 </div>
 
                 <div className="step3-form-group">
                   <InputText
                     name="apellidosTutor"
-                    label="Apellidos*"
+                    label="Apellidos"
                     type="text"
                     placeholder="Apellidos del tutor"
+                    required
                   />
                 </div>
 
                 <div className="step3-form-group">
                   <InputText
                     name="emailTutor"
-                    label="Correo electrónico*"
+                    label="Correo electrónico"
                     type="email"
                     placeholder="Correo del tutor"
+                    required
                   />
                 </div>
 
                 <div className="step3-form-group">
                   <InputText
                     name="telefono"
-                    label="Teléfono*"
+                    label="Teléfono"
                     type="text"
                     placeholder="Teléfono del tutor"
+                    required
                   />
                 </div>
 
                 <div className="step3-form-group">
                   <InputText
                     name="carnetIdentidadTutor"
-                    label="N° de documento*"
+                    label="N° de documento"
                     type="text"
                     placeholder="Documento del tutor"
+                    required
                   />
                 </div>
 
@@ -179,6 +180,17 @@ const Step3Form = ({ onNext, onPrev, formData = {}, updateFormData }) => {
                     type="submit"
                     buttonStyle="primary"
                     disabled={!formik.isValid || isSubmitting || tutoresLocales.length >= MAX_TUTORES}
+                    onClick={() => {
+                      if (!formik.isValid) {
+                        Swal.fire({
+                          icon: 'error',
+                          title: 'Datos incompletos',
+                          text: 'Por favor, complete todos los campos requeridos',
+                          showConfirmButton: false,
+                          timer: 2000,
+                        });
+                      }
+                    }}
                   >
                     {tutoresLocales.length >= MAX_TUTORES ? 
                       'Límite alcanzado' : 
