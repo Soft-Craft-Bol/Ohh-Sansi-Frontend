@@ -4,7 +4,7 @@ import FormArea from "../../components/management/formArea/FormArea";
 import CategoriesManagement from "../../components/management/categories/CategoriesManagement";
 import InscriptionPeriods from "../../components/management/fechas/InscriptionPeriods";
 import "./Management.css";
-
+import Header from "../../components/header/Header";
 const ManagementPage = () => {
   const tabList = [
     { name: "areas", label: "Áreas" },
@@ -27,10 +27,10 @@ const ManagementPage = () => {
 
   return (
     <div className="management-page">
-      <header className="management-header">
-        <h1>Administración</h1>
-        <p>Gestiona las areas, niveles/categorías, fechas de inscripcion y costos de inscripción</p>
-      </header>
+      <Header
+        title="Administración"
+        description="Gestiona las áreas, niveles/categorías, fechas de inscripción y costos de inscripción"
+      />
       <Tabs tabList={tabList} renderTabContent={renderTabContent} />
     </div>
   );

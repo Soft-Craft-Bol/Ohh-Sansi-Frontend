@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { FaThLarge, FaChartPie, FaQuestionCircle, FaCog, FaSignOutAlt } from "react-icons/fa";
+import { FaThLarge, FaChartPie, FaQuestionCircle, FaCog, FaSignOutAlt, FaSearch } from "react-icons/fa";
 import { PiClipboardTextFill } from "react-icons/pi";
 import { MdOutlinePayment } from "react-icons/md";
 import { signOut } from "../../utils/authFuntions";
@@ -27,6 +27,8 @@ const Sidebar = ({ isSidebarVisible }) => {
       setActiveMenu("message");
     } else if (currentPath === "/inicio") {
       setActiveMenu("team");
+    }else if (currentPath === "/orden-de-pago") {
+      setActiveMenu("message");
     }
   }, [location]);
 
@@ -58,13 +60,13 @@ const Sidebar = ({ isSidebarVisible }) => {
             <span className="text">Administracion de olimpiadas</span>
           </Link>
         </li>
-        {/* <li className={activeMenu === "message" ? "active" : ""}>
-          <Link to="/registro-areas" className="link">
-            <FaChartPie className="icon" />
-            <span className="text">Reportes</span>
+        <li className={activeMenu === "message" ? "active" : ""}>
+          <Link to="/orden-de-pago" className="link">
+            <FaSearch className="icon" />
+            <span className="text">Orden de pago</span>
           </Link>
         </li>
-        <li className={activeMenu === "team" ? "active" : ""}>
+        {/* <li className={activeMenu === "team" ? "active" : ""}>
           <Link to="/inicio" className="link">
             <FaQuestionCircle className="icon" />
             <span className="text">Ayuda</span>

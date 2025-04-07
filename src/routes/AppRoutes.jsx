@@ -4,6 +4,7 @@ import PrivateRoute from '../context/PrivateRoute';
 import MainContent from '../components/sidebar/Main';
 import Inicio from '../pages/home/Inicio';
 import Layout from '../Layout/Layout';
+import OrdenDePago from '../pages/ordenDePago/OrdenDePago';
 import MultiStepForm from '../components/multiStepForm/MultiStepForm';
 import ManagementPage from '../pages/admin/Management';
 import FormArea from "../components/management/formArea/FormArea";
@@ -85,6 +86,19 @@ const AppRoutes = () => {
         </PrivateRoute>
       }
     />
+    <Route
+      path="/orden-de-pago"
+      element={
+        <PrivateRoute>
+          <Layout>
+            <OrdenDePago />
+          </Layout>
+        </PrivateRoute>
+      }
+    />
+
+      {/* Ruta de error 404 */}
+      <Route path="*" element={<NotFound404 />} />
 
     </Routes>
   );

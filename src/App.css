@@ -19,8 +19,10 @@ li {
 	--lato: 'Lato', sans-serif;
 
 	--light: #F9F9F9;
+	--lighter: #ffffff;
 	--blue: #033771;
 	--light-blue: #CFE8FF;
+	--light-blue2: #F4F9FF;
 	--dark-grey: #E2E2E2;
 	--red: #EA0613;
 	--yellow: #C8D444;
@@ -29,6 +31,7 @@ li {
 	--dark: #342E37;
 	--orange: #FD7238;
 	--light-orange: #FFE0D3;
+	--border-gray: rgb(0, 0, 0, 20%);
 }
 
 html {
@@ -44,4 +47,8 @@ body.dark {
 body {
 	background: var(--grey);
 	overflow-x: hidden;
+}
+
+main{
+	padding: 0 0 0 0;
 }
