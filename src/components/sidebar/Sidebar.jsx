@@ -16,7 +16,7 @@ const Sidebar = ({ isSidebarVisible }) => {
   };
 
   useEffect(() => {
-    const currentPath = location.pathname;  // Obtén la ruta actual
+    const currentPath = location.pathname;
     if (currentPath === "/home") {
       setActiveMenu("dashboard");
     } else if (currentPath === "/form") {
