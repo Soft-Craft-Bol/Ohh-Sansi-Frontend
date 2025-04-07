@@ -32,6 +32,10 @@ const MultiStepForm = () => {
     costoTotal: 0
   });
 
+  const setIsStepValid = (isValid) => {
+    
+  }
+
   const steps = [
     { label: "Información básica" },
     { label: "Áreas de competencia" },

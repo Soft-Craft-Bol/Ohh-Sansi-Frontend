@@ -1,7 +1,6 @@
 import React, { useEffect } from "react";
 import { Formik, Form } from "formik";
-import * as Yup from "yup";
-import { Toaster, toast } from "sonner";
+import { toast } from "sonner";
 import InputText from "../inputs/InputText";
 import { ButtonPrimary } from "../button/ButtonPrimary";
 import SelectInput from "../selected/SelectInput";
@@ -11,6 +10,7 @@ import useFetchMunicipios from "../../hooks/departamento/useFetchMunicipios";
 import useFetchColegio from "../../hooks/Colegio/useFetchColegio";
 import inscripcionSchema from "../../schemas/InscripcionValidate";
 import "./Step1Form.css";
+import Swal from "sweetalert2";
 
 const Step1Form = ({ formData, updateFormData, onNext}) => {
   const { niveles, loading: loadingNiveles } = useFetchNivelesEscolares();
@@ -30,7 +30,7 @@ const Step1Form = ({ formData, updateFormData, onNext}) => {
     institucion: formData.participante?.idColegio?.toString() || "",
     grado: formData.participante?.idNivelGradoEscolar?.toString() || "",
     email: formData.participante?.correoElectronicoParticipante || "",
-    telefono: ""
+    telefono: formData.participante?.telefonoParticipante || "",
   };
 
   const handleSubmit = (values) => {
@@ -205,6 +205,17 @@ const Step1Form = ({ formData, updateFormData, onNext}) => {
                   type="submit"
                   buttonStyle="primary"
                   disabled={!isValid || isSubmitting}
+                  onClick={() => {
+                    if (!isValid) {
+                      Swal.fire({
+                        icon: 'error',
+                        title: 'Campos incompletos',
+                        text: 'Por favor, complete todos los campos requeridos',
+                        showConfirmButton: false,
+                        timer: 2000,
+                      });
+                    }
+                  }}
                 >
                   Siguiente
                 </ButtonPrimary>

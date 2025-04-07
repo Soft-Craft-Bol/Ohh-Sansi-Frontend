@@ -89,3 +89,35 @@
 .valid-input{
     border: 2px solid #77dd77 !important;
 }
+
+.icon:hover{
+    animation: sacudida 0.9s both;
+}
+
+/* Animacion de hover tipo rotacion*/
+@keyframes sacudida {
+	0%,
+	100% {
+	  transform-origin: top;
+	}
+  
+	15% {
+	  transform: rotateZ(10deg);
+	}
+  
+	30% {
+	  transform: rotateZ(-10deg);
+	}
+  
+	45% {
+	  transform: rotateZ(5deg);
+	}
+  
+	60% {
+	  transform: rotateZ(-5deg);
+	}
+  
+	75% {
+	  transform: rotateZ(2deg);
+	}
+  }
