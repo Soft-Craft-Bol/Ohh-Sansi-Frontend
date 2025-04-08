@@ -4,14 +4,15 @@ import { toast } from "sonner";
 import { FaEdit, FaTrash } from "react-icons/fa";
 import InputText from "../../inputs/InputText";
 import { ButtonPrimary } from "../../button/ButtonPrimary";
-import { 
-  addArea, 
-  getAreas, 
-  deleteArea, 
+import {
+  addArea,
+  getAreas,
   updateArea,
 } from "../../../api/api";
 import { areaValidationSchema } from "../../../schemas/areaValidation";
 import "./FormArea.css";
+import InputTextarea from "../../inputs/InputTextArea";
+import ManagementCard from "../../cards/ManagementCard";
 
 const FormArea = () => {
   const [areas, setAreas] = useState([]);
@@ -39,10 +40,10 @@ const FormArea = () => {
 
   const generateShortName = (nombreArea) => {
     if (!nombreArea) return '';
-    
+
     const words = nombreArea.split(' ').filter(word => word.length > 0);
     let shortName = '';
-    
+
     if (words.length >= 2) {
       shortName = words[0].charAt(0) + words[1].charAt(0);
     } else if (words[0].length >= 2) {
@@ -50,7 +51,7 @@ const FormArea = () => {
     } else {
       shortName = words[0];
     }
-    
+
     return shortName.toUpperCase();
   };
 
@@ -67,7 +68,7 @@ const FormArea = () => {
 
       if (editingId) {
         const response = await updateArea(editingId, areaData);
-        setAreas(areas.map(area => 
+        setAreas(areas.map(area =>
           area.idArea === editingId ? response.data : area
         ));
         toast.success("Área actualizada con éxito");
@@ -78,31 +79,17 @@ const FormArea = () => {
         toast.success("Área registrada con éxito");
         fetchAreas();
       }
-      
+
       resetForm();
       setEditingId(null);
     } catch (error) {
       console.error("Error submitting form:", error);
-      const errorMessage = error.response?.data?.message || 
-                         error.message || 
-                         (editingId ? "Error al actualizar el área" : "Error al registrar el área");
+      const errorMessage = error.response?.data?.message ||
+        error.message ||
+        (editingId ? "Error al actualizar el área" : "Error al registrar el área");
       toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
-    }
-  };
-
-  const handleDeleteArea = async (id) => {
-    if (window.confirm("¿Estás seguro de que deseas eliminar esta área?")) {
-      try {
-        await deleteArea(id);
-        setAreas(areas.filter((area) => area.idArea !== id));
-        toast.success("Área eliminada con éxito");
-        if (editingId === id) setEditingId(null);
-      } catch (error) {
-        console.error("Error deleting area:", error);
-        toast.error(error.response?.data?.message || "Error al eliminar el área");
-      }
     }
   };
 
@@ -133,8 +120,12 @@ const FormArea = () => {
 
   return (
     <div className="form-container">
-      <h2>Áreas de Competencia</h2>
-
+      <div className="tabs">
+        <h2 className="gestion-title"> Áreas de Competencia</h2>
+        <p className="gestion-subtitle">
+          Añada áreas de competencia
+        </p>
+      </div>
       <Formik
         initialValues={initialValues}
         validationSchema={areaValidationSchema}
@@ -150,65 +141,36 @@ const FormArea = () => {
                 type="text"
                 required
                 placeholder="Ej: Matemáticas"
-                maxLength={50}
+                maxLength={30}
               />
-              <p className="char-count">{formik.values.name.length}/50</p>
-              {/* {formik.touched.name && formik.errors.name && (
-                <p className="error">{formik.errors.name}</p>
-              )} */}
+              <p className="char-count">{formik.values.name.length}/30</p>
+
             </div>
             <div>
-              <label>Descripción</label>
-              <textarea
+              <InputTextarea
+                label="Descripción del área"
                 name="description"
                 placeholder="Breve descripción del área"
-                className="input"
-                maxLength={500}
-                required
-                {...formik.getFieldProps("description")}
-              />
-              <p className="char-count">{formik.values.description.length}/500</p>
-              {formik.touched.description && formik.errors.description && (
-                <p className="error">{formik.errors.description}</p>
-              )}
-            </div>
-
-            <div className="toggle-container">
-              <label>
-                Área activa
-                <p className="toggle-info">
-                  Desactivar si no está disponible para inscripción
-                </p>
-              </label>
-              <input
-                type="checkbox"
-                name="isActive"
-                checked={formik.values.isActive}
+                maxLength={200}
+                value={formik.values.description}
                 onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                touched={formik.touched.description}
+                error={formik.errors.description}
+                required
               />
             </div>
 
-            <div className="form-actions">
+
+            <div>
               <ButtonPrimary
                 type="submit"
-                buttonStyle="primary"
+                className="btn-submit-azul"
                 disabled={!formik.isValid || isSubmitting}
               >
                 {editingId ? 'Actualizar área' : 'Añadir área'}
               </ButtonPrimary>
-              
-              {editingId && (
-                <ButtonPrimary
-                  type="button"
-                  buttonStyle="secondary"
-                  onClick={() => {
-                    formik.resetForm();
-                    setEditingId(null);
-                  }}
-                >
-                  Cancelar edición
-                </ButtonPrimary>
-              )}
+
             </div>
           </Form>
         )}
@@ -221,41 +183,22 @@ const FormArea = () => {
         ) : areas.length === 0 ? (
           <p>No hay áreas registradas aún.</p>
         ) : (
-          <ul>
+          <div className="card-list">
             {areas
               .sort((a, b) => a.nombreArea?.localeCompare(b.nombreArea))
               .map((area) => (
-                <li key={area.idArea} className="area-item">
-                  <div className="area-text">
-                    <p className="area-name">{area.nombreArea}</p>
-                    <p className="area-desc">{area.descripcionArea}</p>
-                    <p className="area-price">
-  Precio: {area.precioArea != null ? `$${Number(area.precioArea).toFixed(2)}` : 'No definido'}
-</p>
-                    <p className="area-short">Código: {area.nombreCortoArea}</p>
-                  </div>
-                  <div className="area-actions">
-                    <span className={`status ${area.areaStatus ? "active" : "inactive"}`}>
-                      {area.areaStatus ? "Activo" : "Inactivo"}
-                    </span>
-                    <button 
-                      className="action-icon edit" 
-                      onClick={() => handleEditArea(area.idArea)}
-                      title="Editar"
-                    >
-                      <FaEdit />
-                    </button>
-                    <button 
-                      className="action-icon delete" 
-                      onClick={() => handleDeleteArea(area.idArea)}
-                      title="Eliminar"
-                    >
-                      <FaTrash />
-                    </button>
-                  </div>
-                </li>
+                <ManagementCard key={area.idArea}
+                  title={area.nombreArea}
+                  info={[
+                    { label: "Descripción", value: area.descripcionArea || "—" },
+                    {
+                      label: "Código",
+                      value: area.nombreCortoArea || "—",
+                    },
+                  ]}
+                />
               ))}
-          </ul>
+          </div>
         )}
       </div>
     </div>

@@ -18,6 +18,7 @@ const Tabs = ({ tabs, onTabChange, renderTabContent }) => {
             className={`tab-button ${activeTab === tab.id ? "active" : ""}`}
             onClick={() => handleTabClick(tab.id)}
           >
+            {tab.icon && <span className="tab-icon">{tab.icon}</span>}
             {tab.label}
           </button>
         ))}

@@ -34,34 +34,35 @@ export const addInscripcion = (data) => api.post('/inscripciones', data);
 export const updateInscripcion = (data) => api.put('/inscripciones', data);
 export const deleteInscripcion = (id) => api.delete(`/inscripciones/${id}`);
 export const inscripcionEstudiante = (data) => api.post(`/inscripcion/v1/register`, data);
-
-
-//area
-export const getAreas = () => api.get('/areas');
-export const addArea = (data) => api.post('/areas/register-area', data);
-export const updateArea = (id,data) => api.put(`/areas/${id}`, data);
-export const deleteArea = (id) => api.delete(`/areas/${id}`);
-export const getAreaByIdGrade = (id) => api.get(`/nivelescolar-categoria-area/areas-categorias/${id}`);
-
 export const registerParticipante = (data) => api.post('/participantes/register-participant', data);
 export const register = (data) => api.post('/register', data)
-//Nivel escolar;
-export const getNivelEscolar = () => api.get('/nivelescolar');
-
+//DEPARTAMENTOS Y MUNICIPIOS
 export const getDepartamentos = () => api.get('/departamento');
 export const getDepartamentoById = (id) => api.get(`/departamento/${id}`);
 export const getMunicipios = (id) => api.get(`/municipios/${id}`);
 export const getMunicipiosByDepartamento = (id) => api.get(`/municipios/departamento/${id}`);
 export const getColegiosByMunicipio = (id) => api.get(`/colegios/municipio/${id}`);
-export const registerFechas = (data) => api.post('/fechas/register-fechas', data);
+//area
+export const getAreas = () => api.get('/areas');
+export const addArea = (data) => api.post('/areas/register-area', data);
+export const updateArea = (id,data) => api.put(`/areas/${id}`, data);
+export const deleteArea = (id) => api.delete(`/areas/${id}`);
+//AREA NIVEL ESCOLAR CATEGORIA
+export const getAreaByIdGrade = (id) => api.get(`/nivelescolar-categoria-area/areas-categorias/${id}`);
+export const getAreasGrados = () => api.get('/nivelescolar-categoria-area/areas-grados');
+export const getAreasCategorias = () => api.get('/nivelescolar-categoria-area/areas-categorias');
+//Nivel escolar;
+export const getNivelEscolar = () => api.get('/nivelescolar');
+//CATEGORIAS 
+export const createCategory = (data) => api.post('/nivelescolar-categoria-area/register', data);
+export const getCategories = () => api.get('/category');
+
 
 //TUTORES 
 export const getAllTutor = () => api.get('/tipo-tutor/findAllTipoTutor');
 export const registerTutor = (data) => api.post('/tutores/register-tutor', data);
 
-//CATEGORIAS 
-export const createCategory = (data) => api.post('/nivelescolar-categoria-area/register', data);
-export const getCategories = () => api.get('/category');
+
 
 //Fechas de Inscripcion
 export const upsertFechas = (data) => api.post('/plazo-inscripcion', data);
@@ -70,7 +71,7 @@ export const updateFechas = (id, data) => api.put(`/plazo-inscripcion/${id}`, da
 export const deleteFechas = (id) => api.delete(`/plazo-inscripcion/${id}`);
 export const getFechasById = (id) => api.get(`/plazo-inscripcion/${id}`);
 export const getLastActiveFechas = () => api.get('/plazo-inscripcion/activo');
-
+export const registerFechas = (data) => api.post('/fechas/register-fechas', data);
 
 //EMAILS
 export const sendEmail = (data) => api.post('/email/send', data);

@@ -29,7 +29,7 @@ const GestionPeriod = () => {
 
       <Formik
         initialValues={initialValues}
-        validationSchema={GestionValidate} 
+        validationSchema={GestionValidate}
         onSubmit={handleSubmit}
       >
         {({ handleChange, values, errors, touched }) => (
@@ -42,7 +42,7 @@ const GestionPeriod = () => {
                 onChange={handleChange}
                 placeholder="Ej: Olimpiada 2025"
                 required
-                error={touched.name && errors.name} 
+                error={touched.name && errors.name}
               />
             </div>
             <div className="form-grid">
@@ -102,8 +102,8 @@ const GestionPeriod = () => {
               />
             </div>
 
-            <div className="button-container">
-              <ButtonPrimary type="submit">Registrar Periodo</ButtonPrimary>
+            <div >
+              <ButtonPrimary type="submit" className="btn-submit-azul-period">Registrar Periodo</ButtonPrimary>
             </div>
           </Form>
         )}

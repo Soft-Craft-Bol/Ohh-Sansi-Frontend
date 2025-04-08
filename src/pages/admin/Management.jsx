@@ -1,19 +1,23 @@
 import React from "react";
 import Tabs from "../../components/tabs/Tabs";
-import FormArea from "../../components/management/formArea/FormArea";
-import CategoriesManagement from "../../components/management/categories/CategoriesManagement";
-import InscriptionPeriods from "../../components/management/fechas/InscriptionPeriods";
-import CostsManagement from "../../components/management/costos/CostsManagement";
 import GestionPeriod from "../../components/management/gestion/GestionPeriod";
+import FormArea from "../../components/management/formArea/FormArea";
+import GradosManagement from "../../components/management/grados/GradosManagement";
+import CategoriesManagement from "../../components/management/categories/CategoriesManagement";
+import CostsManagement from "../../components/management/costos/CostsManagement";
+
 import "./Management.css";
+import { Trophy, Calendar, ListChecks,CoinsIcon, Banknote } from 'lucide-react';
+
 
 const ManagementPage = () => {
   const tabs = [
-    { id: "periods", label: "⏳ Periodos" },        
-    { id: "categories", label: "🗂 Categorías" },  
-    { id: "areas", label: "📍 Áreas" },           
-    { id: "costs", label: "💵 Costos" },          
-    { id: "payments", label: "💳 Pagos" }        
+    { id: "periods", icon:<Calendar/>,label: " Periodos" },        
+    { id: "areas",icon:<ListChecks/>, label: " Áreas" },
+    {id: "grados", icon:<ListChecks/>, label: " Grados" }, 
+    {id: "categories", icon: <Trophy />, label: "Categorías" },          
+    { id: "costs", icon:<CoinsIcon/>, label: " Costos" },          
+    { id: "payments", icon:<Banknote/>,label: " Pagos" }        
 ];
 
 
@@ -21,6 +25,8 @@ const ManagementPage = () => {
     switch (activeTab) {
       case "areas":
         return <FormArea />;
+      case "grados":
+        return <GradosManagement />;
       case "categories":
         return <CategoriesManagement />;
       case "periods":
