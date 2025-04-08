@@ -1,10 +1,10 @@
-import React, { useState } from "react";
 import * as Yup from "yup";
 import "./CostsManagement.css";
 import SelectInput from "../../selected/SelectInput";
 import { Formik, Form } from "formik";
 import InputText from "../../inputs/InputText";
 import {ButtonPrimary} from "../../button/ButtonPrimary"
+import Swal from "sweetalert2";
 
 const CostsManagement = () => {
   const periodos = [ //static meanwhile
@@ -24,7 +24,14 @@ const CostsManagement = () => {
   };
 
   const handleSubmit = (values) => {
-    console.log("submit", values);
+    //Aún no implementado
+    Swal.fire({
+    icon: 'success',
+    title: 'Costo registrado',
+    text: `${values.cost} BOB`,
+    showConfirmButton: false,
+    timer: 2000,
+    })
   };
 
   return (
@@ -63,7 +70,7 @@ const CostsManagement = () => {
                 className="costs-btn-primary"
                 buttonStyle="primary"
               >
-                Guardar Período
+                Registrar Costo
               </ButtonPrimary>
               </div>
               
