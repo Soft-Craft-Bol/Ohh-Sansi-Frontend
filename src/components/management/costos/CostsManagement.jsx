@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { toast } from "sonner";
-import Table from "../../table/Table"; // Asegúrate de que este componente esté bien configurado
+import Table from "../../table/Table";
 import "./CostsManagement.css";
 import { FaEdit } from "react-icons/fa";
 
