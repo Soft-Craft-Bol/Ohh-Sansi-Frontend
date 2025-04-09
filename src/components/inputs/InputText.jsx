@@ -41,7 +41,9 @@ function InputText({ label, required, type = "text", as = "input", showCounter =
         <div className="char-counter">
           {field.value.length} / {maxLength}
         </div>
-    );
+      )}
+    </div>
+  );
 }
 
 export default InputText;

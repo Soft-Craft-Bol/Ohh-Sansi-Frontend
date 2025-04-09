@@ -45,7 +45,7 @@ const ManagementPage = () => {
         title="Administración"
         description="Gestiona las áreas, niveles/categorías, fechas de inscripción y costos de inscripción"
       />
-      <Tabs tabList={tabList} renderTabContent={renderTabContent} />
+      <Tabs tabs={tabs} renderTabContent={renderTabContent} />
     </div>
   );
 };
