@@ -163,7 +163,7 @@ const CategoriesManagement = () => {
         }}
       </Formik>
 
-      <h3>Categorías registradas</h3>
+      <h2>Categorías registradas</h2>
       {data.length > 0 ? (
         <div className="categories-list">
           {data.map((item, index) => (

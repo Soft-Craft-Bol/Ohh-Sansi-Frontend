@@ -64,14 +64,13 @@ export const registerTutor = (data) => api.post('/tutores/register-tutor', data)
 
 
 
-//Fechas de Inscripcion
-export const upsertFechas = (data) => api.post('/plazo-inscripcion', data);
+//PERIODO DE INSCRIPCION
+export const upsertFechas = (data) => api.post('/plazo-inscripcion/register', data);
 export const getFechas = () => api.get('/plazo-inscripcion');
-export const updateFechas = (id, data) => api.put(`/plazo-inscripcion/${id}`, data);
 export const deleteFechas = (id) => api.delete(`/plazo-inscripcion/${id}`);
 export const getFechasById = (id) => api.get(`/plazo-inscripcion/${id}`);
 export const getLastActiveFechas = () => api.get('/plazo-inscripcion/activo');
-export const registerFechas = (data) => api.post('/fechas/register-fechas', data);
+export const insertPrecio = (data) => api.post('/precio/register-precio', data);
 
 //EMAILS
 export const sendEmail = (data) => api.post('/email/send', data);

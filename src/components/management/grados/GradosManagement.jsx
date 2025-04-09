@@ -160,7 +160,7 @@ const GradosManagement = () => {
                 }}
             </Formik>
 
-            <h3>Grados registrados</h3>
+            <h2>Grados registrados</h2>
             {data?.areasgrades?.length > 0 ? (
                 <div className="categories-list">
                     {data.areasgrades.map((item, index) => (

@@ -40,7 +40,7 @@ const AppRoutes = () => {
 
       <Route
         path="/management"
-        element={<PrivateRoute><Layout><ManagementPage /></Layout></PrivateRoute>}
+        element={<Layout><ManagementPage /></Layout>}
       />
 
     <Route
