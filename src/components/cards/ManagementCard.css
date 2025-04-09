@@ -1,0 +1,61 @@
+.management-card {
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1rem;
+    max-width: 100%;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+    transition: box-shadow 0.2s ease;
+  }
+  
+  .management-card:hover {
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+  }
+  
+  .management-card-title {
+    margin-bottom: 0.85rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #2d3748;
+    border-bottom: 1px dashed #ccc;
+    padding-bottom: 0.5rem;
+  }
+  
+  .management-info-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .management-info-item {
+    display: flex;
+    justify-content: space-between;
+    margin: 0.4rem 0;
+    font-size: 0.95rem;
+    color: #333;
+  }
+  
+  .management-label {
+    font-weight: 500;
+    color: #555;
+  }
+  
+  .management-value {
+    color: #222;
+    text-align: right;
+  }
+  
+  /* 📱 Responsive */
+  @media (max-width: 600px) {
+    .management-info-item {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  
+    .management-value {
+      margin-top: 0.25rem;
+      text-align: left;
+    }
+  }
+  
