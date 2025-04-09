@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Formik, Form } from "formik";
 import { toast } from "sonner";
 import InputText from "../inputs/InputText";
@@ -9,36 +9,45 @@ import useFetchDepartamentos from "../../hooks/departamento/useFetchDepartamento
 import useFetchMunicipios from "../../hooks/departamento/useFetchMunicipios";
 import useFetchColegio from "../../hooks/Colegio/useFetchColegio";
 import inscripcionSchema from "../../schemas/InscripcionValidate";
-import "./Step1Form.css";
+import { useNavigate } from "react-router-dom";
+import { registerParticipante } from "../../api/api";
 import Swal from "sweetalert2";
+import "./Step1Form.css";
 
-const Step1Form = ({ formData, updateFormData, onNext}) => {
+const Step1Form = () => {
+  const navigate = useNavigate();
   const { niveles, loading: loadingNiveles } = useFetchNivelesEscolares();
   const { departamentos, loading: loadingDepartamentos } = useFetchDepartamentos();
-  const [selectedDepartamento, setSelectedDepartamento] = React.useState(formData.participante.idDepartamento || "");
+  const [selectedDepartamento, setSelectedDepartamento] = useState("");
   const { municipios, loading: loadingMunicipios } = useFetchMunicipios(selectedDepartamento);
-  const [selectedMunicipio, setSelectedMunicipio] = React.useState(formData.participante.idMunicipio || "");
+  const [selectedMunicipio, setSelectedMunicipio] = useState("");
   const { colegios, loading: loadingColegios } = useFetchColegio(selectedMunicipio);
 
-  const initialFormData = {
-    nombre: formData.participante?.nombreParticipante || "",
-    apellido: `${formData.participante?.apellidoPaterno || ""} ${formData.participante?.apellidoMaterno || ""}`.trim(),
-    documento: formData.participante?.carnetIdentidadParticipante || "",
-    fechaNacimiento: formData.participante?.fechaNacimiento || "",
-    departamento: formData.participante?.idDepartamento?.toString() || "",
-    municipio: formData.participante?.idMunicipio?.toString() || "",
-    institucion: formData.participante?.idColegio?.toString() || "",
-    grado: formData.participante?.idNivelGradoEscolar?.toString() || "",
-    email: formData.participante?.correoElectronicoParticipante || "",
-    telefono: formData.participante?.telefonoParticipante || "",
+  // Cargar datos guardados si existen
+  const loadSavedData = () => {
+    const savedData = localStorage.getItem("participanteFormData");
+    return savedData ? JSON.parse(savedData) : {
+      nombre: "",
+      apellido: "",
+      documento: "",
+      fechaNacimiento: "",
+      departamento: "",
+      municipio: "",
+      institucion: "",
+      grado: "",
+      email: "",
+      telefono: "",
+    };
   };
 
-  const handleSubmit = (values) => {
-    localStorage.setItem("step1FormData", JSON.stringify(values));
-
-    updateFormData({
-      participante: {
-        ...formData?.participante,
+  const handleSubmit = async (values) => {
+    try {
+      // Guardar en localStorage
+      localStorage.setItem("participanteFormData", JSON.stringify(values));
+      
+      // Preparar datos para la API
+      const participanteData = {
+        idInscripcion: 60,
         nombreParticipante: values.nombre,
         apellidoPaterno: values.apellido.split(' ')[0] || '',
         apellidoMaterno: values.apellido.split(' ')[1] || '',
@@ -47,34 +56,39 @@ const Step1Form = ({ formData, updateFormData, onNext}) => {
         idDepartamento: values.departamento ? parseInt(values.departamento) : null,
         idMunicipio: values.municipio ? parseInt(values.municipio) : null,
         idColegio: values.institucion ? parseInt(values.institucion) : null,
-        idNivelGradoEscolar: values.grado ? parseInt(values.grado) : null,
+        idNivel: values.grado ? parseInt(values.grado) : null,
         correoElectronicoParticipante: values.email || null,
         telefonoParticipante: values.telefono || null,
-      },
-    });
+      };
 
-    // Toaster
-    toast.success("Datos guardados correctamente. Pasando al siguiente paso...");
-
-    onNext();
+      // Enviar a la API
+      const response = await registerParticipante(participanteData);
+      
+      toast.success("Participante registrado exitosamente");
+      navigate("/areas-competencia"); // Redirigir al siguiente formulario
+      
+    } catch (error) {
+      console.error("Error al registrar participante:", error);
+      toast.error("Error al registrar participante");
+    }
   };
 
-
   return (
-    <Formik
-      initialValues={initialFormData}
-      validationSchema={inscripcionSchema}
-      onSubmit={handleSubmit}
-      validateOnBlur={true}
-      validateOnChange={true}
-    >
-      {({ values, setFieldValue, isValid, isSubmitting }) => (
-        <Form className="step1-container">
-          <span className="step1-description">
-            Ingrese los datos del participante (Paso 1 de 5)
-          </span>
+    <div className="form-container">
+      <h1>Registro de Participante</h1>
+      <span className="form-description">
+        Ingrese los datos del participante
+      </span>
 
-          <div className="step1-grid">
+      <Formik
+        initialValues={loadSavedData()}
+        validationSchema={inscripcionSchema}
+        onSubmit={handleSubmit}
+        validateOnBlur={true}
+        validateOnChange={true}
+      >
+        {({ values, setFieldValue, isValid, isSubmitting }) => (
+          <Form className="step1-grid">
             {/* Campos del formulario */}
             <div className="field-container">
               <InputText
@@ -200,7 +214,7 @@ const Step1Form = ({ formData, updateFormData, onNext}) => {
             </div>
 
             <div className="field-container full-width">
-              <div className="step1-actions">
+              <div className="form-actions">
                 <ButtonPrimary
                   type="submit"
                   buttonStyle="primary"
@@ -217,14 +231,14 @@ const Step1Form = ({ formData, updateFormData, onNext}) => {
                     }
                   }}
                 >
-                  Siguiente
+                  Registrar Participante
                 </ButtonPrimary>
               </div>
             </div>
-          </div>
-        </Form>
-      )}
-    </Formik>
+          </Form>
+        )}
+      </Formik>
+    </div>
   );
 };
 

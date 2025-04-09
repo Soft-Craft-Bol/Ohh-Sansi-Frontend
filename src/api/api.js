@@ -44,7 +44,7 @@ export const updateArea = (id,data) => api.put(`/areas/${id}`, data);
 export const deleteArea = (id) => api.delete(`/areas/${id}`);
 export const getAreaByIdGrade = (id) => api.get(`/nivelescolar-categoria-area/areas-categorias/${id}`);
 
-export const registerParticipante = (data) => api.post('/participantes/register-participant', data);
+export const registerParticipante = (data) => api.post('/participante/register-participant', data);
 export const register = (data) => api.post('/register', data)
 //Nivel escolar;
 export const getNivelEscolar = () => api.get('/nivelescolar');
