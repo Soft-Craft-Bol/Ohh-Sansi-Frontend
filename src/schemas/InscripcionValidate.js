@@ -82,12 +82,7 @@ const inscripcionValidate = Yup.object().shape({
     .required('La fecha de nacimiento es requerida')
     .max(new Date(new Date().setFullYear(new Date().getFullYear() - 5)), 'Debe tener al menos 5 años')
     .min(new Date('2005-01-01'), 'La fecha de nacimiento no puede ser anterior a 2005'),
-    .required('Email es requerido')
-    .email('Formato de email inválido')
-    .matches(
-      /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-      'Debe ser un email válido'
-    )
+
 });
 
 export default inscripcionValidate;
