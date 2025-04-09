@@ -52,11 +52,19 @@ const Step1Form = ({ formData, updateFormData, onNext}) => {
         telefonoParticipante: values.telefono || null,
       },
     });
+    Swal.fire({
+      icon: "success",
+      title: "¡Formulario guardado!",
+      text: "La información fue completada correctamente.",
+      confirmButtonText: "Continuar",
+    }).then(() => {
+      onNext(); 
+    });
 
     // Toaster
-    toast.success("Datos guardados correctamente. Pasando al siguiente paso...");
+    // toast.success("Datos guardados correctamente. Pasando al siguiente paso...");
 
-    onNext();
+    // onNext();
   };
 
 
@@ -78,10 +86,11 @@ const Step1Form = ({ formData, updateFormData, onNext}) => {
             {/* Campos del formulario */}
             <div className="field-container">
               <InputText
-                label="Nombre"
                 name="nombre"
-                placeholder="Nombre del participante"
+                label="Nombre"
                 required
+                onlyLetters
+                maxLength={50}
               />
             </div>
 
@@ -89,17 +98,19 @@ const Step1Form = ({ formData, updateFormData, onNext}) => {
               <InputText
                 label="Apellido"
                 name="apellido"
-                placeholder="Apellido del participante"
-                required
+                                required
+                onlyLetters
+                maxLength={50}
               />
             </div>
 
             <div className="field-container">
               <InputText
-                label="Documento de identidad"
+                label="Documento de Identidad"
                 name="documento"
-                placeholder="Número de identificación"
                 required
+                onlyNumbers
+                maxLength={10}
               />
             </div>
 
@@ -192,11 +203,12 @@ const Step1Form = ({ formData, updateFormData, onNext}) => {
             <div className="field-container">
               <InputText
                 label="Teléfono"
-                name="telefono"
-                type="tel"
-                placeholder="Número de contacto"
+                name="telefono"                
                 required
+                onlyNumbers
+                maxLength={8}
               />
+
             </div>
 
             <div className="field-container full-width">
