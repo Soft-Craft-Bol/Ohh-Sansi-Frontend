@@ -75,3 +75,6 @@ export const getLastActiveFechas = () => api.get('/plazo-inscripcion/activo');
 
 //EMAILS
 export const sendEmail = (data) => api.post('/email/send', data);
+
+//OrdenPAGO
+export const getOrdenPagoDetailInfo = (codigoUnico) => api.get(`/inscripcion/details/${codigoUnico}`);

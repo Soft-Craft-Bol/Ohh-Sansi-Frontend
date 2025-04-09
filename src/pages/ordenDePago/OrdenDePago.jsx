@@ -1,16 +1,34 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import "./OrdenDePago.css";
 import Header from "../../components/header/Header";
 import { FaSearch } from 'react-icons/fa';
 import OrdenPagoDetalle from "../../components/ordenPagoDetalle/OrdenPagoDetalle";
+import { getOrdenPagoDetailInfo } from "../../api/api";
+
 const OrdenDePago = () => {
   const [inputValue, setInputValue] = useState("");
   const [codigoIntroducido, setCodigoIntroducido] = useState("");
+  const [ordenData, setOrdenData] = useState(null);
 
   const handleSearch = () => {
     setCodigoIntroducido(inputValue);
     setInputValue("");
   };
+
+  useEffect(() => {
+    const fetchOrdenData = async () => {
+      if (codigoIntroducido) {
+        try {
+          const data = await getOrdenPagoDetailInfo(codigoIntroducido);
+          setOrdenData(data);
+          console.log("Orden de pago data:", data);
+        } catch (error) {
+          console.error("Error al obtener los datos de la orden de pago:", error);
+        }
+      }
+    };
+    fetchOrdenData();
+  }, [codigoIntroducido]);
 
   const handleKeyPress = (event) => {
     if (event.key === "Enter") handleSearch();
