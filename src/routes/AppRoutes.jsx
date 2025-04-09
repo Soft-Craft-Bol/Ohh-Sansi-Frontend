@@ -9,6 +9,7 @@ import MultiStepForm from '../components/multiStepForm/MultiStepForm';
 import ManagementPage from '../pages/admin/Management';
 import FormArea from "../components/management/formArea/FormArea";
 import { NotFound404 } from '../pages/404NotFound/NotFound404';
+import InscripcionExcel from '../pages/inscripcion/InscripcionExcel';
 
 
 const LoginUser = lazy(() => import('../pages/login/LoginUser'));
@@ -37,6 +38,11 @@ const AppRoutes = () => {
       <Route
         path="/form"
         element={<PrivateRoute><Layout><MultiStepForm /></Layout></PrivateRoute>}
+      />
+
+      <Route
+        path="/register-excel"
+        element={<PrivateRoute><Layout> <InscripcionExcel/> </Layout></PrivateRoute>}
       />
 
       <Route
