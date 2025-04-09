@@ -4,6 +4,7 @@
   padding: 2rem;
   font-family: var(--poppins);
   background-color: var(--light);
+  color:#fff;
   border-radius: 0.75rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
@@ -68,7 +69,7 @@
 .selected-item {
   display: inline-flex;
   align-items: center;
-  background-color: rgba(12, 114, 230, 0.1);
+  background-color: var(--blue);
   padding: 0.5rem 1rem;
   margin: 0.5rem;
   border-radius: 0.5rem;
@@ -107,6 +108,7 @@
   display: flex;
   gap: 2rem;
   margin-top: 1rem;
+  color: var(--dark);
 }
 
 .category-details > div {

@@ -59,6 +59,29 @@ const inscripcionValidate = Yup.object().shape({
     .required('Grado es requerido'),
 
   email: Yup.string()
+    .email('Correo electrónico inválido')
+    .test('valid-domain', 'Dominio no permitido', (value) => {
+      if (!value) return true;
+      const validDomains = ['gmail.com', 'outlook.com', 'hotmail.com', 'yahoo.com', 'edu.pe'];
+      const [, domain] = value.split('@');
+      return validDomains.some(d => domain?.endsWith(d));
+    }),
+  
+  telefono: Yup.string()
+    .required('El teléfono es requerido')
+    .matches(/^[0-9]+$/, 'El teléfono debe contener solo números')
+    .test('no-espacios', 'El nombre no puede contener solo espacios', (value) => value && value.trim().length > 0)
+    .max(8, 'El teléfono no puede tener más de 8 dígitos'),
+  documento: Yup.string()
+    .required('El documento de identidad es requerido')
+    .test('no-espacios', 'El nombre no puede contener solo espacios', (value) => value && value.trim().length > 0)
+    .matches(/^[a-zA-Z0-9]+$/, 'El documento solo puede contener letras y números')
+    .min(5, 'El documento debe tener al menos 5 caracteres')
+    .max(20, 'El documento no puede tener más de 20 caracteres'),
+  fechaNacimiento: Yup.date()
+    .required('La fecha de nacimiento es requerida')
+    .max(new Date(new Date().setFullYear(new Date().getFullYear() - 5)), 'Debe tener al menos 5 años')
+    .min(new Date('2005-01-01'), 'La fecha de nacimiento no puede ser anterior a 2005'),
     .required('Email es requerido')
     .email('Formato de email inválido')
     .matches(
