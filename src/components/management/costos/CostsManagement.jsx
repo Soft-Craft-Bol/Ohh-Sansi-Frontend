@@ -88,6 +88,7 @@ const CostsManagement = () => {
             <p className="cost-id">ID: {cost.id}</p>
           </div>
         ))}
+
       </div>
     </div>
   );

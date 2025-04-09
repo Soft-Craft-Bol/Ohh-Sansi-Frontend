@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { FaThLarge, FaChartPie, FaQuestionCircle, FaCog, FaSignOutAlt } from "react-icons/fa";
+import { FaThLarge, FaChartPie, FaQuestionCircle, FaCog, FaSignOutAlt, FaSearch } from "react-icons/fa";
 import { PiClipboardTextFill } from "react-icons/pi";
 import { MdOutlinePayment } from "react-icons/md";
 import { signOut } from "../../utils/authFuntions";
@@ -16,7 +16,7 @@ const Sidebar = ({ isSidebarVisible }) => {
   };
 
   useEffect(() => {
-    const currentPath = location.pathname;  // Obtén la ruta actual
+    const currentPath = location.pathname;
     if (currentPath === "/home") {
       setActiveMenu("dashboard");
     } else if (currentPath === "/form") {
@@ -27,6 +27,8 @@ const Sidebar = ({ isSidebarVisible }) => {
       setActiveMenu("message");
     } else if (currentPath === "/inicio") {
       setActiveMenu("team");
+    }else if (currentPath === "/orden-de-pago") {
+      setActiveMenu("message");
     }
   }, [location]);
 
@@ -40,12 +42,12 @@ const Sidebar = ({ isSidebarVisible }) => {
       </Link>
 
       <ul className="side-menu top">
-        <li className={activeMenu === "dashboard" ? "active" : ""}>
+        {/* <li className={activeMenu === "dashboard" ? "active" : ""}>
           <Link to="/home" className="link">
             <FaThLarge className="icon" />
             <span className="text">Página Principal</span>
           </Link>
-        </li>
+        </li> */}
         <li className={activeMenu === "analytics" ? "active" : ""}>
           <Link to="/form" className="link">
             <PiClipboardTextFill className="icon" />
@@ -59,26 +61,26 @@ const Sidebar = ({ isSidebarVisible }) => {
           </Link>
         </li>
         <li className={activeMenu === "message" ? "active" : ""}>
-          <Link to="/registro-areas" className="link">
-            <FaChartPie className="icon" />
-            <span className="text">Reportes</span>
+          <Link to="/orden-de-pago" className="link">
+            <FaSearch className="icon" />
+            <span className="text">Orden de pago</span>
           </Link>
         </li>
-        <li className={activeMenu === "team" ? "active" : ""}>
+        {/* <li className={activeMenu === "team" ? "active" : ""}>
           <Link to="/inicio" className="link">
             <FaQuestionCircle className="icon" />
             <span className="text">Ayuda</span>
           </Link>
-        </li>
+        </li> */}
       </ul>
 
       <ul className="side-menu">
-        <li>
+        {/* <li>
           <Link to="/inicio" className="link">
             <FaCog className="icon" />
             <span className="text">Configuraciones</span>
           </Link>
-        </li>
+        </li> */}
         <li>
           <button onClick={handleLogout} className="logout">
             <FaSignOutAlt className="icon" />

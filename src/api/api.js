@@ -1,14 +1,15 @@
 import axios from 'axios';
 
+//const baseURL = "https://ohh-sansi.onrender.com/api/v1";
 const baseURL = "http://localhost:9999/api/v1";
 
 const api = axios.create({
     baseURL: baseURL,
     responseType: 'json',
     withCredentials: true, 
-    timeout: 60000,
+    timeout: 100000,
   });
-  
+  //comgit 
 
 
 api.interceptors.request.use((config) => {

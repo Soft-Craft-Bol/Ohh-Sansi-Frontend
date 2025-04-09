@@ -58,14 +58,18 @@ const FormArea = () => {
   const handleSubmit = async (values, { resetForm }) => {
     setIsSubmitting(true);
     try {
+      // Eliminar espacios innecesarios y poner en formato adecuado
+      const nombreLimpio = values.name.trim().replace(/\s+/g, ' ');
+      const nombreCapitalizado = nombreLimpio.charAt(0).toUpperCase() + nombreLimpio.slice(1).toLowerCase();
+      
       const areaData = {
-        nombreArea: values.name,
+        nombreArea: nombreCapitalizado,
         precioArea: parseFloat(values.precioArea),
-        nombreCortoArea: generateShortName(values.name),
-        descripcionArea: values.description,
+        nombreCortoArea: generateShortName(nombreCapitalizado),
+        descripcionArea: values.description.trim(),
         areaStatus: values.isActive
       };
-
+  
       if (editingId) {
         const response = await updateArea(editingId, areaData);
         setAreas(areas.map(area =>
@@ -79,7 +83,6 @@ const FormArea = () => {
         toast.success("Área registrada con éxito");
         fetchAreas();
       }
-
       resetForm();
       setEditingId(null);
     } catch (error) {
@@ -87,11 +90,13 @@ const FormArea = () => {
       const errorMessage = error.response?.data?.message ||
         error.message ||
         (editingId ? "Error al actualizar el área" : "Error al registrar el área");
+
       toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
   };
+  
 
   const handleEditArea = (id) => {
     const areaToEdit = areas.find(area => area.idArea === id);

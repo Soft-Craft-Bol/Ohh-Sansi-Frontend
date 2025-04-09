@@ -5,7 +5,7 @@ import FormArea from "../../components/management/formArea/FormArea";
 import GradosManagement from "../../components/management/grados/GradosManagement";
 import CategoriesManagement from "../../components/management/categories/CategoriesManagement";
 import CostsManagement from "../../components/management/costos/CostsManagement";
-
+import Header from "../../components/header/Header";
 import "./Management.css";
 import { Trophy, Calendar, ListChecks,CoinsIcon, Banknote } from 'lucide-react';
 
@@ -33,6 +33,7 @@ const ManagementPage = () => {
         return <GestionPeriod />;
         case "costs":
           return <CostsManagement />;
+
       default:
         return null;
     }
@@ -40,12 +41,11 @@ const ManagementPage = () => {
 
   return (
     <div className="management-page">
-      <header className="management-header">
-        <h1>Administración</h1>
-        <p>Gestiona las areas, niveles/categorías, fechas de inscripcion y costos de inscripción</p>
-      </header>
-      <Tabs tabs={tabs} renderTabContent={renderTabContent} />
-
+      <Header
+        title="Administración"
+        description="Gestiona las áreas, niveles/categorías, fechas de inscripción y costos de inscripción"
+      />
+      <Tabs tabList={tabList} renderTabContent={renderTabContent} />
     </div>
   );
 };

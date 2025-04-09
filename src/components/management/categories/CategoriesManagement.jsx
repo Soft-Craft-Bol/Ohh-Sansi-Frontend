@@ -41,7 +41,6 @@ const CategoriesManagement = () => {
     }
   };
 
-
   return (
     <div className="category-container">
       <h2>Crear Categoría</h2>
@@ -177,6 +176,7 @@ const CategoriesManagement = () => {
                 { label: "Grados", value: item.codigoNivel || "Ninguno" }
               ]}
             />
+
           ))}
         </div>
       ) : (

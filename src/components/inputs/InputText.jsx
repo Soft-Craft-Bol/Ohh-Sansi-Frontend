@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { useField } from "formik";
-import { FaEye, FaEyeSlash } from "react-icons/fa"; 
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 import "./InputText.css";
 
 function InputText({ label, required, type = "text", as = "input", showCounter = false, maxLength, ...props }) {
-  const [field, meta, helpers] = useField(props);
-  const [showPassword, setShowPassword] = useState(false);
+    const [field, meta, helpers] = useField(props);
+    const [showPassword, setShowPassword] = useState(false);
 
   return (
     <div className="input-component">
@@ -41,9 +41,7 @@ function InputText({ label, required, type = "text", as = "input", showCounter =
         <div className="char-counter">
           {field.value.length} / {maxLength}
         </div>
-      )}
-    </div>
-  );
+    );
 }
 
 export default InputText;

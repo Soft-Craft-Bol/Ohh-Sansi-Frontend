@@ -1,0 +1,161 @@
+@import '../../App.css';
+
+.orden-pago-detalle {
+  background-color: var(--lighter);
+  border: 1px solid var(--border-gray);
+  border-radius: 10px;
+  padding: 25px 30px;
+  font-family: var(--lato);
+  color: #000;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.cabecera{
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 2px solid var(--border-gray);
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+}
+
+.titulo-uni{
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 1rem;
+}
+
+.subtitulo{
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.95rem;
+}
+
+.subtexto{
+  font-size: 0.85rem;
+}
+
+.orden-numero{
+  text-align: right;
+}
+
+.numero-rojo{
+  color: var(--red);
+  font-weight: bold;
+}
+
+.datos-emisor {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.datos-emisor p {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1rem;
+  margin: 8px 0;
+}
+
+.datos-emisor .underline {
+  flex-grow: 1;
+  border-bottom: 1px solid var(--blue);
+  margin-left: 10px;
+  padding-bottom: 2px;
+}
+
+.espacio-nit {
+  margin-left: 20px;
+}
+
+.tabla-detalle{
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+  margin-bottom: 10px;
+}
+
+.tabla-detalle th,
+.tabla-detalle td {
+  border: 1px solid #ccc;
+  padding: 8px;
+  text-align: left;
+  font-size: 0.95rem;
+}
+
+.tabla-detalle th {
+  background-color: var(--dark-grey);
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.tabla-detalle td {
+  background-color: #fff;
+}
+
+.nota {
+  font-size: 0.85rem;
+  font-style: italic;
+  color: #555;
+  margin-top: 10px;
+}
+
+.totales p {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 1rem;
+  margin: 8px 0;
+}
+
+.totales .underline {
+  flex-grow: 1;
+  border-bottom: 1px solid var(--blue);
+  margin-left: 10px;
+  padding-bottom: 2px;
+}
+
+.totales .monto-box {
+  font-weight: bold;
+  font-size: 1.2rem;
+  color: var(--blue);
+  margin-left: 10px;
+}
+
+.monto-box {
+  border: 1px solid #ccc;
+  padding: 4px 10px;
+  border-radius: 4px;
+  margin-left: 10px;
+  font-weight: bold;
+}
+
+.footer-fecha {
+  margin-top: 20px;
+  font-size: 0.9rem;
+}
+
+.boton-descargar {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+.btn-descargar {
+  background-color: var(--blue);
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-family: var(--poppins);
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.btn-descargar:hover {
+  background-color: #022b5e;
+}
