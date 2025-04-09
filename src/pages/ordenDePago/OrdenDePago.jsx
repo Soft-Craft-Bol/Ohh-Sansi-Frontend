@@ -11,25 +11,28 @@ const OrdenDePago = () => {
   const [ordenData, setOrdenData] = useState(null);
 
   const handleSearch = () => {
-    setCodigoIntroducido(inputValue);
-    setInputValue("");
+    if (inputValue.trim() !== "") {
+      setCodigoIntroducido(inputValue.trim());
+      setInputValue("");
+    }
   };
 
   useEffect(() => {
     const fetchOrdenData = async () => {
       if (codigoIntroducido) {
         try {
-          const data = await getOrdenPagoDetailInfo(codigoIntroducido);
-          setOrdenData(data);
-          console.log("Orden de pago data:", data);
+          const response = await getOrdenPagoDetailInfo(codigoIntroducido);
+          setOrdenData(response.data);
+          console.log("Datos recibidos:", response.data);
         } catch (error) {
           console.error("Error al obtener los datos de la orden de pago:", error);
+          setOrdenData(null);
         }
       }
     };
     fetchOrdenData();
   }, [codigoIntroducido]);
-
+    
   const handleKeyPress = (event) => {
     if (event.key === "Enter") handleSearch();
   };
@@ -53,24 +56,48 @@ const OrdenDePago = () => {
       </div>
     </div>
   );
-  const renderInfoSection = () => (
-    <div className='info-box'>
-      <div className='resumen'>
-        <h3>Resumen de la inscripción</h3>
-        <p>Total de participantes: <span className="bold-blue">15</span></p>
-        <p>Total áreas inscritas: <span className="bold-blue">10</span></p>
-        <p>Nombre del responsable de la inscripción: <span className="bold-blue">Alfredo Ernesto Torrico García</span></p>
-        <p>Correo del responsable de la inscripción: <span className="bold-blue">atgealfredo@gmail.com</span></p>
+
+  const renderInfoSection = () => {
+    if (!ordenData) return null;
+  
+    const participantes = ordenData.participantes || [];
+    const areas = ordenData.areas || [];
+    const tutores = ordenData.tutores || [];
+  
+    const totalParticipantes = participantes.length;
+    const totalAreas = areas.length;
+    console.log(areas.length);
+  
+    const primerTutor = tutores.length > 0 ? tutores[0] : null;
+    const nombreResponsable = primerTutor
+      ? `${primerTutor.nombres_tutor || ""} ${primerTutor.apellidos_tutor || ""}`.trim()
+      : "No disponible";
+    const correoResponsable = primerTutor?.email_tutor || "No disponible";
+  
+    const costoPorArea = 35;
+    const totalInscripciones = costoPorArea;
+    const totalAPagar = totalParticipantes * costoPorArea;
+  
+    return (
+      <div className='info-box'>
+        <div className='resumen'>
+          <h3>Resumen de la inscripción</h3>
+          <p>Total de participantes: <span className="bold-blue">{totalParticipantes}</span></p>
+          <p>Total áreas inscritas: <span className="bold-blue">{totalAreas}</span></p>
+          <p>Nombre del responsable de la inscripción: <span className="bold-blue">{nombreResponsable}</span></p>
+          <p>Correo del responsable de la inscripción: <span className="bold-blue">{correoResponsable}</span></p>
+        </div>
+        <div className='divider'></div>
+        <div className='pago'>
+          <h3>Detalles del pago</h3>
+          <p>Total inscripciones: <span className="bold-blue">{totalInscripciones} bs.</span></p>
+          <p>Costo por área: <span className="bold-blue">{costoPorArea} bs.</span></p>
+          <p className='total-pagar'>Total a pagar: </p>
+          <span className="big-bold-blue">{totalAPagar} bs.</span>
+        </div>
       </div>
-      <div className='divider'></div>
-      <div className='pago'>
-        <h3>Detalles del pago</h3>
-        <p>Total inscripciones: <span className="bold-blue">35 bs.</span></p>
-        <p>Costo por área: <span className="bold-blue">35 bs.</span></p>
-        <p className='total-pagar'>Total a pagar: </p><span className="big-bold-blue">700 bs.</span>
-      </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="orden-de-pago">
@@ -85,9 +112,11 @@ const OrdenDePago = () => {
       <div className='info-container'>
         {renderInfoSection()}
       </div>
-      <div className='orden-detail'>
-        <OrdenPagoDetalle />
-      </div>
+      {ordenData && (
+        <div className='orden-detail'>
+          <OrdenPagoDetalle data={ordenData} />
+        </div>
+      )}
     </div>
   );
 };
