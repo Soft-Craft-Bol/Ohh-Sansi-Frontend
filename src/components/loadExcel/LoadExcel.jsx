@@ -2,7 +2,7 @@ import React, { useRef, useState } from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import * as XLSX from 'xlsx';
-import { FaUpload, FaDownload } from 'react-icons/fa';
+import { FaUpload, FaDownload, FaCheck } from 'react-icons/fa';
 import { RiFileExcel2Line } from 'react-icons/ri';
 import { ButtonPrimary } from '../button/ButtonPrimary';
 import './LoadExcel.css';
@@ -13,6 +13,8 @@ const validExtensions = ['.xlsx', '.xls', '.csv', '.xsb'];
 const LoadExcel = () => {
   const fileInputRef = useRef(null);
   const [excelData, setExcelData] = useState([]);
+  const [buttonState, setButtonState] = useState('upload'); // 'upload', 'loading', 'done'
+
 
   const formik = useFormik({
     initialValues: {
@@ -22,6 +24,7 @@ const LoadExcel = () => {
       file: Yup.mixed().required('Debe seleccionar un archivo'),
     }),
     onSubmit: async (values, { setSubmitting }) => {
+      setButtonState('loading');
       const file = values.file;
       const reader = new FileReader();
     
@@ -33,8 +36,9 @@ const LoadExcel = () => {
         const json = XLSX.utils.sheet_to_json(worksheet);
         console.log('Contenido del archivo:', json);
     
-        setExcelData(json); // 👉 Guardar los datos para mostrar
+        setExcelData(json);
         setSubmitting(false);
+        setButtonState('done');
       };
     
       reader.readAsArrayBuffer(file);
@@ -65,6 +69,47 @@ const LoadExcel = () => {
     formik.setFieldTouched('file', false);
   };
 
+  const handleSubmit = (event) => {
+    event.preventDefault();
+  
+    Swal.fire({
+      title: '<h2 style="color:#003366;">Inscripción correctamente realizada</h2>',
+      html: `
+        <div style="margin: 20px 0;">
+          <div style="font-size: 40px; font-weight: bold; color: #555;">xa123ca</div>
+          <p style="color: #666; font-size: 16px; line-height: 1.5; margin: 20px 0;">
+            Este es un código único generado para la inscripción realizada, con este código completa los detalles del pago.
+            Guarda <strong>este código</strong>, <strong>se envió al correo</strong> de igual manera.
+          </p>
+        </div>
+        <div style="display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;">
+          <button id="goHome" style="background-color:#003366; color:white; border:none; padding:10px 20px; border-radius:8px; font-size:14px;">Ir al inicio</button>
+          <button id="viewDetails" style="background-color:#003366; color:white; border:none; padding:10px 20px; border-radius:8px; font-size:14px;">Detalles del pago</button>
+        </div>
+      `,
+      showConfirmButton: false,
+      showCloseButton: true,
+      didOpen: () => {
+        const goHome = document.getElementById('goHome');
+        const viewDetails = document.getElementById('viewDetails');
+  
+        if (goHome) {
+          goHome.addEventListener('click', () => {
+            // path inicio
+            Swal.close();
+          });
+        }
+  
+        if (viewDetails) {
+          viewDetails.addEventListener('click', () => {
+            // path Ver detalles del pago
+            Swal.close();
+          });
+        }
+      }
+    });
+  };
+
   return (
     <div>
       <form onSubmit={formik.handleSubmit} className="excel-upload-container">
@@ -90,9 +135,9 @@ const LoadExcel = () => {
 
           {formik.values.file && (        
             <div className="file-info">
-              <ButtonPrimary type="submit" style={{ marginTop: '1rem' }}>
-            Procesar archivo
-           </ButtonPrimary>  
+              
+              
+
               <RiFileExcel2Line style={{ color: '#22c55e', fontSize: '18px' }} />
               <span
                 style={{ maxWidth: '30vh', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
@@ -101,15 +146,34 @@ const LoadExcel = () => {
                 {formik.values.file.name}
               </span>
               <span className="file-size">{(formik.values.file.size / (1024 * 1024)).toFixed(1)} Mb</span>
+              <div>
+                
+                </div>
+              
             </div>
+            
           )}
 
           {formik.errors.file && formik.touched.file && (
             <div className="error-message">{formik.errors.file}</div>
           )}
         </div>
-
         <p className="formats">Formatos soportados: .xlsx, .xls, .csv, .xsb (máximo 7 mb)</p>
+        <ButtonPrimary className="btn-loading" type="submit" disabled={buttonState === 'loading'}>
+                {buttonState === 'loading' ? (
+                  <div className="btn-loader-active"></div>
+                ) : buttonState === 'done' ? (
+                  <FaCheck className="icon" />
+                ) : (
+                  <FaUpload className="icon" />
+                )}
+                &emsp;
+                {buttonState === 'loading'
+                  ? 'Cargando...'
+                  : buttonState === 'done'
+                  ? 'Archivo cargado'
+                  : 'Cargar datos'}
+              </ButtonPrimary>
       </div>
 
       <div className="upload-right">
@@ -131,11 +195,9 @@ const LoadExcel = () => {
           <FaDownload /> Descargar plantilla
         </a>
       </div>
-
-      
-
     </form>
-{excelData.length > 0 && (
+
+      {excelData.length > 0 && (
         <div className="table-container">
           <h3>Listado de Participantes Cargados</h3>
           <table className="excel-table">
@@ -158,10 +220,10 @@ const LoadExcel = () => {
           </table>
         </div>
       )}
-
+      <ButtonPrimary type='submit' onClick={handleSubmit}>
+        Registrar participantes
+      </ButtonPrimary>
     </div>
-    
-
   );
 };
 
