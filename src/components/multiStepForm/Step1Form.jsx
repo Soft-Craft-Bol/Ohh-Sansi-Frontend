@@ -98,7 +98,7 @@ const Step1Form = ({ formData, updateFormData, onNext}) => {
               <InputText
                 label="Apellido"
                 name="apellido"
-                                required
+                required
                 onlyLetters
                 maxLength={50}
               />
