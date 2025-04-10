@@ -1,230 +1,223 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { toast } from "sonner";
+import InputText from "../inputs/InputText";
 import { ButtonPrimary } from "../button/ButtonPrimary";
+import { getAreaByIdGrade, getEstudianteByCarnet } from "../../api/api";
 import "./Step2Form.css";
-import { getAreaByIdGrade } from "../../api/api";
+import { Form, Formik } from "formik";
 
-const Step2Form = ({ onNext, onPrev, formData = {}, updateFormData }) => {
-  const [seleccionadas, setSeleccionadas] = useState(
-    formData.areasCompetenciaEstudiante?.map(a => a.idArea) || []
-  );
+const AsignarAreasForm = () => {
+  const [estudiante, setEstudiante] = useState(null);
   const [areas, setAreas] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [seleccionadas, setSeleccionadas] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (formData.participante?.idNivelGradoEscolar) {
-      fetchAreasByGrade();
-    } else {
-      toast.error("Primero seleccione un grado/nivel en el paso anterior");
-      onPrev();
+  const buscarEstudiante = async (carnet) => {
+    if (!carnet || carnet.trim() === "") {
+      toast.error("Por favor ingrese un número de carnet");
+      return;
     }
-  }, [formData.participante?.idNivelGradoEscolar]);
 
-  const fetchAreasByGrade = async () => {
+    const carnetNumerico = parseInt(carnet, 10);
+    if (isNaN(carnetNumerico)) {
+      toast.error("El carnet debe contener solo números");
+      return;
+    }
+
+    setLoading(true);
     try {
-      setIsLoading(true);
-      const response = await getAreaByIdGrade(formData.participante.idNivelGradoEscolar);
+      const resEstudiante = await getEstudianteByCarnet(carnetNumerico);
+      console.log("Estudiante encontrado:", resEstudiante.data);
       
-      // Combinamos y procesamos ambas listas de áreas
-      const combinedAreas = processAreas(response.data);
+      if (!resEstudiante.data?.participante) {
+        throw new Error("No se encontró información del participante");
+      }
       
-      setAreas(combinedAreas);
-    } catch (error) {
-      console.error("Error fetching areas by grade:", error);
-      toast.error("Error al cargar las áreas para este grado");
+      setEstudiante(resEstudiante.data.participante);
+
+      const idNivel = resEstudiante.data.participante.idNivel;
+      console.log("ID Nivel:", idNivel);
+
+      if (!idNivel) {
+        throw new Error("No se pudo determinar el nivel del estudiante");
+      }
+
+      const resAreas = await getAreaByIdGrade(idNivel);
+      const combined = processAreas(resAreas.data);
+      setAreas(combined);
+    } catch (err) {
+      console.error("Error buscando estudiante:", err);
+      toast.error(err.message || "No se encontró el estudiante o las áreas");
+      setEstudiante(null);
       setAreas([]);
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
-  // Función para combinar y procesar las áreas de ambas fuentes
   const processAreas = (data) => {
-    const seenAreas = new Set();
-    const uniqueAreas = [];
-    
-    // Procesar áreas directas (de 'areas')
-    if (data.areas && Array.isArray(data.areas)) {
-      data.areas.forEach(area => {
-        if (!seenAreas.has(area.idArea)) {
-          seenAreas.add(area.idArea);
-          uniqueAreas.push({
-            ...area,
-            source: 'Nivel', // Indica que viene del nivel escolar
-            categoria: null // No pertenece a categoría
+    const seen = new Set();
+    const result = [];
+
+    if (data.areas) {
+      data.areas.forEach((a) => {
+        if (!seen.has(a.idArea)) {
+          seen.add(a.idArea);
+          result.push({ 
+            ...a, 
+            source: "Nivel", 
+            categoria: null,
+            precioArea: a.precioArea || 0 // Asegurar que precioArea tenga valor
           });
         }
       });
     }
-    
-    // Procesar áreas de categorías (de 'areasCategorias')
-    if (data.areasCategorias && Array.isArray(data.areasCategorias)) {
-      data.areasCategorias.forEach(areaCat => {
-        if (!seenAreas.has(areaCat.idArea)) {
-          seenAreas.add(areaCat.idArea);
-          uniqueAreas.push({
-            idArea: areaCat.idArea,
-            nombreArea: areaCat.nombreArea,
-            precioArea: areaCat.precioArea,
-            descripcionArea: areaCat.descripcionArea,
-            nombreCortoArea: areaCat.nombreCortoArea,
-            source: 'Categoría', // Indica que viene de categoría
+
+    if (data.areasCategorias) {
+      data.areasCategorias.forEach((a) => {
+        if (!seen.has(a.idArea)) {
+          seen.add(a.idArea);
+          result.push({
+            idArea: a.idArea,
+            nombreArea: a.nombreArea,
+            precioArea: a.precioArea || 0, // Asegurar que precioArea tenga valor
+            descripcionArea: a.descripcionArea,
+            nombreCortoArea: a.nombreCortoArea,
+            source: "Categoría",
             categoria: {
-              id: areaCat.idCategoria,
-              nombre: areaCat.codigoCategoria
-            }
+              id: a.idCategoria,
+              nombre: a.codigoCategoria,
+            },
           });
         }
       });
     }
-    
-    return uniqueAreas;
+
+    return result;
   };
 
   const toggleSeleccion = (id) => {
     setSeleccionadas((prev) => {
-      if (prev.includes(id)) {
-        return prev.filter((areaId) => areaId !== id);
-      } else if (prev.length < 2) {
-        return [...prev, id];
-      } else {
-        toast.error("Solo puede inscribirse a 2 áreas como máximo");
+      if (prev.includes(id)) return prev.filter((a) => a !== id);
+      if (prev.length >= 2) {
+        toast.error("Máximo 2 áreas permitidas");
         return prev;
       }
+      return [...prev, id];
     });
   };
 
-  const eliminarSeleccion = (id) => {
-    setSeleccionadas((prev) => prev.filter((areaId) => areaId !== id));
+  const handleGuardar = async () => {
+    if (!estudiante || seleccionadas.length === 0) {
+      toast.error("Debe seleccionar al menos un área");
+      return;
+    }
+
+    try {
+      const areasSeleccionadas = areas
+        .filter((a) => seleccionadas.includes(a.idArea))
+        .map((a) => ({
+          idArea: a.idArea,
+          nombreArea: a.nombreArea,
+          precioArea: a.precioArea,
+        }));
+
+      // await asignarAreasEstudiante({ idEstudiante: estudiante.idParticipante, areas: areasSeleccionadas });
+      toast.success("Áreas asignadas correctamente");
+      setEstudiante(null);
+      setSeleccionadas([]);
+      setAreas([]);
+    } catch (e) {
+      toast.error("Error al asignar las áreas");
+    }
   };
 
   const totalCosto = seleccionadas.reduce((acc, id) => {
     const area = areas.find((a) => a.idArea === id);
-    return acc + (area ? area.precioArea : 0);
+    return acc + (area?.precioArea || 0);
   }, 0);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const areasSeleccionadas = areas
-      .filter(area => seleccionadas.includes(area.idArea))
-      .map(area => ({ 
-        idArea: area.idArea,
-        nombreArea: area.nombreArea,
-        precioArea: area.precioArea,
-        source: area.source,
-        categoria: area.categoria
-      }));
-    
-    updateFormData({ 
-      areasCompetenciaEstudiante: areasSeleccionadas,
-      costoTotal: totalCosto,
-      areasInfo: areas
-    });
-    onNext();
+  const formatCurrency = (value) => {
+    return value?.toFixed ? value.toFixed(2) : "0.00";
   };
 
-  if (isLoading) {
-    return (
-      <div className="step2-container">
-        <div className="loading-message">Cargando áreas para este grado...</div>
-      </div>
-    );
-  }
-
   return (
-    <form onSubmit={handleSubmit} className="step2-container">
-      <span className="step2-description">
-        Seleccione las áreas en las que desea participar (Paso 2 de 5)
-      </span>
-      
-      <div className="step2-grid">
-        {areas.length > 0 ? (
-          areas.map((area) => (
-            <div
-              key={area.idArea}
-              className={`step2-card ${seleccionadas.includes(area.idArea) ? "selected" : ""}`}
-              onClick={() => toggleSeleccion(area.idArea)}
-            >
-              <h3>
-                <input
-                  type="checkbox"
-                  checked={seleccionadas.includes(area.idArea)}
-                  onChange={() => toggleSeleccion(area.idArea)}
-                  className="mr-2"
-                />
-                {area.nombreArea}
-                <span className={`area-source ${area.source.toLowerCase()}`}>
-                  ({area.source}{area.categoria ? `: ${area.categoria.nombre}` : ''})
-                </span>
-              </h3>
-              <p>{area.descripcionArea}</p>
-              <p className="costo">Costo: Bs {area.precioArea.toFixed(2)}</p>
-            </div>
-          ))
-        ) : (
-          <div className="no-areas-message">
-            No hay áreas disponibles para este grado. Por favor seleccione otro grado.
-          </div>
-        )}
+    <div className="step2-container">
+      <h2>Asignar Áreas al Estudiante</h2>
+
+      <div className="step2-carnet-container">
+        <Formik
+          initialValues={{ carnet: "" }}
+          onSubmit={async (values, { setSubmitting }) => {
+            try {
+              await buscarEstudiante(values.carnet);
+            } finally {
+              setSubmitting(false);
+            }
+          }}
+        >
+          {({ isSubmitting }) => (
+            <Form>
+              <InputText
+                id="carnet"
+                name="carnet"
+                label="Carnet del Estudiante"
+                placeholder="Ej: 123456789"
+                type="number"
+              />
+              <ButtonPrimary type="submit" disabled={isSubmitting}>
+                {isSubmitting ? "Buscando..." : "Buscar Estudiante"}
+              </ButtonPrimary>
+            </Form>
+          )}
+        </Formik>
       </div>
-      
-      {seleccionadas.length > 0 && (
-        <div className="step2-selected-container">
-          <div className="step2-selected-areas">
-            <h3>Áreas seleccionadas:</h3>
-            <div className="step2-selected-cards">
-              {seleccionadas.map((id) => {
-                const area = areas.find((a) => a.idArea === id);
-                return (
-                  <div key={id} className="step2-selected-card">
-                    <div>
-                      <h3>
-                        {area.nombreArea}
-                        <span className={`area-source ${area.source.toLowerCase()}`}>
-                          ({area.source}{area.categoria ? `: ${area.categoria.nombre}` : ''})
-                        </span>
-                      </h3>
-                      <p>{area.descripcionArea}</p>
-                      <p className="costo">Costo: Bs {area.precioArea.toFixed(2)}</p>
-                    </div>
-                    <button 
-                      type="button"
-                      className="remove-btn"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        eliminarSeleccion(id);
-                      }}
-                    >
-                      ×
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
-            <h2 className="step2-total">Total: Bs {totalCosto.toFixed(2)}</h2>
+
+      {loading && <div>Cargando...</div>}
+
+      {estudiante && (
+        <div>
+          <p><strong>Nombre:</strong> {`${estudiante.nombreParticipante} ${estudiante.apellidoPaterno} ${estudiante.apellidoMaterno}`}</p>
+          <p><strong>CI:</strong> {estudiante.carnetIdentidadParticipante}</p>
+
+          <span>Seleccione hasta 2 áreas:</span>
+
+          <div className="step2-grid">
+            {areas.map((area) => (
+              <div
+                key={area.idArea}
+                className={`step2-card ${seleccionadas.includes(area.idArea) ? "selected" : ""}`}
+                onClick={() => toggleSeleccion(area.idArea)}
+              >
+                <h3>{area.nombreArea}</h3>
+                <p>{area.descripcionArea}</p>
+                <p className="costo">Bs {formatCurrency(area.precioArea)}</p>
+              </div>
+            ))}
           </div>
+
+          {seleccionadas.length > 0 && (
+            <div>
+              <h3>Áreas seleccionadas</h3>
+              <ul>
+                {seleccionadas.map((id) => {
+                  const area = areas.find((a) => a.idArea === id);
+                  return (
+                    <li key={id}>
+                      {area?.nombreArea} - Bs {formatCurrency(area?.precioArea)}
+                    </li>
+                  );
+                })}
+              </ul>
+              <p><strong>Total:</strong> Bs {formatCurrency(totalCosto)}</p>
+            </div>
+          )}
+
+          <ButtonPrimary onClick={handleGuardar}>Guardar Selección</ButtonPrimary>
         </div>
       )}
-      
-      <div className="step2-actions">
-        <ButtonPrimary 
-          type="button"
-          buttonStyle="secondary"
-          onClick={onPrev}
-          className="mr-2"
-        >
-          Anterior
-        </ButtonPrimary>
-        <ButtonPrimary 
-          type="submit" 
-          buttonStyle="primary"
-          disabled={seleccionadas.length === 0 || areas.length === 0}
-        >
-          Siguiente
-        </ButtonPrimary>
-      </div>
-    </form>
+    </div>
   );
 };
 
-export default Step2Form;
+export default AsignarAreasForm;
