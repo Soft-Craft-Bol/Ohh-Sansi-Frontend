@@ -20,3 +20,4 @@ const ManagementCard = ({ title, info = [] }) => {
 };
 
 export default ManagementCard;
+ 
