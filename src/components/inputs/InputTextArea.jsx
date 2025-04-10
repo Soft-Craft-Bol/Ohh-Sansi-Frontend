@@ -1,5 +1,5 @@
 import React from "react";
-import "./InputTextarea.css";
+import "./InputTextArea.css";   
 
 function InputTextarea({
     label,

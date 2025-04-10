@@ -48,6 +48,8 @@ export const getAreas = () => api.get('/areas');
 export const addArea = (data) => api.post('/areas/register-area', data);
 export const updateArea = (id,data) => api.put(`/areas/${id}`, data);
 export const deleteArea = (id) => api.delete(`/areas/${id}`);
+
+export const getEstudianteByCarnet = (carnet) => api.get(`/participante/carnet/${carnet}`);
 //AREA NIVEL ESCOLAR CATEGORIA
 export const getAreaByIdGrade = (id) => api.get(`/nivelescolar-categoria-area/areas-categorias/${id}`);
 export const getAreasGrados = () => api.get('/nivelescolar-categoria-area/areas-grados');
@@ -78,3 +80,4 @@ export const sendEmail = (data) => api.post('/email/send', data);
 
 //OrdenPAGO
 export const getOrdenPagoDetailInfo = (codigoUnico) => api.get(`/inscripcion/details/${codigoUnico}`);
+export const createOrdenPago = (data) => api.post('/orden-pago', data);

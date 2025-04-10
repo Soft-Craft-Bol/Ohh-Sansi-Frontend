@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useState } from "react";
 import { Formik, Form } from "formik";
 import { toast } from "sonner";
 import InputText from "../inputs/InputText";
@@ -9,127 +9,115 @@ import useFetchDepartamentos from "../../hooks/departamento/useFetchDepartamento
 import useFetchMunicipios from "../../hooks/departamento/useFetchMunicipios";
 import useFetchColegio from "../../hooks/Colegio/useFetchColegio";
 import inscripcionSchema from "../../schemas/InscripcionValidate";
-import "./Step1Form.css";
+import { useNavigate } from "react-router-dom";
+import { registerParticipante } from "../../api/api";
 import Swal from "sweetalert2";
+import "./Step1Form.css";
 
-const Step1Form = ({ formData, updateFormData, onNext}) => {
+const Step1Form = () => {
+  const navigate = useNavigate();
   const { niveles, loading: loadingNiveles } = useFetchNivelesEscolares();
   const { departamentos, loading: loadingDepartamentos } = useFetchDepartamentos();
-  const [selectedDepartamento, setSelectedDepartamento] = React.useState(formData.participante.idDepartamento || "");
+  const [selectedDepartamento, setSelectedDepartamento] = useState("");
   const { municipios, loading: loadingMunicipios } = useFetchMunicipios(selectedDepartamento);
-  const [selectedMunicipio, setSelectedMunicipio] = React.useState(formData.participante.idMunicipio || "");
+  const [selectedMunicipio, setSelectedMunicipio] = useState("");
   const { colegios, loading: loadingColegios } = useFetchColegio(selectedMunicipio);
 
-  const initialFormData = {
-    nombre: formData.participante?.nombreParticipante || "",
-    apellido: `${formData.participante?.apellidoPaterno || ""} ${formData.participante?.apellidoMaterno || ""}`.trim(),
-    documento: formData.participante?.carnetIdentidadParticipante || "",
-    fechaNacimiento: formData.participante?.fechaNacimiento || "",
-    departamento: formData.participante?.idDepartamento?.toString() || "",
-    municipio: formData.participante?.idMunicipio?.toString() || "",
-    institucion: formData.participante?.idColegio?.toString() || "",
-    grado: formData.participante?.idNivelGradoEscolar?.toString() || "",
-    email: formData.participante?.correoElectronicoParticipante || "",
-    telefono: formData.participante?.telefonoParticipante || "",
+  const loadSavedData = () => {
+    const savedData = localStorage.getItem("participanteFormData");
+    return savedData
+      ? JSON.parse(savedData)
+      : {
+          nombre: "",
+          apellido: "",
+          documento: "",
+          fechaNacimiento: "",
+          departamento: "",
+          municipio: "",
+          institucion: "",
+          grado: "",
+          email: "",
+          telefono: "",
+        };
   };
 
-  const handleSubmit = (values) => {
-    localStorage.setItem("step1FormData", JSON.stringify(values));
+  const handleSubmit = async (values) => {
+    try {
+      localStorage.setItem("participanteFormData", JSON.stringify(values));
 
-    updateFormData({
-      participante: {
-        ...formData?.participante,
+      const participanteData = {
+        idInscripcion: 60,
         nombreParticipante: values.nombre,
-        apellidoPaterno: values.apellido.split(' ')[0] || '',
-        apellidoMaterno: values.apellido.split(' ')[1] || '',
+        apellidoPaterno: values.apellido.split(" ")[0] || "",
+        apellidoMaterno: values.apellido.split(" ")[1] || "",
         carnetIdentidadParticipante: values.documento,
         fechaNacimiento: values.fechaNacimiento,
-        idDepartamento: values.departamento ? parseInt(values.departamento) : null,
-        idMunicipio: values.municipio ? parseInt(values.municipio) : null,
-        idColegio: values.institucion ? parseInt(values.institucion) : null,
-        idNivelGradoEscolar: values.grado ? parseInt(values.grado) : null,
+        idDepartamento: parseInt(values.departamento),
+        idMunicipio: parseInt(values.municipio),
+        idColegio: parseInt(values.institucion),
+        idNivel: parseInt(values.grado),
         correoElectronicoParticipante: values.email || null,
         telefonoParticipante: values.telefono || null,
-      },
-    });
-    Swal.fire({
-      icon: "success",
-      title: "¡Formulario guardado!",
-      text: "La información fue completada correctamente.",
-      confirmButtonText: "Continuar",
-    }).then(() => {
-      onNext(); 
-    });
+      };
 
-    // Toaster
-    // toast.success("Datos guardados correctamente. Pasando al siguiente paso...");
+      const response = await registerParticipante(participanteData);
 
-    // onNext();
+      if (response && response.data && response.data.existe) {
+        toast.error("El participante ya está registrado con ese documento.");
+        return;
+      }
+
+      toast.success("Participante registrado exitosamente");
+      Swal.fire({
+        icon: "success",
+        title: "¡Formulario guardado!",
+        text: "La información fue completada correctamente.",
+        confirmButtonText: "Continuar",
+      }).then(() => {
+        navigate("/areas-competencia");
+      });
+    } catch (error) {
+      console.error("Error al registrar participante:", error);
+      toast.error(
+        error.response?.data?.message || "Error al registrar participante"
+      );
+    }
   };
 
-
   return (
-    <Formik
-      initialValues={initialFormData}
-      validationSchema={inscripcionSchema}
-      onSubmit={handleSubmit}
-      validateOnBlur={true}
-      validateOnChange={true}
-    >
-      {({ values, setFieldValue, isValid, isSubmitting }) => (
-        <Form className="step1-container">
-          <span className="step1-description">
-            Ingrese los datos del participante (Paso 1 de 5)
-          </span>
+    <div className="form-container">
+      <h1>Registro de Participante</h1>
+      <span className="form-description">Ingrese los datos del participante</span>
 
-          <div className="step1-grid">
-            {/* Campos del formulario */}
+      <Formik
+        initialValues={loadSavedData()}
+        validationSchema={inscripcionSchema}
+        onSubmit={handleSubmit}
+        validateOnBlur={true}
+        validateOnChange={true}
+      >
+        {({ values, setFieldValue, isValid, isSubmitting }) => (
+          <Form className="step1-grid">
+            {/* Campos */}
             <div className="field-container">
-              <InputText
-                name="nombre"
-                label="Nombre"
-                required
-                onlyLetters
-                maxLength={50}
-              />
+              <InputText name="nombre" label="Nombre" required onlyLetters maxLength={50} />
             </div>
-
             <div className="field-container">
-              <InputText
-                label="Apellido"
-                name="apellido"
-                required
-                onlyLetters
-                maxLength={50}
-              />
+              <InputText name="apellido" label="Apellido" required onlyLetters maxLength={50} />
             </div>
-
             <div className="field-container">
-              <InputText
-                label="Documento de Identidad"
-                name="documento"
-                required
-                onlyNumbers
-                maxLength={10}
-              />
+              <InputText name="documento" label="Documento de Identidad" required onlyNumbers maxLength={10} />
             </div>
-
             <div className="field-container">
-              <InputText
-                label="Fecha de nacimiento"
-                name="fechaNacimiento"
-                type="date"
-                required
-              />
+              <InputText name="fechaNacimiento" label="Fecha de nacimiento" type="date" required />
             </div>
-
             <div className="field-container">
               <SelectInput
                 label="Departamento"
                 name="departamento"
                 options={departamentos.map(d => ({
                   value: d.idDepartamento.toString(),
-                  label: d.nombreDepartamento
+                  label: d.nombreDepartamento,
                 }))}
                 loading={loadingDepartamentos}
                 emptyMessage="No se encontraron departamentos"
@@ -141,14 +129,13 @@ const Step1Form = ({ formData, updateFormData, onNext}) => {
                 required
               />
             </div>
-
             <div className="field-container">
               <SelectInput
                 label="Municipio"
                 name="municipio"
                 options={municipios.map(m => ({
                   value: m.idMunicipio.toString(),
-                  label: m.nombreMunicipio
+                  label: m.nombreMunicipio,
                 }))}
                 loading={loadingMunicipios}
                 emptyMessage="No se encontraron municipios"
@@ -160,14 +147,13 @@ const Step1Form = ({ formData, updateFormData, onNext}) => {
                 required
               />
             </div>
-
             <div className="field-container">
               <SelectInput
                 label="Colegio/Institución"
                 name="institucion"
                 options={colegios.map(c => ({
                   value: c.idColegio.toString(),
-                  label: `${c.nombreColegio} - ${c.direccion}`
+                  label: `${c.nombreColegio} - ${c.direccion}`,
                 }))}
                 loading={loadingColegios}
                 emptyMessage="No se encontraron colegios"
@@ -175,44 +161,29 @@ const Step1Form = ({ formData, updateFormData, onNext}) => {
                 required
               />
             </div>
-
             <div className="field-container">
               <SelectInput
                 label="Grado/Nivel"
                 name="grado"
                 options={niveles.map(n => ({
                   value: n.idNivel.toString(),
-                  label: n.nombreNivelEscolar
+                  label: n.nombreNivelEscolar,
                 }))}
                 loading={loadingNiveles}
                 emptyMessage="No se encontraron niveles"
                 required
               />
             </div>
-
             <div className="field-container">
-              <InputText
-                label="Correo electrónico"
-                name="email"
-                type="email"
-                placeholder="correo@ejemplo.com"
-                required
-              />
+              <InputText name="email" label="Correo electrónico" type="email" placeholder="correo@ejemplo.com" required />
+            </div>
+            <div className="field-container">
+              <InputText name="telefono" label="Teléfono" required onlyNumbers maxLength={8} />
             </div>
 
-            <div className="field-container">
-              <InputText
-                label="Teléfono"
-                name="telefono"                
-                required
-                onlyNumbers
-                maxLength={8}
-              />
-
-            </div>
-
+            {/* Botón */}
             <div className="field-container full-width">
-              <div className="step1-actions">
+              <div className="form-actions">
                 <ButtonPrimary
                   type="submit"
                   buttonStyle="primary"
@@ -220,23 +191,23 @@ const Step1Form = ({ formData, updateFormData, onNext}) => {
                   onClick={() => {
                     if (!isValid) {
                       Swal.fire({
-                        icon: 'error',
-                        title: 'Campos incompletos',
-                        text: 'Por favor, complete todos los campos requeridos',
+                        icon: "error",
+                        title: "Campos incompletos",
+                        text: "Por favor, complete todos los campos requeridos",
                         showConfirmButton: false,
                         timer: 2000,
                       });
                     }
                   }}
                 >
-                  Siguiente
+                  Registrar Participante
                 </ButtonPrimary>
               </div>
             </div>
-          </div>
-        </Form>
-      )}
-    </Formik>
+          </Form>
+        )}
+      </Formik>
+    </div>
   );
 };
 
