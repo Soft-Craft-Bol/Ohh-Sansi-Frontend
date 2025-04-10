@@ -130,3 +130,61 @@
   cursor: pointer;
   transition: background-color 0.3s ease;
 }
+
+/* Media Queries para diseño responsivo */
+@media screen and (max-width: 1024px) {
+  .top-container, .info-container, .orden-detail {
+    margin-left: 4vh;
+    margin-right: 4vh;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .top-container, .info-container, .orden-detail {
+    margin-left: 2vh;
+    margin-right: 2vh;
+  }
+  
+  .info-box {
+    flex-direction: column;
+    padding: 15px;
+  }
+  
+  .divider {
+    width: 100%;
+    height: 1px;
+    margin: 15px 0;
+  }
+  
+  .input-container {
+    max-width: 100%;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .top-container, .info-container, .orden-detail {
+    margin-left: 1vh;
+    margin-right: 1vh;
+  }
+  
+  .code-text {
+    font-size: 1rem;
+  }
+  
+  .codigo-introducido {
+    font-size: 1.1rem;
+  }
+  
+  .cont-cod-int {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .big-bold-blue {
+    font-size: 1.1rem;
+  }
+  
+  .btn-generar {
+    width: 100%;
+  }
+}

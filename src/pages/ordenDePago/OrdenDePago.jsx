@@ -40,6 +40,7 @@ const OrdenDePago = () => {
       {error && <div className="error-message">{error}</div>}
     </div>
   );
+  
   const renderInfoSection = () => {
     if (!ordenData) return null;
 
@@ -72,8 +73,10 @@ const OrdenDePago = () => {
         <div className='pago'>
           <h3>Detalles del pago</h3>
           <p>Costo por área: <span className="bold-blue">{costoPorArea} bs.</span></p>
-          <p className='total-pagar'>Total a pagar: </p>
-          <span className="big-bold-blue">{totalAPagar} bs.</span>
+          <div className="total-container">
+            <p className='total-pagar'>Total a pagar: </p>
+            <span className="big-bold-blue">{totalAPagar} bs.</span>
+          </div>
         </div>
       </div>
     );
@@ -83,10 +86,10 @@ const OrdenDePago = () => {
     <div className="orden-de-pago">
       <Header
         title="Generación de Orden de Pago"
-        description="Genera la orden de pago para el participante previamente inscrito en la olimpiada, buscando con el código de inscripción brindado al finalizar el registro."
+        description="Necesitas la orden de pago para realizar el pago de la inscripción."
       />
       <div className="top-container">
-        <h2>Generar orden de pago</h2>
+        {/* <h2>Generar orden de pago</h2> */}
         {renderInputSection()}
       </div>
       <div className='info-container'>
@@ -105,7 +108,10 @@ const OrdenDePago = () => {
       </div>
       {mostrarDetalle && ordenGenerada && (
         <div className='orden-detail'>
-          <OrdenPagoDetalle data={ordenGenerada} />
+          <OrdenPagoDetalle 
+            data={ordenGenerada}
+            nit_tutor={ordenData.tutores[0]?.carnet_identidad_tutor || '000000000' }
+          />
         </div>
       )}
     </div>

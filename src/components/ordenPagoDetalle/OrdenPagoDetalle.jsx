@@ -2,7 +2,7 @@ import React from 'react';
 import './OrdenPagoDetalle.css';
 import { generateOrdenPagoPDF } from '../../utils/PDFGenerator';
 
-const OrdenPagoDetalle = ({ data }) => {
+const OrdenPagoDetalle = ({ data, nit_tutor }) => {
   const formatFecha = (fechaStr) => {
     if (!fechaStr) return '';
     const meses = [
@@ -52,7 +52,7 @@ const OrdenPagoDetalle = ({ data }) => {
           <strong>Señor(es):</strong> 
           <span className="underline"> {data?.responsablePago || 'Nombre no disponible'}</span> 
           <strong> NIT/CI:</strong> 
-          <span className="underline espacio-nit"></span>
+          <span className="underline espacio-nit">{nit_tutor}</span>
         </p>
         <p><strong>Por lo siguiente:</strong></p>
       </div>
