@@ -1,7 +1,35 @@
 import React from 'react';
 import './OrdenPagoDetalle.css';
+import { generateOrdenPagoPDF } from '../../utils/PDFGenerator';
 
-const OrdenPagoDetalle = () => {
+const OrdenPagoDetalle = ({ data, nit_tutor }) => {
+  const formatFecha = (fechaStr) => {
+    if (!fechaStr) return '';
+    const meses = [
+      'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+      'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
+    ];
+    const fecha = new Date(fechaStr);
+    const dia = fecha.getDate();
+    const mes = meses[fecha.getMonth()];
+    const año = fecha.getFullYear();
+    return `Cochabamba, ${dia} de ${mes} de ${año}`;
+  };
+
+  const handleDownload = () => {
+    try {
+      generateOrdenPagoPDF(data)
+        .save()
+        .catch(error => {
+          console.error('Error al generar el PDF:', error);
+          alert('Ocurrió un error al generar el PDF. Por favor intente nuevamente.');//cambiar a soner, criterio de acptacion
+        });
+    } catch (error) {
+      console.error('Error al generar el PDF:', error);
+      alert('Ocurrió un error al generar el PDF. Por favor intente nuevamente.');//cambiar a soner, criterio de acptacion
+    }
+  };
+
   return (
     <div className="orden-pago-detalle">
       <div className="cabecera">
@@ -12,12 +40,20 @@ const OrdenPagoDetalle = () => {
         </div>
         <div className="orden-numero">
           <p><strong>ORDEN DE PAGO</strong></p>
-          <p className="numero-rojo">N°001233</p>
+          <p className="numero-rojo">{data?.codOrdenPago || 'N°000000'}</p>
         </div>
       </div>
       <div className="datos-emisor">
-        <p><strong>Emitido por la unidad:</strong> <span className="underline">FACULTAD DE CIENCIAS Y TECNOLOGÍA</span></p>
-        <p><strong>Señor(es):</strong> <span className="underline">Alfredo Ernesto Torrico Garcia</span> <strong>NIT/CI:</strong> <span className="underline espacio-nit"></span></p>
+        <p>
+          <strong>Emitido por la unidad:</strong> 
+          <span className="underline"> {data?.emisor || 'FACULTAD DE CIENCIAS Y TECNOLOGÍA'}</span>
+        </p>
+        <p>
+          <strong>Señor(es):</strong> 
+          <span className="underline"> {data?.responsablePago || 'Nombre no disponible'}</span> 
+          <strong> NIT/CI:</strong> 
+          <span className="underline espacio-nit">{nit_tutor}</span>
+        </p>
         <p><strong>Por lo siguiente:</strong></p>
       </div>
       <table className="tabla-detalle">
@@ -31,22 +67,29 @@ const OrdenPagoDetalle = () => {
         </thead>
         <tbody>
           <tr>
-            <td>20</td>
-            <td>Inscripción a la olimpiada estudiantil</td>
-            <td>Bs. 35</td>
-            <td>Bs. 700</td>
+            <td>{data?.cantidad || 0}</td>
+            <td>{data?.concepto || 'Concepto no especificado'}</td>
+            <td>Bs. {data?.precio_unitario?.toFixed(2) || '0.00'}</td>
+            <td>Bs. {data?.montoTotalPago?.toFixed(2) || '0.00'}</td>
           </tr>
-          {/* <tr><td colSpan="4">&nbsp;</td></tr> */}
-          
         </tbody>
       </table>
       <p className="nota">Nota: no vale como factura oficial</p>
       <div className="totales">
-        <p><strong>Son:</strong> <span className="underline">SETECIENTOS 00/100</span> Bolivianos: <span className="monto-box">700</span></p>
+        <p>
+          <strong>Son:</strong> 
+          <span className="underline"> {data?.precioLiteral || 'CERO 00/100'}</span> 
+          Bolivianos: <span className="monto-box">{data?.montoTotalPago?.toFixed(2) || '0.00'}</span>
+        </p>
       </div>
-      <p className="footer-fecha">Cochabamba, 02 de abril de 2025</p>
+      <p className="footer-fecha">
+        {formatFecha(data?.fechaEmisionOrdenPago) || 'Fecha no disponible'}
+      </p>
+      
       <div className="boton-descargar">
-        <button className="btn-descargar">⬇ Descargar orden</button>
+        <button className="btn-descargar" onClick={handleDownload}>
+          ⬇ Descargar orden
+        </button>
       </div>
     </div>
   );

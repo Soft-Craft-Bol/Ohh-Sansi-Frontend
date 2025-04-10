@@ -27,57 +27,27 @@ const AppRoutes = () => {
       {/*<Route path="/formulario" element= {<Layout><Formulario /></Layout>} />*/}
 
       {/* Ruta raíz protegida */}
-      <Route
-        path="/"
-        element={
-          <PrivateRoute>
-            <MainContent />
-          </PrivateRoute>
-        }
-      />
+      <Route path="/" element={<PrivateRoute><Layout><MainContent /></Layout></PrivateRoute>}/>
+
 
       {/* Otras rutas protegidas */}
       <Route
         path="/home"
-        element={
-          <PrivateRoute>
-            <Layout>
-              <MainContent />
-            </Layout>
-          </PrivateRoute>
-        }
+        element={<PrivateRoute><Layout><MainContent /></Layout></PrivateRoute>}
       />
       <Route
         path="/inicio"
-        element={
-          <PrivateRoute>
-            <Layout>
-              <Inicio />
-            </Layout>
-          </PrivateRoute>
-        }
+        element={<PrivateRoute><Layout><Inicio /></Layout></PrivateRoute>}
       />
 
       <Route
         path="/form"
-        element={
-          <PrivateRoute>
-            <Layout>
-              <MultiStepForm />
-            </Layout>
-          </PrivateRoute>
-        }
+        element={<PrivateRoute><Layout><MultiStepForm /></Layout></PrivateRoute>}
       />
 
       <Route
         path="/management"
-        element={
-          <PrivateRoute>
-            <Layout>
-              <ManagementPage />
-            </Layout>
-          </PrivateRoute>
-        }
+        element={<Layout><ManagementPage /></Layout>}
       />
 
       <Route
