@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import * as XLSX from 'xlsx';
@@ -6,11 +6,13 @@ import { FaUpload, FaDownload } from 'react-icons/fa';
 import { RiFileExcel2Line } from 'react-icons/ri';
 import { ButtonPrimary } from '../button/ButtonPrimary';
 import './LoadExcel.css';
+import Swal from 'sweetalert2';
 
 const validExtensions = ['.xlsx', '.xls', '.csv', '.xsb'];
 
 const LoadExcel = () => {
   const fileInputRef = useRef(null);
+  const [excelData, setExcelData] = useState([]);
 
   const formik = useFormik({
     initialValues: {
@@ -22,7 +24,7 @@ const LoadExcel = () => {
     onSubmit: async (values, { setSubmitting }) => {
       const file = values.file;
       const reader = new FileReader();
-
+    
       reader.onload = (event) => {
         const data = new Uint8Array(event.target.result);
         const workbook = XLSX.read(data, { type: 'array' });
@@ -30,9 +32,11 @@ const LoadExcel = () => {
         const worksheet = workbook.Sheets[sheetName];
         const json = XLSX.utils.sheet_to_json(worksheet);
         console.log('Contenido del archivo:', json);
+    
+        setExcelData(json); // 👉 Guardar los datos para mostrar
         setSubmitting(false);
       };
-
+    
       reader.readAsArrayBuffer(file);
     },
   });
@@ -46,6 +50,13 @@ const LoadExcel = () => {
       formik.setFieldError('file', 'Formato de archivo no válido');
       formik.setFieldValue('file', null);
       formik.setFieldTouched('file', true);
+      Swal.fire({
+        icon: "error",
+        title: "Formato de archivo no válido",
+        text: "Por favor, seleccione un archivo con las extensiones permitidas",
+        showConfirmButton: false,
+        timer: 2000,
+      });
       return;
     }
 
@@ -55,7 +66,8 @@ const LoadExcel = () => {
   };
 
   return (
-    <form onSubmit={formik.handleSubmit} className="excel-upload-container">
+    <div>
+      <form onSubmit={formik.handleSubmit} className="excel-upload-container">
       <div className="upload-left">
         <h3>Carga de Participantes desde Excel</h3>
         <p>Sube un archivo Excel con los datos de múltiples los participantes siguiendo el formato requerido.</p>
@@ -76,8 +88,11 @@ const LoadExcel = () => {
             &emsp; Subir archivo Excel
           </ButtonPrimary>
 
-          {formik.values.file && (
+          {formik.values.file && (        
             <div className="file-info">
+              <ButtonPrimary type="submit" style={{ marginTop: '1rem' }}>
+            Procesar archivo
+           </ButtonPrimary>  
               <RiFileExcel2Line style={{ color: '#22c55e', fontSize: '18px' }} />
               <span
                 style={{ maxWidth: '30vh', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
@@ -116,7 +131,37 @@ const LoadExcel = () => {
           <FaDownload /> Descargar plantilla
         </a>
       </div>
+
+      
+
     </form>
+{excelData.length > 0 && (
+        <div className="table-container">
+          <h3>Listado de Participantes Cargados</h3>
+          <table className="excel-table">
+            <thead>
+              <tr>
+                {Object.keys(excelData[0]).map((key) => (
+                  <th key={key}>{key}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {excelData.map((row, index) => (
+                <tr key={index}>
+                  {Object.keys(row).map((key) => (
+                    <td key={key}>{row[key]}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+    </div>
+    
+
   );
 };
 

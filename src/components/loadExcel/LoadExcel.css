@@ -29,32 +29,12 @@
     margin-bottom: 16px;
   }
   
-  .upload-button {
-    display: flex;
-    align-items: center;
-    background-color: #1d4ed8;
-    color: #fff;
-    padding: 10px 16px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: 500;
-    margin-bottom: 14px;
-    transition: background 0.2s ease;
-  }
   .input-file {
     position: absolute;
     font-size: 100px;
     right: 0;
     top: 0;
     opacity: 0;
-  }
-  .upload-button .icon {
-    margin-right: 8px;
-  }
-  
-  .upload-button:hover {
-    background-color: #2563eb;
   }
   
   .file-info {
@@ -118,3 +98,32 @@
     text-decoration: underline;
   }
   
+  .table-container {
+    max-height: 400px;
+    overflow: auto;
+    background-color: white;
+  }
+  
+  .table-container h3{
+    color: var(--blue);
+    margin-bottom: 10px;
+  }
+  .excel-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+  }
+  
+  .excel-table th,
+  .excel-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+  }
+  
+  .excel-table th {
+    background-color: #f0f0f0;
+    font-weight: bold;
+    position: sticky;
+    top: 0;
+  }
