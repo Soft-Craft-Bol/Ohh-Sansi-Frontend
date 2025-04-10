@@ -1,11 +1,14 @@
 import React from "react";
 import "./ManagementCard.css";
 
-const ManagementCard = ({ title, info = [] }) => {
+const ManagementCard = ({ title, info = [], extraContent = null }) => {
   return (
     <div className="management-card">
       <div className="management-card-body">
-        {title && <h4 className="management-card-title">{title}</h4>}
+        <div className="management-card-header">
+          {title && <h4 className="management-card-title">{title}</h4>}
+          {extraContent && <div className="management-extra">{extraContent}</div>}
+        </div>
         <ul className="management-info-list">
           {info.map(({ label, value }, index) => (
             <li key={index} className="management-info-item">
@@ -20,4 +23,3 @@ const ManagementCard = ({ title, info = [] }) => {
 };
 
 export default ManagementCard;
- 
