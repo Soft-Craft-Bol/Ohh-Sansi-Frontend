@@ -1,0 +1,39 @@
+.event-card {
+    border: 1px solid #e0e0e0;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    background: #fff;
+  }
+  .event-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .event-title {
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    
+  }
+  .icon-edit {
+    cursor: pointer;
+    color: var(--yellow);
+  }
+    .icon-delete {
+        cursor: pointer;
+        color: var(--red);
+    }
+  .eye {
+    color: green;
+  }
+  .event-date {
+    font-size: 0.9em;
+    color: #555;
+  }
+  .event-desc {
+    font-size: 0.85em;
+    color: #777;
+  }
+  

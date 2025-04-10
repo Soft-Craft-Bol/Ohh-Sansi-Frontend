@@ -5,6 +5,7 @@ import MainContent from '../components/sidebar/Main';
 import Inicio from '../pages/home/Inicio';
 import Layout from '../Layout/Layout';
 import OrdenDePago from '../pages/ordenDePago/OrdenDePago';
+import EstadoInscripcion from '../pages/estadoInscripcion/EstadoInscripcion';
 import MultiStepForm from '../components/multiStepForm/MultiStepForm';
 import ManagementPage from '../pages/admin/Management';
 import FormArea from "../components/management/formArea/FormArea";
@@ -41,7 +42,7 @@ const AppRoutes = () => {
 
       <Route
         path="/management"
-        element={<Layout><ManagementPage /></Layout>}
+        element={<PrivateRoute><Layout><ManagementPage /></Layout></PrivateRoute>}
       />
 
     <Route
@@ -59,7 +60,16 @@ const AppRoutes = () => {
         </PrivateRoute>
       }
     />
-
+    <Route
+      path="/estado-inscripcion"
+      element={
+        <PrivateRoute>
+          <Layout>
+            <EstadoInscripcion />
+          </Layout>
+        </PrivateRoute>
+      }
+    />
       {/* Ruta de error 404 */}
       <Route path="*" element={<NotFound404 />} />
 

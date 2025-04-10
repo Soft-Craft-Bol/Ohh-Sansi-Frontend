@@ -121,7 +121,7 @@ const GradosManagement = () => {
                                     value=""
                                 >
                                     <option value="">Seleccione un grado escolar</option>
-                                    {ordenarGrados(nivelesEscolares).map(nivel => (
+                                    {ordenarGrados(availableGrades).map(nivel => (
                                         <option key={nivel.idNivel} value={nivel.idNivel}>
                                             {nivel.nombreNivelEscolar}
                                         </option>

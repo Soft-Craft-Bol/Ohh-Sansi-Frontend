@@ -84,6 +84,10 @@ const CategoriesManagement = () => {
             setFieldValue("nivelesEscolares", newGrades);
           };
 
+          const availableGrades = nivelesEscolares.filter(
+            nivel => !values.nivelesEscolares.includes(nivel.idNivel)
+        );
+
           return (
             <Form>
               <InputText
@@ -120,7 +124,7 @@ const CategoriesManagement = () => {
                   value=""
                 >
                   <option value="">Seleccione un grado escolar</option>
-                  {ordenarGrados(nivelesEscolares).map(nivel => (
+                  {ordenarGrados(availableGrades).map(nivel => (
                     <option key={nivel.idNivel} value={nivel.idNivel}>
                       {nivel.nombreNivelEscolar}
                     </option>

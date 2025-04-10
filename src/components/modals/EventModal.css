@@ -1,0 +1,131 @@
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.4);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .modal-container {
+    background-color: #ffffff;
+    border-radius: 12px;
+    padding: 24px;
+    width: 420px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    font-family: 'Segoe UI', sans-serif;
+  }
+  
+  .modal-container h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 20px;
+    font-weight: 600;
+  }
+  
+  .modal-container input[type="text"],
+  .modal-container input[type="date"],
+  .modal-container textarea {
+    width: 100%;
+    padding: 10px 12px;
+    margin-top: 4px;
+    margin-bottom: 16px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    background-color: #f9fafb;
+  }
+  
+  .modal-container textarea {
+    resize: vertical;
+    min-height: 60px;
+  }
+  
+  .date-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  
+  .date-row > div {
+    flex: 1;
+  }
+  
+  .public-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 10px;
+    font-size: 14px;
+    color: #333;
+  }
+  
+  .switch {
+    position: relative;
+    display: inline-block;
+    width: 42px;
+    height: 24px;
+  }
+  .switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0;
+    right: 0; bottom: 0;
+    background-color: #ccc;
+    transition: 0.4s;
+    border-radius: 34px;
+  }
+  .slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.4s;
+    border-radius: 50%;
+  }
+  input:checked + .slider {
+    background-color: var(--blue); 
+  }
+  input:checked + .slider:before {
+    transform: translateX(18px);
+  }
+  
+  .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 24px;
+  }
+  
+  .modal-actions button {
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .modal-actions button[type="button"] {
+    background-color: #e5e7eb;
+    color: #111827;
+  }
+  
+  .modal-actions .btn-primary {
+    background-color:var(--blue);
+    color: white;
+  }
+  
+  .modal-actions .btn-primary:hover {
+    background-color: #164d9a;
+  }
+  
