@@ -64,6 +64,8 @@
   margin: 20px 8vh;
   display: flex;
   justify-content: center;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 .info-box {
@@ -116,4 +118,15 @@
   margin: 0px 8vh;
   display: flex;
   justify-content: center;
+}
+.btn-generar{
+  background-color: var(--blue);
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-family: var(--poppins);
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
 }

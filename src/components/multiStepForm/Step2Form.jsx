@@ -65,7 +65,7 @@ const Step2Form = ({ onNext, onPrev, formData = {}, updateFormData }) => {
           uniqueAreas.push({
             idArea: areaCat.idArea,
             nombreArea: areaCat.nombreArea,
-            precioArea: areaCat.precioArea,
+            //precioArea: areaCat.precioArea,
             descripcionArea: areaCat.descripcionArea,
             nombreCortoArea: areaCat.nombreCortoArea,
             source: 'Categoría', // Indica que viene de categoría
@@ -100,7 +100,8 @@ const Step2Form = ({ onNext, onPrev, formData = {}, updateFormData }) => {
 
   const totalCosto = seleccionadas.reduce((acc, id) => {
     const area = areas.find((a) => a.idArea === id);
-    return acc + (area ? area.precioArea : 0);
+    //return acc + (area ? area.precioArea : 0);
+    return 19.99; 
   }, 0);
 
   const handleSubmit = (e) => {
@@ -110,7 +111,7 @@ const Step2Form = ({ onNext, onPrev, formData = {}, updateFormData }) => {
       .map(area => ({ 
         idArea: area.idArea,
         nombreArea: area.nombreArea,
-        precioArea: area.precioArea,
+        //precioArea: area.precioArea,
         source: area.source,
         categoria: area.categoria
       }));
@@ -158,7 +159,7 @@ const Step2Form = ({ onNext, onPrev, formData = {}, updateFormData }) => {
                 </span>
               </h3>
               <p>{area.descripcionArea}</p>
-              <p className="costo">Costo: Bs {area.precioArea.toFixed(2)}</p>
+              {/* <p className="costo">Costo: Bs {area.precioArea.toFixed(2)}</p> */}
             </div>
           ))
         ) : (
@@ -185,7 +186,7 @@ const Step2Form = ({ onNext, onPrev, formData = {}, updateFormData }) => {
                         </span>
                       </h3>
                       <p>{area.descripcionArea}</p>
-                      <p className="costo">Costo: Bs {area.precioArea.toFixed(2)}</p>
+                      {/* <p className="costo">Costo: Bs {area.precioArea.toFixed(2)}</p> */}
                     </div>
                     <button 
                       type="button"

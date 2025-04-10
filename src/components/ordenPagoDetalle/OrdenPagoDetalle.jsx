@@ -1,7 +1,7 @@
 import React from 'react';
 import './OrdenPagoDetalle.css';
 
-const OrdenPagoDetalle = () => {
+const OrdenPagoDetalle = ({ data }) => {
   return (
     <div className="orden-pago-detalle">
       <div className="cabecera">

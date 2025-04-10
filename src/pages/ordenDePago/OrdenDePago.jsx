@@ -3,12 +3,13 @@ import "./OrdenDePago.css";
 import Header from "../../components/header/Header";
 import { FaSearch } from 'react-icons/fa';
 import OrdenPagoDetalle from "../../components/ordenPagoDetalle/OrdenPagoDetalle";
-import { getOrdenPagoDetailInfo } from "../../api/api";
+import { getOrdenPagoDetailInfo, createOrdenPago } from "../../api/api";
 
 const OrdenDePago = () => {
   const [inputValue, setInputValue] = useState("");
   const [codigoIntroducido, setCodigoIntroducido] = useState("");
   const [ordenData, setOrdenData] = useState(null);
+  const [mostrarDetalle, setMostrarDetalle] = useState(false);
 
   const handleSearch = () => {
     if (inputValue.trim() !== "") {
@@ -35,6 +36,10 @@ const OrdenDePago = () => {
     
   const handleKeyPress = (event) => {
     if (event.key === "Enter") handleSearch();
+  };
+
+  const handleGenerarOrden = () => {
+    setMostrarDetalle(true);
   };
 
   const renderInputSection = () => (
@@ -109,10 +114,9 @@ const OrdenDePago = () => {
         <h2>Generar orden de pago</h2>
         {renderInputSection()}
       </div>
-      <div className='info-container'>
-        {renderInfoSection()}
-      </div>
-      {ordenData && (
+      
+      
+      {ordenData && mostrarDetalle &&(
         <div className='orden-detail'>
           <OrdenPagoDetalle data={ordenData} />
         </div>
@@ -122,3 +126,19 @@ const OrdenDePago = () => {
 };
 
 export default OrdenDePago;
+
+
+
+
+
+
+{/* <div className='info-container'>
+        {renderInfoSection()}
+        {ordenData && (
+          <div className='boton-generar'>
+            <button onClick={handleGenerarOrden} className="btn-generar">
+              Generar Orden de Pago
+            </button>
+          </div>
+        )}
+      </div> */}
