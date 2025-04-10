@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 import "./OrdenDePago.css";
 import Header from "../../components/header/Header";
 import { FaSearch } from 'react-icons/fa';
@@ -20,8 +21,18 @@ const OrdenDePago = () => {
     handleGenerarOrden
   } = useOrdenPago();
 
+  const containerVariants = {
+    hidden: { opacity: 0, y: 50 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }, 
+  };
+
   const renderInputSection = () => (
-    <div className="buscador-codigo">
+    <motion.div
+      className="buscador-codigo"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
       <p>Genera la orden de pago referente a la inscripción, introduciendo el código</p>
       <div className="input-container">
         <input
@@ -38,9 +49,9 @@ const OrdenDePago = () => {
         <span className="codigo-introducido">{codigoIntroducido || "sin código"}</span>
       </div>
       {error && <div className="error-message">{error}</div>}
-    </div>
+    </motion.div>
   );
-  
+
   const renderInfoSection = () => {
     if (!ordenData) return null;
 
@@ -61,24 +72,29 @@ const OrdenDePago = () => {
     const totalAPagar = totalAreas * costoPorArea;
 
     return (
-      <div className='info-box'>
-        <div className='resumen'>
+      <motion.div
+        className="info-box"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        <div className="resumen">
           <h3>Resumen de la inscripción</h3>
           <p>Total de participantes: <span className="bold-blue">{totalParticipantes}</span></p>
           <p>Total áreas inscritas: <span className="bold-blue">{totalAreas}</span></p>
           <p>Nombre del responsable: <span className="bold-blue">{nombreResponsable}</span></p>
           <p>Correo del responsable: <span className="bold-blue">{correoResponsable}</span></p>
         </div>
-        <div className='divider'></div>
-        <div className='pago'>
+        <div className="divider"></div>
+        <div className="pago">
           <h3>Detalles del pago</h3>
           <p>Costo por área: <span className="bold-blue">{costoPorArea} bs.</span></p>
           <div className="total-container">
-            <p className='total-pagar'>Total a pagar: </p>
+            <p className="total-pagar">Total a pagar: </p>
             <span className="big-bold-blue">{totalAPagar} bs.</span>
           </div>
         </div>
-      </div>
+      </motion.div>
     );
   };
 
@@ -88,14 +104,23 @@ const OrdenDePago = () => {
         title="Generación de Orden de Pago"
         description="Necesitas la orden de pago para realizar el pago de la inscripción."
       />
-      <div className="top-container">
-        {/* <h2>Generar orden de pago</h2> */}
+      <motion.div
+        className="top-container"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
         {renderInputSection()}
-      </div>
-      <div className='info-container'>
+      </motion.div>
+      <motion.div
+        className="info-container"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
         {renderInfoSection()}
         {ordenData && !mostrarDetalle && (
-          <div className='boton-generar'>
+          <div className="boton-generar">
             <button 
               onClick={handleGenerarOrden} 
               className="btn-generar"
@@ -105,14 +130,19 @@ const OrdenDePago = () => {
             </button>
           </div>
         )}
-      </div>
+      </motion.div>
       {mostrarDetalle && ordenGenerada && (
-        <div className='orden-detail'>
+        <motion.div
+          className="orden-detail"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
           <OrdenPagoDetalle 
             data={ordenGenerada}
             nit_tutor={ordenData.tutores[0]?.carnet_identidad_tutor || '000000000' }
           />
-        </div>
+        </motion.div>
       )}
     </div>
   );
