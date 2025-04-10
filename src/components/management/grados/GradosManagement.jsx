@@ -160,11 +160,7 @@ const GradosManagement = () => {
                 }}
             </Formik>
 
-<<<<<<< HEAD
-            <h3>Grados registrados</h3>
-=======
             <h2>Grados registrados</h2>
->>>>>>> 84d4d2cb383d1665a6f146b6369dcca706449a3c
             {data?.areasgrades?.length > 0 ? (
                 <div className="categories-list">
                     {data.areasgrades.map((item, index) => (
