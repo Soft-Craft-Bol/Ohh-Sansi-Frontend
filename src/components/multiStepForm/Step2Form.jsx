@@ -1,90 +1,72 @@
 import React, { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { ButtonPrimary } from "../button/ButtonPrimary";
+import { getAreaByCI, inscripcionEstudiante, sendEmail } from "../../api/api";
 import "./Step2Form.css";
-import { getAreaByIdGrade } from "../../api/api";
 
-const Step2Form = ({ onNext, onPrev, formData = {}, updateFormData }) => {
-  const [seleccionadas, setSeleccionadas] = useState(
-    formData.areasCompetenciaEstudiante?.map(a => a.idArea) || []
-  );
+const Step2Form = ({ formData = {}, updateFormData, navigate }) => {
+  const [seleccionadas, setSeleccionadas] = useState([]);
   const [areas, setAreas] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (formData.participante?.idNivelGradoEscolar) {
-      fetchAreasByGrade();
-    } else {
-      toast.error("Primero seleccione un grado/nivel en el paso anterior");
-      onPrev();
+    if (!formData.participante?.carnetIdentidadParticipante) {
+      toast.error("Debe ingresar el carnet del participante en el Paso 1");
+      return;
     }
-  }, [formData.participante?.idNivelGradoEscolar]);
+    fetchAreasByCI();
+  }, []);
 
-  const fetchAreasByGrade = async () => {
+  const fetchAreasByCI = async () => {
     try {
       setIsLoading(true);
-      const response = await getAreaByIdGrade(formData.participante.idNivelGradoEscolar);
-      
-      // Combinamos y procesamos ambas listas de áreas
-      const combinedAreas = processAreas(response.data);
-      
-      setAreas(combinedAreas);
+      const response = await getAreaByCI(formData.participante.carnetIdentidadParticipante);
+      const processed = processAreas(response.data);
+      setAreas(processed);
     } catch (error) {
-      console.error("Error fetching areas by grade:", error);
-      toast.error("Error al cargar las áreas para este grado");
-      setAreas([]);
+      console.error("Error al obtener áreas por CI:", error);
+      toast.error("No se pudieron cargar las áreas");
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Función para combinar y procesar las áreas de ambas fuentes
   const processAreas = (data) => {
-    const seenAreas = new Set();
-    const uniqueAreas = [];
-    
-    // Procesar áreas directas (de 'areas')
-    if (data.areas && Array.isArray(data.areas)) {
-      data.areas.forEach(area => {
-        if (!seenAreas.has(area.idArea)) {
-          seenAreas.add(area.idArea);
-          uniqueAreas.push({
-            ...area,
-            source: 'Nivel', // Indica que viene del nivel escolar
-            categoria: null // No pertenece a categoría
-          });
-        }
-      });
-    }
-    
-    // Procesar áreas de categorías (de 'areasCategorias')
-    if (data.areasCategorias && Array.isArray(data.areasCategorias)) {
-      data.areasCategorias.forEach(areaCat => {
-        if (!seenAreas.has(areaCat.idArea)) {
-          seenAreas.add(areaCat.idArea);
-          uniqueAreas.push({
-            idArea: areaCat.idArea,
-            nombreArea: areaCat.nombreArea,
-            precioArea: areaCat.precioArea,
-            descripcionArea: areaCat.descripcionArea,
-            nombreCortoArea: areaCat.nombreCortoArea,
-            source: 'Categoría', // Indica que viene de categoría
-            categoria: {
-              id: areaCat.idCategoria,
-              nombre: areaCat.codigoCategoria
-            }
-          });
-        }
-      });
-    }
-    
-    return uniqueAreas;
+    const seen = new Set();
+    const result = [];
+
+    data.areas?.forEach(area => {
+      if (!seen.has(area.idArea)) {
+        seen.add(area.idArea);
+        result.push({ ...area, source: "Nivel", categoria: null });
+      }
+    });
+
+    data.areasCategorias?.forEach(area => {
+      if (!seen.has(area.idArea)) {
+        seen.add(area.idArea);
+        result.push({
+          idArea: area.idArea,
+          nombreArea: area.nombreArea,
+          precioArea: area.precioArea,
+          descripcionArea: area.descripcionArea,
+          nombreCortoArea: area.nombreCortoArea,
+          source: "Categoría",
+          categoria: {
+            id: area.idCategoria,
+            nombre: area.codigoCategoria,
+          }
+        });
+      }
+    });
+
+    return result;
   };
 
   const toggleSeleccion = (id) => {
-    setSeleccionadas((prev) => {
+    setSeleccionadas(prev => {
       if (prev.includes(id)) {
-        return prev.filter((areaId) => areaId !== id);
+        return prev.filter(a => a !== id);
       } else if (prev.length < 2) {
         return [...prev, id];
       } else {
@@ -94,134 +76,70 @@ const Step2Form = ({ onNext, onPrev, formData = {}, updateFormData }) => {
     });
   };
 
-  const eliminarSeleccion = (id) => {
-    setSeleccionadas((prev) => prev.filter((areaId) => areaId !== id));
-  };
-
   const totalCosto = seleccionadas.reduce((acc, id) => {
-    const area = areas.find((a) => a.idArea === id);
-    return acc + (area ? area.precioArea : 0);
+    const area = areas.find(a => a.idArea === id);
+    return acc + (area?.precioArea || 0);
   }, 0);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const areasSeleccionadas = areas
-      .filter(area => seleccionadas.includes(area.idArea))
-      .map(area => ({ 
+
+    if (seleccionadas.length === 0) {
+      toast.error("Debe seleccionar al menos una área");
+      return;
+    }
+
+    const areasSeleccionadas = areas.filter(area => seleccionadas.includes(area.idArea));
+    const dataToSend = {
+      
+      areasCompetenciaEstudiante: areasSeleccionadas.map(area => ({
         idArea: area.idArea,
-        nombreArea: area.nombreArea,
-        precioArea: area.precioArea,
-        source: area.source,
-        categoria: area.categoria
-      }));
-    
-    updateFormData({ 
-      areasCompetenciaEstudiante: areasSeleccionadas,
-      costoTotal: totalCosto,
-      areasInfo: areas
-    });
-    onNext();
+      })),
+      costoTotal: totalCosto
+    };
+
+    try {
+      const response = await inscripcionEstudiante(dataToSend);
+      toast.success("Inscripción completada con éxito");
+
+      // Opcionalmente enviar emails
+      // Aquí puedes enviar correos a tutores si aplica
+
+      // Redirigir
+      navigate("/home");
+
+    } catch (err) {
+      console.error("Error en inscripción:", err);
+      toast.error("Error al registrar la inscripción");
+    }
   };
 
   if (isLoading) {
-    return (
-      <div className="step2-container">
-        <div className="loading-message">Cargando áreas para este grado...</div>
-      </div>
-    );
+    return <div className="step2-container">Cargando áreas disponibles...</div>;
   }
 
   return (
     <form onSubmit={handleSubmit} className="step2-container">
-      <span className="step2-description">
-        Seleccione las áreas en las que desea participar (Paso 2 de 5)
-      </span>
-      
+      <h2>Seleccione áreas para participar</h2>
+
       <div className="step2-grid">
-        {areas.length > 0 ? (
-          areas.map((area) => (
-            <div
-              key={area.idArea}
-              className={`step2-card ${seleccionadas.includes(area.idArea) ? "selected" : ""}`}
-              onClick={() => toggleSeleccion(area.idArea)}
-            >
-              <h3>
-                <input
-                  type="checkbox"
-                  checked={seleccionadas.includes(area.idArea)}
-                  onChange={() => toggleSeleccion(area.idArea)}
-                  className="mr-2"
-                />
-                {area.nombreArea}
-                <span className={`area-source ${area.source.toLowerCase()}`}>
-                  ({area.source}{area.categoria ? `: ${area.categoria.nombre}` : ''})
-                </span>
-              </h3>
-              <p>{area.descripcionArea}</p>
-              <p className="costo">Costo: Bs {area.precioArea.toFixed(2)}</p>
-            </div>
-          ))
-        ) : (
-          <div className="no-areas-message">
-            No hay áreas disponibles para este grado. Por favor seleccione otro grado.
+        {areas.map(area => (
+          <div
+            key={area.idArea}
+            className={`step2-card ${seleccionadas.includes(area.idArea) ? "selected" : ""}`}
+            onClick={() => toggleSeleccion(area.idArea)}
+          >
+            <h3>{area.nombreArea}</h3>
+            <p><strong>Precio:</strong> {area.precioArea} Bs</p>
+            <p><strong>Origen:</strong> {area.source}</p>
+            {area.categoria && <p><strong>Categoría:</strong> {area.categoria.nombre}</p>}
           </div>
-        )}
+        ))}
       </div>
-      
-      {seleccionadas.length > 0 && (
-        <div className="step2-selected-container">
-          <div className="step2-selected-areas">
-            <h3>Áreas seleccionadas:</h3>
-            <div className="step2-selected-cards">
-              {seleccionadas.map((id) => {
-                const area = areas.find((a) => a.idArea === id);
-                return (
-                  <div key={id} className="step2-selected-card">
-                    <div>
-                      <h3>
-                        {area.nombreArea}
-                        <span className={`area-source ${area.source.toLowerCase()}`}>
-                          ({area.source}{area.categoria ? `: ${area.categoria.nombre}` : ''})
-                        </span>
-                      </h3>
-                      <p>{area.descripcionArea}</p>
-                      <p className="costo">Costo: Bs {area.precioArea.toFixed(2)}</p>
-                    </div>
-                    <button 
-                      type="button"
-                      className="remove-btn"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        eliminarSeleccion(id);
-                      }}
-                    >
-                      ×
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
-            <h2 className="step2-total">Total: Bs {totalCosto.toFixed(2)}</h2>
-          </div>
-        </div>
-      )}
-      
-      <div className="step2-actions">
-        <ButtonPrimary 
-          type="button"
-          buttonStyle="secondary"
-          onClick={onPrev}
-          className="mr-2"
-        >
-          Anterior
-        </ButtonPrimary>
-        <ButtonPrimary 
-          type="submit" 
-          buttonStyle="primary"
-          disabled={seleccionadas.length === 0 || areas.length === 0}
-        >
-          Siguiente
-        </ButtonPrimary>
+
+      <div className="step2-footer">
+        <p>Total a pagar: <strong>{totalCosto} Bs</strong></p>
+        <ButtonPrimary type="submit">Finalizar inscripción</ButtonPrimary>
       </div>
     </form>
   );
