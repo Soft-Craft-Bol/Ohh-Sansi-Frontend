@@ -17,6 +17,7 @@ import Step5Form from "../components/multiStepForm/Step5Form";
 
 const LoginUser = lazy(() => import("../pages/login/LoginUser"));
 //const Formulario = lazy(() => import('../components/formulario/Formulario'));
+import InscripcionExcel from '../pages/inscripcion/InscripcionExcel';
 
 const AppRoutes = () => {
   return (
@@ -43,6 +44,11 @@ const AppRoutes = () => {
       <Route
         path="/form"
         element={<PrivateRoute><Layout><MultiStepForm /></Layout></PrivateRoute>}
+      />
+
+      <Route
+        path="/register-excel"
+        element={<PrivateRoute><Layout> <InscripcionExcel/> </Layout></PrivateRoute>}
       />
 
       <Route

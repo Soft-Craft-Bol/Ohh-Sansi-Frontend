@@ -1,0 +1,157 @@
+.excel-upload-container {
+    display: flex;
+    justify-content: space-between;
+    gap: 40px;
+    padding: 30px;
+    background-color: #F4F9FF;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  }
+  .upload-and-archive{
+    display: flex;
+    gap: 10%;    
+  }
+  .upload-left,
+  .upload-right {
+    flex: 1;
+  }
+  
+  .upload-left h3,
+  .upload-right h4 {
+    color: var(--blue);
+    margin-bottom: 10px;
+  }
+  
+  .upload-left p,
+  .upload-right p {
+    color: var(--secondary-color);
+    font-size: 14px;
+    margin-bottom: 16px;
+  }
+  
+  .input-file {
+    position: absolute;
+    font-size: 100px;
+    right: 0;
+    top: 0;
+    opacity: 0;
+  }
+  
+  .file-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: #1e293b;
+    margin-bottom: 8px;
+  }
+  
+  
+  .file-size {
+    font-size: 12px;
+    color: #64748b;
+  }
+  
+  .formats {
+    font-size: 12px;
+    color: #64748b;
+  }
+  
+  .tips-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .tips-header h4 {
+    margin: 0;
+  }
+  
+  .tips-label {
+    background-color: #d9f99d;
+    color: #3f6212;
+    font-size: 12px;
+    padding: 2px 6px;
+    border-radius: 12px;
+    font-weight: bold;
+  }
+  
+  .tips-list {
+    list-style: disc;
+    padding-left: 20px;
+    margin-bottom: 16px;
+    font-size: 14px;
+    color: #444;
+  }
+  
+  .download-template {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    color: #1d4ed8;
+    font-weight: 500;
+    text-decoration: none;
+  }
+  
+  .download-template:hover {
+    text-decoration: underline;
+  }
+  
+  .table-container {
+    max-height: 400px;
+    overflow: auto;
+    background-color: white;
+  }
+  
+  .table-container h3{
+    color: var(--blue);
+    margin-bottom: 10px;
+  }
+  .excel-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+  }
+  
+  .excel-table th,
+  .excel-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+  }
+  
+  .excel-table th {
+    background-color: #f0f0f0;
+    font-weight: bold;
+    position: sticky;
+    top: 0;
+  }
+
+  .btn-loader-active {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 3px solid var(--blue);
+    border-left-color: transparent;
+    animation: rotation 1.4s ease 0.5s infinite;
+    display: inline-block;
+  }
+
+  @keyframes rotation {
+    0%{
+      transform: rotate(360deg);
+    }
+    
+  }
+  .btn-loader-active :hover{
+    background-color: #1cef69;
+  }
+
+  .btn-loading{
+    background-color: #22c55e;
+  }
+
+  .btn-loading :hover{
+    background-color: #1cef69;
+  }
