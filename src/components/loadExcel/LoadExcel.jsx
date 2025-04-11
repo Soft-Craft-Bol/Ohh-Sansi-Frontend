@@ -7,6 +7,8 @@ import { RiFileExcel2Line } from 'react-icons/ri';
 import { ButtonPrimary } from '../button/ButtonPrimary';
 import './LoadExcel.css';
 import Swal from 'sweetalert2';
+import { useNavigate } from 'react-router-dom';
+import plantilla from '../../assets/PlantillaInscripcion.xlsx';
 
 const validExtensions = ['.xlsx', '.xls', '.csv', '.xsb'];
 
@@ -14,7 +16,7 @@ const LoadExcel = () => {
   const fileInputRef = useRef(null);
   const [excelData, setExcelData] = useState([]);
   const [buttonState, setButtonState] = useState('upload'); // 'upload', 'loading', 'done'
-
+  const navigate = useNavigate();
 
   const formik = useFormik({
     initialValues: {
@@ -95,14 +97,14 @@ const LoadExcel = () => {
   
         if (goHome) {
           goHome.addEventListener('click', () => {
-            // path inicio
+            navigate("/home")
             Swal.close();
           });
         }
   
         if (viewDetails) {
           viewDetails.addEventListener('click', () => {
-            // path Ver detalles del pago
+            navigate("/orden-de-pago")
             Swal.close();
           });
         }
@@ -134,9 +136,7 @@ const LoadExcel = () => {
           </ButtonPrimary>
 
           {formik.values.file && (        
-            <div className="file-info">
-              
-              
+            <div className="file-info"> 
 
               <RiFileExcel2Line style={{ color: '#22c55e', fontSize: '18px' }} />
               <span
@@ -191,7 +191,7 @@ const LoadExcel = () => {
           <li>• Correo electrónico</li>
           <li>• Demás campos</li>
         </ul>
-        <a href="#" className="download-template">
+        <a href={plantilla} download className="download-template">
           <FaDownload /> Descargar plantilla
         </a>
       </div>
