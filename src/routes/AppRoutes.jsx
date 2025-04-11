@@ -9,6 +9,7 @@ import MultiStepForm from '../components/multiStepForm/MultiStepForm';
 import ManagementPage from '../pages/admin/Management';
 import FormArea from "../components/management/formArea/FormArea";
 import { NotFound404 } from '../pages/404NotFound/NotFound404';
+import EstadoDeInscripcion from '../pages/estadoDeInscripcion/EstadoDeInscripcion';
 
 
 const LoginUser = lazy(() => import('../pages/login/LoginUser'));
@@ -55,6 +56,16 @@ const AppRoutes = () => {
         <PrivateRoute>
           <Layout>
             <OrdenDePago />
+          </Layout>
+        </PrivateRoute>
+      }
+    />
+    <Route
+      path="/estado-de-inscripcion"
+      element={
+        <PrivateRoute>
+          <Layout>
+            <EstadoDeInscripcion />
           </Layout>
         </PrivateRoute>
       }

@@ -29,7 +29,11 @@ const Sidebar = ({ isSidebarVisible }) => {
       setActiveMenu("team");
     }else if (currentPath === "/orden-de-pago") {
       setActiveMenu("message");
+    }else if (currentPath === "/estado-de-inscripcion") {
+      setActiveMenu("inscriptionState");
     }
+
+
   }, [location]);
 
   return (
@@ -66,12 +70,12 @@ const Sidebar = ({ isSidebarVisible }) => {
             <span className="text">Orden de pago</span>
           </Link>
         </li>
-        {/* <li className={activeMenu === "team" ? "active" : ""}>
-          <Link to="/inicio" className="link">
+        <li className={activeMenu === "inscriptionState" ? "active" : ""}>
+          <Link to="/estado-de-inscripcion" className="link">
             <FaQuestionCircle className="icon" />
-            <span className="text">Ayuda</span>
+            <span className="text">Estado de Inscripcion</span>
           </Link>
-        </li> */}
+        </li>
       </ul>
 
       <ul className="side-menu">

@@ -5,6 +5,7 @@ import Header from "../../components/header/Header";
 import { FaSearch } from 'react-icons/fa';
 import OrdenPagoDetalle from "../../components/ordenPagoDetalle/OrdenPagoDetalle";
 import useOrdenPago from '../../hooks/ordenPago/useOrdenPago';
+import BuscadorCodigo from '../../components/buscadorCodigo/BuscadorCodigo';
 
 const OrdenDePago = () => {
   const {
@@ -26,31 +27,7 @@ const OrdenDePago = () => {
     visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }, 
   };
 
-  const renderInputSection = () => (
-    <motion.div
-      className="buscador-codigo"
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-    >
-      <p>Genera la orden de pago referente a la inscripción, introduciendo el código</p>
-      <div className="input-container">
-        <input
-          type="text"
-          placeholder="Introduce el código"
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-          onKeyPress={handleKeyPress}
-        />
-        <FaSearch className="search-icon" onClick={handleSearch} />
-      </div>
-      <div className="cont-cod-int">
-        <p className="code-text">Código introducido: </p>
-        <span className="codigo-introducido">{codigoIntroducido || "sin código"}</span>
-      </div>
-      {error && <div className="error-message">{error}</div>}
-    </motion.div>
-  );
+  
 
   const renderInfoSection = () => {
     if (!ordenData) return null;
@@ -110,7 +87,17 @@ const OrdenDePago = () => {
         initial="hidden"
         animate="visible"
       >
-        {renderInputSection()}
+        <BuscadorCodigo
+          descripcion="Genera la orden de pago referente a la inscripción, introduciendo el código"
+          placeholder="Introduce el código"
+          codigoIntroducidoTexto="Código introducido:"
+          codigoIntroducido={inputValue}
+          onInputChange={(e) => setInputValue(e.target.value)}
+          onKeyPress={handleKeyPress}
+          onSearch={handleSearch}
+          error={error}
+          containerVariants={containerVariants}
+        />
       </motion.div>
       <motion.div
         className="info-container"
@@ -120,7 +107,12 @@ const OrdenDePago = () => {
       >
         {renderInfoSection()}
         {ordenData && !mostrarDetalle && (
-          <div className="boton-generar">
+          <motion.div
+            className="boton-generar"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+          >
             <button 
               onClick={handleGenerarOrden} 
               className="btn-generar"
@@ -128,7 +120,7 @@ const OrdenDePago = () => {
             >
               {isLoading ? 'Generando...' : 'Generar Orden de Pago'}
             </button>
-          </div>
+        </motion.div>
         )}
       </motion.div>
       {mostrarDetalle && ordenGenerada && (

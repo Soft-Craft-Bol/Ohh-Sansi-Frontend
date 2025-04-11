@@ -4,9 +4,12 @@ import Header from "../../components/header/Header";
 
 const EstadoDeInscripcion = () => {
   return (
-    <main>
-
-    </main>
+    <div className='estado-inscripcion'>
+      <Header 
+        title="Estado de Inscripción"
+        description="Consulta el estado de tu inscripción"
+      />
+    </div>
   )
 }
 
