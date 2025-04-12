@@ -1,0 +1,152 @@
+@import '../../App.css';
+.estado-inscripcion{
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--grey);
+  transition: background-color 0.3s ease;
+  padding: 0px;
+  padding-bottom: 100px;
+}
+.top-container h2 {
+  color: var(--blue);
+  font-family: var(--poppins);
+  font-size: 2.5rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+.detail-info-cont {
+  margin-top: 30px;
+}
+
+.detail-info-cont h2 {
+  color: var(--dark);
+  font-family: var(--poppins);
+  font-size: 1.5rem;
+  margin-bottom: 20px;
+}
+
+.info-card {
+  background-color: var(--lighter);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.info-header {
+  padding: 20px;
+  background-color: #f8ffed;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--dark-grey);
+}
+
+.info-user h3 {
+  font-family: var(--poppins);
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.info-user p {
+  color: var(--dark);
+  font-family: var(--lato);
+  font-size: 0.9rem;
+}
+
+.status-badge {
+  display: flex;
+  align-items: center;
+}
+
+.status-complete {
+  background-color: #8bc34a;
+  color: white;
+  padding: 8px 15px;
+  border-radius: 20px;
+  font-family: var(--poppins);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.info-table {
+  width: 100%;
+}
+
+.table-header {
+  display: flex;
+  background-color: #f0f8ff;
+  padding: 15px 20px;
+  font-family: var(--poppins);
+  font-weight: 600;
+  color: var(--blue);
+  font-size: 0.9rem;
+}
+
+.table-row {
+  display: flex;
+  padding: 15px 20px;
+  font-family: var(--lato);
+  border-bottom: 1px solid var(--dark-grey);
+  align-items: center;
+}
+
+.table-row:last-child {
+  border-bottom: none;
+}
+
+.col-etapa {
+  width: 25%;
+  font-weight: 500;
+}
+
+.col-estado {
+  width: 15%;
+}
+
+.col-fecha {
+  width: 15%;
+  color: #666;
+}
+
+.col-comentarios {
+  width: 30%;
+  color: #666;
+}
+
+.col-acciones {
+  width: 15%;
+  text-align: right;
+}
+
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 10px;
+  border-radius: 15px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.status-chip.complete {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+.status-chip.generado {
+  background-color: #e3f2fd;
+  color: #1565c0;
+}
+
+.ver-detalles {
+  color: var(--blue);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.ver-detalles:hover {
+  text-decoration: underline;
+}
