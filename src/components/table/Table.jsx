@@ -14,7 +14,10 @@ const Table = ({ columns, data, onRowClick, rowsPerPage = 10 }) => {
   const totalPages = useMemo(() => Math.ceil(data.length / rowsPerPageSelection), [data, rowsPerPageSelection]);
 
   const hasSubColumns = columns.some(column => column.columns);
-
+  
+  const checkRowForEmptyFields = (row) => {
+    return columns.some(column => !row[column.accessor]);
+  };  
   const handleSort = (key) => {
     let direction = 'asc';
     if (sortConfig.key === key && sortConfig.direction === 'asc') {
@@ -95,26 +98,40 @@ const Table = ({ columns, data, onRowClick, rowsPerPage = 10 }) => {
           )}
         </thead>
         <tbody>
-          {paginatedData.map((row, rowIndex) => (
-            <tr key={rowIndex} onClick={() => onRowClick && onRowClick(row)}>
+        {paginatedData.map((row, rowIndex) => {
+          const isRowIncomplete = checkRowForEmptyFields(row); // Verificamos si la fila tiene campos vacíos
+
+          return (
+            <tr
+              key={rowIndex}
+              onClick={() => onRowClick && onRowClick(row)}
+              style={isRowIncomplete ? { color: 'white' } : {}}
+            >
               {columns.map((column, colIndex) => {
-                if (column.columns) {
-                  return column.columns.map((subColumn, subIndex) => (
-                    <td key={`${colIndex}-${subIndex}`}>
-                      {row[subColumn.accessor] || '-'}
-                    </td>
-                  ));
-                } else {
-                  return (
-                    <td key={colIndex}>
-                      {column.render ? column.render(row) : row[column.accessor] || '-'}
-                    </td>
-                  );
-                }
+                const value = row[column.accessor] || 'No corresponde';
+                const isAreaColumn = column.accessor === 'Area';
+                
+                return (
+                  <td
+                    key={colIndex}
+                    style={{
+                      color: isRowIncomplete ? 'var(--red)' : 'black',
+                    }}
+                  >
+                  {isAreaColumn ? (
+                      <span className={isRowIncomplete ? "tips-label-error" : 'tips-label'}>{column.render ? column.render(row) : value}</span>
+                    ) : (
+                      column.render ? column.render(row) : value
+                    )}                  
+                  </td>
+                );
               })}
             </tr>
-          ))}
-        </tbody>
+          );
+        })}
+      </tbody>
+
+
       </table>
 
       {/* Paginación */}

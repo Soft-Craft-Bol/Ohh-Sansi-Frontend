@@ -43,15 +43,21 @@
   display: inline-block;
 }
 
-.reusable-table td span.tag.error {
-  background-color: red;
-  color: white;
+.tips-label {
+  background-color: #d9f99d;
+  color: #3f6212;
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 12px;
+  font-weight: bold;
 }
 
-/* Texto en rojo cuando hay error */
-.reusable-table td.text-error {
-  color: red;
-  font-weight: 500;
+.tips-label-error {
+  background-color: var(--red);
+  color: white;
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 12px;
 }
 
 /* PAGINACIÓN */
