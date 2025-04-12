@@ -1,0 +1,87 @@
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.reusable-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.reusable-table thead {
+  background-color: white;
+  font-weight: bold;
+  color: #333;
+}
+
+.reusable-table th,
+.reusable-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #eee;
+  vertical-align: middle;
+}
+
+.reusable-table tbody tr:hover {
+  background-color: #f9f9f9;
+  cursor: pointer;
+}
+
+.reusable-table td {
+  color: #555;
+}
+
+.reusable-table td span.tag {
+  background-color: #cddc39;
+  color: black;
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  margin-right: 5px;
+  display: inline-block;
+}
+
+.reusable-table td span.tag.error {
+  background-color: red;
+  color: white;
+}
+
+/* Texto en rojo cuando hay error */
+.reusable-table td.text-error {
+  color: red;
+  font-weight: 500;
+}
+
+/* PAGINACIÓN */
+.pagination-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+  font-size: 14px;
+}
+
+.pagination-button {
+  padding: 6px 12px;
+  background-color: #f1f1f1;
+  border: none;
+  cursor: pointer;
+  margin: 0 5px;
+  border-radius: 6px;
+}
+
+.pagination-button:hover {
+  background-color: #ddd;
+}
+
+.pagination-info {
+  margin: 0 10px;
+}
+
+.rows-per-page select {
+  margin-left: 8px;
+  padding: 4px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
