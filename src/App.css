@@ -52,3 +52,13 @@ body {
 /* main{
 	padding: 0 0 0 0;
 } */
+.top-container{
+  margin-top: 3vh;
+  margin-right: 8vh;
+  margin-left: 8vh;
+}
+.page-padding{
+  margin-top: 3vh;
+  margin-right: 8vh;
+  margin-left: 8vh;
+}

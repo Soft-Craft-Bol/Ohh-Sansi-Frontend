@@ -26,9 +26,6 @@ const OrdenDePago = () => {
     hidden: { opacity: 0, y: 50 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }, 
   };
-
-  
-
   const renderInfoSection = () => {
     if (!ordenData) return null;
 
@@ -45,7 +42,8 @@ const OrdenDePago = () => {
       : "No disponible";
     const correoResponsable = primerTutor?.email_tutor || "No disponible";
 
-    const costoPorArea = 35;
+    const costoPorArea = ordenData.olimpiadas[0]?.precio_olimpiada || 'Error';
+    console.log("Costo por área:", costoPorArea);
     const totalAPagar = totalAreas * costoPorArea;
 
     return (
@@ -92,7 +90,13 @@ const OrdenDePago = () => {
           placeholder="Introduce el código"
           codigoIntroducidoTexto="Código introducido:"
           codigoIntroducido={inputValue}
-          onInputChange={(e) => setInputValue(e.target.value)}
+          // onInputChange={(e) => setInputValue(e.target.value)}
+          onInputChange={(e) => {
+            const value = e.target.value;
+            if (value.length <= 6) {
+              setInputValue(value);
+            }
+          }}
           onKeyPress={handleKeyPress}
           onSearch={handleSearch}
           error={error}
