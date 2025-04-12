@@ -31,6 +31,7 @@ const Step1Form = () => {
           nombre: "",
           apellido: "",
           documento: "",
+          complemento: "",
           fechaNacimiento: "",
           departamento: "",
           municipio: "",
@@ -52,6 +53,7 @@ const Step1Form = () => {
         apellidoMaterno: values.apellido.split(" ")[1] || "",
         carnetIdentidadParticipante: values.documento,
         fechaNacimiento: values.fechaNacimiento,
+        complemento: values.complemento,
         idDepartamento: parseInt(values.departamento),
         idMunicipio: parseInt(values.municipio),
         idColegio: parseInt(values.institucion),
@@ -107,6 +109,9 @@ const Step1Form = () => {
             </div>
             <div className="field-container">
               <InputText name="documento" label="Documento de Identidad" required onlyNumbers maxLength={10} />
+            </div>
+            <div className="field-container">
+              <InputText name="complemento" label="Complemento"  maxLength={2} />
             </div>
             <div className="field-container">
               <InputText name="fechaNacimiento" label="Fecha de nacimiento" type="date" required />
