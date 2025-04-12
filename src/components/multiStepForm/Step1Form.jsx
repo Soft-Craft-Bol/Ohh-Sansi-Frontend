@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import InputText from "../inputs/InputText";
 import { ButtonPrimary } from "../button/ButtonPrimary";
 import SelectInput from "../selected/SelectInput";
-import useFetchNivelesEscolares from "../../hooks/NivelEscolar/useFetchNivelesEscolares";
+import useFetchGrados from "../../hooks/NivelEscolar/useFetchGrados";
 import useFetchDepartamentos from "../../hooks/departamento/useFetchDepartamentos";
 import useFetchMunicipios from "../../hooks/departamento/useFetchMunicipios";
 import useFetchColegio from "../../hooks/Colegio/useFetchColegio";
@@ -13,7 +13,7 @@ import "./Step1Form.css";
 import Swal from "sweetalert2";
 
 const Step1Form = ({ formData, updateFormData, onNext}) => {
-  const { niveles, loading: loadingNiveles } = useFetchNivelesEscolares();
+  const { grados, loading: loadingGrados} = useFetchGrados();
   const { departamentos, loading: loadingDepartamentos } = useFetchDepartamentos();
   const [selectedDepartamento, setSelectedDepartamento] = React.useState(formData.participante.idDepartamento || "");
   const { municipios, loading: loadingMunicipios } = useFetchMunicipios(selectedDepartamento);
@@ -28,7 +28,7 @@ const Step1Form = ({ formData, updateFormData, onNext}) => {
     departamento: formData.participante?.idDepartamento?.toString() || "",
     municipio: formData.participante?.idMunicipio?.toString() || "",
     institucion: formData.participante?.idColegio?.toString() || "",
-    grado: formData.participante?.idNivelGradoEscolar?.toString() || "",
+    grado: formData.participante?.idGrado?.toString() || "",
     email: formData.participante?.correoElectronicoParticipante || "",
     telefono: formData.participante?.telefonoParticipante || "",
   };
@@ -167,13 +167,13 @@ const Step1Form = ({ formData, updateFormData, onNext}) => {
 
             <div className="field-container">
               <SelectInput
-                label="Grado/Nivel"
+                label="Grado escolar"
                 name="grado"
-                options={niveles.map(n => ({
-                  value: n.idNivel.toString(),
-                  label: n.nombreNivelEscolar
+                options={grados.map(n => ({
+                  value: n.idGrado.toString(),
+                  label: n.nombreGrado
                 }))}
-                loading={loadingNiveles}
+                loading={loadingGrados}
                 emptyMessage="No se encontraron niveles"
                 required
               />

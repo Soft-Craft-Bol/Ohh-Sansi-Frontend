@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { ButtonPrimary } from "../button/ButtonPrimary";
 import "./Step2Form.css";
-import { getAreaByIdGrade } from "../../api/api";
 
 const Step2Form = ({ onNext, onPrev, formData = {}, updateFormData }) => {
   const [seleccionadas, setSeleccionadas] = useState(
@@ -23,7 +22,7 @@ const Step2Form = ({ onNext, onPrev, formData = {}, updateFormData }) => {
   const fetchAreasByGrade = async () => {
     try {
       setIsLoading(true);
-      const response = await getAreaByIdGrade(formData.participante.idNivelGradoEscolar);
+      const response = await (formData.participante.idNivelGradoEscolar);
       
       // Combinamos y procesamos ambas listas de áreas
       const combinedAreas = processAreas(response.data);

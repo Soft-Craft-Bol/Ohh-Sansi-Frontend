@@ -48,14 +48,12 @@ export const getAreas = () => api.get('/areas');
 export const addArea = (data) => api.post('/areas/register-area', data);
 export const updateArea = (id,data) => api.put(`/areas/${id}`, data);
 export const deleteArea = (id) => api.delete(`/areas/${id}`);
-//AREA NIVEL ESCOLAR CATEGORIA
-export const getAreaByIdGrade = (id) => api.get(`/nivelescolar-categoria-area/areas-categorias/${id}`);
-export const getAreasGrados = () => api.get('/nivelescolar-categoria-area/areas-grados');
-export const getAreasCategorias = () => api.get('/nivelescolar-categoria-area/areas-categorias');
-//Nivel escolar;
-export const getNivelEscolar = () => api.get('/nivelescolar');
+
+//GRADOS;
+export const getGrados = () => api.get('/grados');
+export const getGradosCategorias = () => api.get('/grado-categoria');
 //CATEGORIAS 
-export const createCategory = (data) => api.post('/nivelescolar-categoria-area/register', data);
+export const createCategory = (data) => api.post('/grado-categoria/register', data);
 export const getCategories = () => api.get('/category');
 
 
@@ -63,6 +61,10 @@ export const getCategories = () => api.get('/category');
 export const getAllTutor = () => api.get('/tipo-tutor/findAllTipoTutor');
 export const registerTutor = (data) => api.post('/tutores/register-tutor', data);
 
+//OLIMPIADA
+export const getOlimpiadas = () => api.get('/olimpiada');
+export const saveOlimpiada = (data) => api.post('/olimpiada/register', data);
+export const savePrecioOlimpiada = (data) => api.put('/olimpiada/update-precio', data);
 
 
 //PERIODO DE INSCRIPCION
