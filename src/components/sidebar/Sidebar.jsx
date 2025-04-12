@@ -5,6 +5,7 @@ import { MdOutlinePayment } from "react-icons/md";
 import { RiFileExcel2Line } from "react-icons/ri";
 import { signOut } from "../../utils/authFuntions";
 import { Link, useLocation } from "react-router-dom";
+import { FaQuestionCircle } from "react-icons/fa";
 import "./Sidebar.css";
 import logoOhSansi from "../../assets/img/sansi-logo-only.png";
 
