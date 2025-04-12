@@ -102,16 +102,18 @@ const Step1Form = () => {
           <Form className="step1-grid">
             {/* Campos */}
             <div className="field-container">
-              <InputText name="nombre" label="Nombre" required onlyLetters maxLength={50} />
+              <InputText name="nombre" label="Nombre" required onlyLetters={true} maxLength={50} 
+              />
             </div>
             <div className="field-container">
-              <InputText name="apellido" label="Apellido" required onlyLetters maxLength={50} />
+              <InputText name="apellido" label="Apellido" required onlyLetters maxLength={50}
+               />
             </div>
             <div className="field-container">
               <InputText name="documento" label="Documento de Identidad" required onlyNumbers maxLength={10} />
             </div>
             <div className="field-container">
-              <InputText name="complemento" label="Complemento"  maxLength={2} />
+              <InputText name="complemento" label="Complemento"  maxLength={2}  onlyAlphaNumeric />
             </div>
             <div className="field-container">
               <InputText name="fechaNacimiento" label="Fecha de nacimiento" type="date" required />
