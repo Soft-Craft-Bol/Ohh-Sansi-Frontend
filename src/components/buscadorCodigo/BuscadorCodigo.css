@@ -27,7 +27,7 @@
 
 .search-icon {
   color: var(--blue);
-  font-size: 16px;
+  font-size: 1rem;
   cursor: pointer;
 }
 

@@ -143,10 +143,99 @@
 
 .ver-detalles {
   color: var(--blue);
-  font-weight: 600;
-  text-decoration: none;
+  font-weight: 100;
+  text-decoration: underline;
 }
 
 .ver-detalles:hover {
   text-decoration: underline;
+}
+
+@media screen and (max-width: 1024px) {
+  .table-header,
+  .table-row {
+    flex-wrap: wrap;
+    font-size: 0.85rem;
+  }
+  .page-padding, .top-container{
+    margin-top: 3vh;
+    margin-right: 2vh;
+    margin-left: 2vh;
+  }
+
+  .col-etapa,
+  .col-estado,
+  .col-fecha,
+  .col-comentarios,
+  .col-acciones {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+
+  .col-acciones {
+    text-align: left;
+  }
+
+  .info-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .top-container h2,
+  .detail-info-cont h2 {
+    font-size: 1.8rem;
+  }
+
+  .info-user h3 {
+    font-size: 1rem;
+  }
+
+  .status-complete {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+  }
+  .page-padding, .top-container{
+    margin-top: 3vh;
+    margin-right: 2vh;
+    margin-left: 2vh;
+  }
+
+
+  .table-header,
+  .table-row {
+    padding: 10px 15px;
+  }
+
+  .status-chip {
+    font-size: 0.8rem;
+    padding: 4px 8px;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .top-container h2,
+  .detail-info-cont h2 {
+    font-size: 1.5rem;
+    text-align: start;
+  }
+
+  .info-header {
+    padding: 15px;
+  }
+  .page-padding, .top-container{
+    margin-top: 3vh;
+    margin-right: 2vh;
+    margin-left: 2vh;
+  }
+
+  .info-card {
+    margin: 0 10px;
+  }
+
+  .ver-detalles {
+    font-size: 0.85rem;
+  }
 }

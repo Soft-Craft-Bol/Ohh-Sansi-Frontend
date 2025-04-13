@@ -129,14 +129,20 @@
 
 /* Media Queries para diseño responsivo */
 @media screen and (max-width: 1024px) {
-  .top-container, .info-container, .orden-detail {
-    margin-left: 4vh;
-    margin-right: 4vh;
+  
+  .info-container, .orden-detail {
+    margin-left: 2vh;
+    margin-right: 2vh;
+  }
+  .page-padding, .top-container{
+    margin-top: 3vh;
+    margin-right: 2vh;
+    margin-left: 2vh;
   }
 }
 
 @media screen and (max-width: 768px) {
-  .top-container, .info-container, .orden-detail {
+  .info-container, .orden-detail {
     margin-left: 2vh;
     margin-right: 2vh;
   }
@@ -145,11 +151,16 @@
     flex-direction: column;
     padding: 15px;
   }
+  .page-padding, .top-container{
+    margin-top: 3vh;
+    margin-right: 2vh;
+    margin-left: 2vh;
+  }
   
   .divider {
     width: 100%;
     height: 1px;
-    margin: 15px 0;
+    margin: 20px 0;
   }
   
   .input-container {
@@ -158,7 +169,7 @@
 }
 
 @media screen and (max-width: 480px) {
-  .top-container, .info-container, .orden-detail {
+  .info-container, .orden-detail {
     margin-left: 1vh;
     margin-right: 1vh;
   }
@@ -174,6 +185,11 @@
   .cont-cod-int {
     flex-direction: column;
     align-items: flex-start;
+  }
+  .page-padding, .top-container{
+    margin-top: 3vh;
+    margin-right: 2vh;
+    margin-left: 2vh;
   }
   
   .big-bold-blue {
