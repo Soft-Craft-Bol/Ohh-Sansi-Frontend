@@ -35,7 +35,7 @@ export const addInscripcion = (data) => api.post('/inscripciones', data);
 export const updateInscripcion = (data) => api.put('/inscripciones', data);
 export const deleteInscripcion = (id) => api.delete(`/inscripciones/${id}`);
 export const inscripcionEstudiante = (data) => api.post(`/inscripcion/v1/register`, data);
-export const registerParticipante = (data) => api.post('/participantes/register-participant', data);
+export const registerParticipante = (data) => api.post('/participante/register-participant', data);
 export const register = (data) => api.post('/register', data)
 //DEPARTAMENTOS Y MUNICIPIOS
 export const getDepartamentos = () => api.get('/departamento');

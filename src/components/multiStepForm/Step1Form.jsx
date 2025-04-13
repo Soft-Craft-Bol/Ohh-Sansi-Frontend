@@ -48,29 +48,38 @@ const Step1Form = () => {
     try {
       localStorage.setItem("participanteFormData", JSON.stringify(values));
 
+      const fechaNacimiento = new Date(values.fechaNacimiento);
+      const hoy = new Date();
+      let edad = hoy.getFullYear() - fechaNacimiento.getFullYear(); // Cambiado a let
+      const mes = hoy.getMonth() - fechaNacimiento.getMonth();
+      if (mes < 0 || (mes === 0 && hoy.getDate() < fechaNacimiento.getDate())) {
+        edad--; // Ahora es válido porque edad es mutable
+      }
+      const tutorRequerido = edad < 15;
+  
       const participanteData = {
-        idInscripcion: 60,
-        nombreParticipante: values.nombre,
-        apellidoPaterno: values.apellido.split(" ")[0] || "",
-        apellidoMaterno: values.apellido.split(" ")[1] || "",
-        carnetIdentidadParticipante: values.documento,
-        fechaNacimiento: values.fechaNacimiento,
-        complemento: values.complemento,
         idDepartamento: parseInt(values.departamento),
         idMunicipio: parseInt(values.municipio),
         idColegio: parseInt(values.institucion),
-        idNivel: parseInt(values.grado),
-        correoElectronicoParticipante: values.email || null,
-        telefonoParticipante: values.telefono || null,
+        idGrado: parseInt(values.grado),
+        participanteHash: "hash1asd23131",
+        nombreParticipante: values.nombre,
+        apellidoPaterno: values.apellido.split(" ")[0] || "",
+        apellidoMaterno: values.apellido.split(" ")[1] || "",
+        fechaNacimiento: values.fechaNacimiento,
+        carnetIdentidadParticipante: parseInt(values.documento),
+        complementoCiParticipante: values.complemento || null,
+        emailParticipante: values.email || null,
+        tutorRequerido,
       };
-
+  
       const response = await registerParticipante(participanteData);
-
+  
       if (response && response.data && response.data.existe) {
         toast.error("El participante ya está registrado con ese documento.");
         return;
       }
-
+  
       toast.success("Participante registrado exitosamente");
       Swal.fire({
         icon: "success",
