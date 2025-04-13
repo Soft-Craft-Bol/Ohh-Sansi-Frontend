@@ -54,7 +54,7 @@ export const getGrados = () => api.get('/grados');
 export const getGradosCategorias = () => api.get('/grado-categoria');
 
 export const getEstudianteByCarnet = (carnet) => api.get(`/participante/carnet/${carnet}`);
-
+export const getAreaByIdGrade = (id) => api.get(`/nivelescolar-categoria-area/areas-categorias/${id}`);
 //CATEGORIAS 
 export const createCategory = (data) => api.post('/grado-categoria/register', data);
 export const getCategories = () => api.get('/category');
