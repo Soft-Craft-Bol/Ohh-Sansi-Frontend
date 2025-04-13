@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { FaThLarge, FaChartPie, FaQuestionCircle, FaCog, FaSignOutAlt, FaSearch } from "react-icons/fa";
+import { FaSignOutAlt, FaSearch } from "react-icons/fa";
 import { PiClipboardTextFill } from "react-icons/pi";
 import { MdOutlinePayment } from "react-icons/md";
+import { RiFileExcel2Line } from "react-icons/ri";
 import { signOut } from "../../utils/authFuntions";
 import { Link, useLocation } from "react-router-dom";
+import { FaQuestionCircle } from "react-icons/fa";
 import "./Sidebar.css";
 import logoOhSansi from "../../assets/img/sansi-logo-only.png";
 
@@ -29,10 +31,11 @@ const Sidebar = ({ isSidebarVisible }) => {
       setActiveMenu("team");
     }else if (currentPath === "/orden-de-pago") {
       setActiveMenu("message");
-    }else if (currentPath === "/estado-inscripcion") {
-      setActiveMenu("message");
+    }else if (currentPath === "/estado-de-inscripcion") {
+      setActiveMenu("inscriptionState");
+    }else if (currentPath === "/register-excel"){
+      setActiveMenu("excel");
     }
-    
   }, [location]);
 
   return (
@@ -57,10 +60,16 @@ const Sidebar = ({ isSidebarVisible }) => {
             <span className="text">Inscripciones</span>
           </Link>
         </li>
+        <li className={activeMenu === "excel" ? "active" : ""}>
+          <Link to="/register-excel" className="link">
+            <RiFileExcel2Line className="icon" />
+            <span className="text">Inscripción múltiple</span>
+          </Link>
+        </li>
         <li className={activeMenu === "store" ? "active" : ""}>
           <Link to="/management" className="link">
             <MdOutlinePayment className="icon" />
-            <span className="text">Administracion de olimpiadas</span>
+            <span className="text">Administración de olimpiadas</span>
           </Link>
         </li>
         <li className={activeMenu === "message" ? "active" : ""}>
@@ -69,18 +78,12 @@ const Sidebar = ({ isSidebarVisible }) => {
             <span className="text">Orden de pago</span>
           </Link>
         </li>
-        <li className={activeMenu === "message" ? "active" : ""}>
-          <Link to="/estado-inscripcion " className="link">
-            <FaSearch className="icon" />
-            <span className="text">Detalle del estado de inscripcion</span>
+        <li className={activeMenu === "inscriptionState" ? "active" : ""}>
+          <Link to="/estado-de-inscripcion" className="link">
+            <FaQuestionCircle className="icon" />
+            <span className="text">Estado de Inscripcion</span>
           </Link>
         </li>
-        {/* <li className={activeMenu === "team" ? "active" : ""}>
-          <Link to="/inicio" className="link">
-            <FaQuestionCircle className="icon" />
-            <span className="text">Ayuda</span>
-          </Link>
-        </li> */}
       </ul>
 
       <ul className="side-menu">

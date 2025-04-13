@@ -19,6 +19,20 @@ function InputText({ label, required, type = "text", as = "input", showCounter =
           {...props}
           type={type === "password" && showPassword ? "text" : type}
           maxLength={maxLength}
+          onChange={(e) => {
+            let value = e.target.value;
+    
+            if (props.onlyNumbers === true) {
+                value = value.replace(/\D/g, "");
+            }
+        
+            field.onChange({
+                target: {
+                    name: field.name,
+                    value,
+                },
+            });
+        }}
           onBlur={(e) => {
             field.onBlur(e); 
             helpers.setTouched(true); 

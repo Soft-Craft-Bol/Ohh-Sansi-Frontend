@@ -52,6 +52,9 @@ export const deleteArea = (id) => api.delete(`/areas/${id}`);
 //GRADOS;
 export const getGrados = () => api.get('/grados');
 export const getGradosCategorias = () => api.get('/grado-categoria');
+
+export const getEstudianteByCarnet = (carnet) => api.get(`/participante/carnet/${carnet}`);
+
 //CATEGORIAS 
 export const createCategory = (data) => api.post('/grado-categoria/register', data);
 export const getCategories = () => api.get('/category');
@@ -76,3 +79,4 @@ export const sendEmail = (data) => api.post('/email/send', data);
 
 //OrdenPAGO
 export const getOrdenPagoDetailInfo = (codigoUnico) => api.get(`/inscripcion/details/${codigoUnico}`);
+export const createOrdenPago = (data) => api.post('/orden-pago', data);
