@@ -67,14 +67,10 @@ export const saveOlimpiada = (data) => api.post('/olimpiada/register', data);
 export const savePrecioOlimpiada = (data) => api.put('/olimpiada/update-precio', data);
 
 
-//PERIODO DE INSCRIPCION
-export const upsertFechas = (data) => api.post('/plazo-inscripcion/register', data);
-export const getFechas = () => api.get('/plazo-inscripcion');
-export const deleteFechas = (id) => api.delete(`/plazo-inscripcion/${id}`);
-export const getFechasById = (id) => api.get(`/plazo-inscripcion/${id}`);
-export const getLastActiveFechas = () => api.get('/plazo-inscripcion/activo');
-export const insertPrecio = (data) => api.post('/precio/register-precio', data);
-
+//FechaOlimpiada
+export const getOlimpiadasConEventos = () => api.get('/fecha-olimpiada/olimpiadas-con-eventos');
+export const saveFechaOlimpiada = (data) => api.post('/fecha-olimpiada/register', data);
+export const saveFechaConOlimpiada = (data) => api.post('/fecha-olimpiada/full-register', data);
 //EMAILS
 export const sendEmail = (data) => api.post('/email/send', data);
 

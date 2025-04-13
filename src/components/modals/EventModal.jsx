@@ -25,41 +25,61 @@ const EventModal = ({ onClose, onSave }) => {
   };
 
   return (
-    <div className="modal-backdrop">
-      <div className="modal-container">
+    <div className="em-backdrop">
+      <div className="em-container">
         <h3>Agregar evento</h3>
         <form onSubmit={handleSubmit}>
           <label>Nombre del evento</label>
           <input
             name="nombre"
+            type="text"
             value={formData.nombre}
             onChange={handleChange}
             placeholder="Inscripciones"
           />
-          <div className="date-row">
+          <div className="em-date-row">
             <div>
               <label>Fecha inicio</label>
-              <input type="date" name="fechaInicio" value={formData.fechaInicio} onChange={handleChange} />
+              <input
+                type="date"
+                name="fechaInicio"
+                value={formData.fechaInicio}
+                onChange={handleChange}
+              />
             </div>
             <div>
               <label>Fecha fin</label>
-              <input type="date" name="fechaFin" value={formData.fechaFin} onChange={handleChange} />
+              <input
+                type="date"
+                name="fechaFin"
+                value={formData.fechaFin}
+                onChange={handleChange}
+              />
             </div>
           </div>
           <label>Descripción (opcional)</label>
-          <textarea name="descripcion" value={formData.descripcion} onChange={handleChange} />
+          <textarea
+            name="descripcion"
+            value={formData.descripcion}
+            onChange={handleChange}
+          />
 
-          <div className="public-toggle">
+          <div className="em-toggle">
             <span>Evento público</span>
-            <label className="switch">
-              <input type="checkbox" name="publico" checked={formData.publico} onChange={handleChange} />
-              <span className="slider round" />
+            <label className="em-switch">
+              <input
+                type="checkbox"
+                name="publico"
+                checked={formData.publico}
+                onChange={handleChange}
+              />
+              <span className="em-slider round" />
             </label>
           </div>
 
-          <div className="modal-actions">
+          <div className="em-actions">
             <button type="button" onClick={onClose}>Cancelar</button>
-            <button type="submit" className="btn-primary">Guardar evento</button>
+            <button type="submit" className="em-primary">Guardar evento</button>
           </div>
         </form>
       </div>

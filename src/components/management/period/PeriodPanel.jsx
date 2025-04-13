@@ -4,7 +4,7 @@ import EventModal from '../../modals/EventModal';
 import EventCard from '../../cards/EventCard';
 import './PeriodPanel.css';
 
-const PeriodPanel = ({ year, activo, eventos }) => {
+const PeriodPanel = ({ nombreOlimpiada, estadoOlimpiada, eventos }) => {
   const [expanded, setExpanded] = useState(false);
   const [eventList, setEventList] = useState(eventos || []);
   const [showModal, setShowModal] = useState(false);
@@ -23,20 +23,21 @@ const PeriodPanel = ({ year, activo, eventos }) => {
     <div className="period-card">
       <div className="period-header">
         <div className="left">
-          <h3>Olimpiada {year}</h3>
-          <span className={`status-badge ${activo ? 'active' : 'inactive'}`}>
-            {activo ? 'Activo' : 'Inactivo'}
+          <h3>{nombreOlimpiada}</h3>
+          <span className={`status-badge ${estadoOlimpiada ? 'active' : 'inactive'}`}>
+            {estadoOlimpiada ? 'Activo' : 'Inactivo'}
           </span>
         </div>
         <div className="right">
           <FiCalendar />
-          
-        </div><button
-            className="dropdown-toggle"
-            onClick={() => setExpanded(!expanded)}
-          >
-            {expanded ? <FiChevronUp /> : <FiChevronDown />}
-          </button>
+        </div>
+      </div>
+
+      <div className="view-events-toggle" onClick={() => setExpanded(!expanded)}>
+        <span className="view-label">Ver eventos</span>
+        <button className="dropdown-toggle" aria-label="Toggle eventos">
+          {expanded ? <FiChevronUp /> : <FiChevronDown />}
+        </button>
       </div>
 
       {expanded && (
@@ -49,9 +50,7 @@ const PeriodPanel = ({ year, activo, eventos }) => {
                 <EventCard
                   key={i}
                   evento={e}
-                  onEdit={() => {
-                    console.log('Editar evento', i);
-                  }}
+                  onEdit={() => console.log('Editar evento', i)}
                   onDelete={() => handleDeleteEvento(i)}
                 />
               ))}

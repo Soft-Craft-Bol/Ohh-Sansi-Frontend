@@ -1,134 +1,186 @@
 .periodos-wrapper {
-    padding: 20px;
-  }
-  
-  .page-header {
-    margin-bottom: 30px;
-  }
-  
-  .gestion-title {
-    font-size: 28px;
-    font-weight: bold;
-    margin-bottom: 5px;
-  }
-  
-  .gestion-subtitle {
-    font-size: 16px;
-    color: #666;
-  }
-  
+  padding: 20px;
+}
+
+.page-header {
+  margin-bottom: 30px;
+}
+
+.gestion-title {
+  font-size: 28px;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.gestion-subtitle {
+  font-size: 16px;
+  color: #666;
+}
+
+.periodos-management {
+  display: flex;
+  gap: 40px;
+  flex-wrap: wrap;
+}
+
+/* 🧱 Formulario lateral */
+.side-form {
+  flex: 1;
+  min-width: 280px;
+  max-width: 350px;
+  background-color: #fafafa;
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid #ddd;
+}
+
+/* 📜 Lista de periodos */
+.periodos-list {
+  flex: 2;
+  min-width: 400px;
+}
+
+/* 🔧 Form control */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  font-weight: 600;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 8px;
+  margin-top: 6px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.form-group small {
+  color: #777;
+  font-size: 12px;
+}
+
+/* 🔘 Toggle switch */
+.switch-group {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.custom-switch {
+  width: 40px;
+  height: 20px;
+  background-color: #ccc;
+  border-radius: 999px;
+  position: relative;
+  cursor: pointer;
+  display: inline-block;
+  transition: background-color 0.3s ease;
+  border: none;
+  padding: 0;
+}
+
+.custom-slider {
+  content: "";
+  position: absolute;
+  height: 16px;
+  width: 16px;
+  top: 2px;
+  left: 2px;
+  background-color: white;
+  border-radius: 50%;
+  transition: transform 0.3s ease;
+  display: block;
+}
+
+.custom-slider.on {
+  transform: translateX(20px);
+}
+
+.custom-switch:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+}
+
+.custom-switch.on {
+  background-color: var(--blue-color);
+}
+
+/* 📭 Caja vacía eventos */
+.empty-event-box {
+  background-color: #f3f4f6;
+  padding: 10px;
+  border: 1px dashed #bbb;
+  border-radius: 8px;
+  margin-top: 8px;
+  text-align: center;
+}
+
+/* 🗒️ Preview eventos */
+.event-preview-list {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0;
+  font-size: 14px;
+}
+
+/* 🔘 Botones */
+.add-btn,
+.register-btn {
+  background-color: var(--blue-color);
+  color: white;
+  padding: 10px 14px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-top: 10px;
+  width: 100%;
+}
+
+.add-btn:hover,
+.register-btn:hover {
+  opacity: 0.9;
+}
+
+/* 📱📱📱 Responsive rules */
+@media (max-width: 768px) {
   .periodos-management {
-    display: flex;
-    gap: 40px;
-    flex-wrap: wrap;
-  }
-  
-  .side-form {
-    flex: 1;
-    min-width: 280px;
-    max-width: 350px;
-    background-color: #fafafa;
-    padding: 20px;
-    border-radius: 12px;
-    border: 1px solid #ddd;
-  }
-  
-  .periodos-list {
-    flex: 2;
-    min-width: 400px;
-  }
-  
-  .form-group {
-    margin-bottom: 20px;
-  }
-  
-  .form-group label {
-    font-weight: 600;
-  }
-  
-  .form-group input {
-    width: 100%;
-    padding: 8px;
-    margin-top: 6px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-  }
-  
-  .form-group small {
-    color: #777;
-    font-size: 12px;
+    flex-direction: column;
+    gap: 20px;
   }
 
-  .switch-group {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+  .side-form {
+    max-width: 100%;
   }
-  
-  .custom-switch {
-    width: 40px;
-    height: 20px;
-    background-color: #ccc;
-    border-radius: 999px;
-    position: relative;
-    cursor: pointer;
-    display: inline-block;
-    transition: background-color 0.3s ease;
-    border: none;
-    padding: 0;
+
+  .periodos-list {
+    min-width: 100%;
   }
-  
-  .custom-slider {
-    content: "";
-    position: absolute;
-    height: 16px;
-    width: 16px;
-    top: 2px;
-    left: 2px;
-    background-color: white;
-    border-radius: 50%;
-    transition: transform 0.3s ease;
-    display: block;
+
+  .gestion-title {
+    font-size: 24px;
   }
-  
-  .custom-slider.on {
-    transform: translateX(20px);
-  }
-  
-  .custom-switch:focus {
-    outline: none;
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5); /* similar a Tailwind focus ring */
-  }
-  
-  .custom-switch.on {
-    background-color: var(--blue-color);
-  }
-  
-  
-  .empty-event-box {
-    background-color: #f3f4f6;
-    padding: 10px;
-    border: 1px dashed #bbb;
-    border-radius: 8px;
-    margin-top: 8px;
-    text-align: center;
-  }
-  
-  .event-preview-list {
-    list-style: none;
-    padding: 0;
-    margin: 10px 0;
+
+  .gestion-subtitle {
     font-size: 14px;
   }
-  
+}
+
+@media (max-width: 480px) {
+  .gestion-title {
+    font-size: 20px;
+  }
+
+  .side-form,
+  .periodos-list {
+    padding: 16px;
+  }
+
   .add-btn,
   .register-btn {
-    background-color: var(--blue-color);
-    color: white;
-    padding: 10px 14px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    margin-top: 10px;
-    width: 100%;
+    font-size: 14px;
+    padding: 10px;
   }
+}

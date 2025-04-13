@@ -36,12 +36,39 @@
     color: #c62828;
   }
   
+  .view-events-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    cursor: pointer;
+    background-color: #f6f7fb;
+    border-radius: 8px;
+    margin-top: 8px;
+    transition: background-color 0.2s ease;
+  }
+  
+  .view-events-toggle:hover {
+    background-color: #e9ebf0;
+  }
+  
+  .view-label {
+    font-weight: 500;
+    font-size: 14px;
+    color: #333;
+  }
+  
   .dropdown-toggle {
     background: none;
     border: none;
-    font-size: 18px;
     cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    color: #333;
+    font-size: 18px;
   }
+  
   
   .event-body {
     margin-top: 10px;
@@ -53,5 +80,37 @@
     padding: 10px;
     border-radius: 6px;
     margin-bottom: 8px;
+  }
+  
+  @media (max-width: 768px) {
+    .period-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+    }
+  
+    .view-events-toggle {
+      flex-direction: row;
+      justify-content: space-between;
+      width: 100%;
+    }
+    @media (max-width: 480px) {
+  .period-card {
+    padding: 12px;
+  }
+
+  .period-header .left h3 {
+    font-size: 16px;
+  }
+
+  .status-badge {
+    font-size: 12px;
+    padding: 3px 8px;
+  }
+
+  .dropdown-toggle {
+    font-size: 16px;
+  }
+}
   }
   

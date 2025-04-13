@@ -1,6 +1,5 @@
 import React from "react";
 import Tabs from "../../components/tabs/Tabs";
-import GestionPeriod from "../../components/management/gestion/GestionPeriod";
 import FormArea from "../../components/management/formArea/FormArea";
 import CategoriesManagement from "../../components/management/categories/CategoriesManagement";
 import CostsManagement from "../../components/management/costos/CostsManagement";
@@ -12,11 +11,10 @@ import { Trophy, Calendar, ListChecks, CoinsIcon, Banknote } from 'lucide-react'
 
 const ManagementPage = () => {
   const tabs = [
-    { id: "periods", icon: <Calendar />, label: " Periodos" },
+    { id: "olimpiadas", icon: <Calendar />, label: " Periodos" },
     { id: "areas", icon: <ListChecks />, label: " Áreas" },
     { id: "categories", icon: <Trophy />, label: "Categorías" },
     { id: "costs", icon: <CoinsIcon />, label: " Costos" },
-    { id: "payments", icon: <Banknote />, label: " Pagos" }
   ];
 
 
@@ -26,12 +24,10 @@ const ManagementPage = () => {
         return <FormArea />;
       case "categories":
         return <CategoriesManagement />;
-      case "periods":
-        return <GestionPeriod />;
+      case "olimpiadas":
+        return <PeriodosManagement />;
       case "costs":
         return <CostsManagement />;
-      case "payments":
-        return <PeriodosManagement />;
       default:
         return null;
     }
