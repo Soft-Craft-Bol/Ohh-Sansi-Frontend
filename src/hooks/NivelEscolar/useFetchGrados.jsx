@@ -10,8 +10,8 @@ const useFetchGrados = () => {
     const fetchData = async () => {
       try {
         const response = await getGrados();
-        if (response.data && Array.isArray(response.data)) {
-          setGrados(response.data);
+        if (response.data && Array.isArray(response.data.data)) {
+          setGrados(response.data.data);
         } else {
           setGrados([]);
         }
@@ -25,6 +25,7 @@ const useFetchGrados = () => {
 
     fetchData();
   }, []);
+  console.log("Grados cargados:", grados);
 
   return { grados, loading, error }; 
 };
