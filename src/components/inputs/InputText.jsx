@@ -18,6 +18,7 @@ function InputText({ label, required, type = "text", as = "input", showCounter =
           {...field}
           {...props}
           type={type === "password" && showPassword ? "text" : type}
+          max={props.max}
           maxLength={maxLength}
           
           onChange={(e) => {

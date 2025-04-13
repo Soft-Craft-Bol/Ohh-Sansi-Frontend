@@ -13,10 +13,12 @@ import { useNavigate } from "react-router-dom";
 import { registerParticipante } from "../../api/api";
 import Swal from "sweetalert2";
 import "./Step1Form.css";
+import DisabledButton from "../button/DisabledButton";
 
 
 const Step1Form = () => {
   const navigate = useNavigate();
+  const today = new Date().toISOString().split("T")[0];
   const { grados, loading: loadingGrados} = useFetchGrados();
   const { departamentos, loading: loadingDepartamentos } = useFetchDepartamentos();
   const [selectedDepartamento, setSelectedDepartamento] = useState("");
@@ -104,21 +106,21 @@ const Step1Form = () => {
           <Form className="step1-grid">
             {/* Campos */}
             <div className="field-container">
-              <InputText name="nombre" label="Nombre" required onlyLetters={true} maxLength={50} 
+              <InputText name="nombre" label="Nombre" required onlyLetters={true} maxLength={50} placeholder="Ej: Edwin" 
               />
             </div>
             <div className="field-container">
-              <InputText name="apellido" label="Apellido" required onlyLetters maxLength={50}
+              <InputText name="apellido" label="Apellido" required onlyLetters maxLength={50} placeholder="Ej: Sánchez Velarde"
                />
             </div>
             <div className="field-container">
-              <InputText name="documento" label="Documento de Identidad" required onlyNumbers maxLength={10} />
+              <InputText name="documento" label="Documento de Identidad" required onlyNumbers maxLength={10} placeholder="Ej: 12354987"/>
             </div>
             <div className="field-container">
-              <InputText name="complemento" label="Complemento"  maxLength={2}  onlyAlphaNumeric />
+              <InputText name="complemento" label="Complemento"  maxLength={2}  onlyAlphaNumeric placeholder="Ej: 1T"/>
             </div>
             <div className="field-container">
-              <InputText name="fechaNacimiento" label="Fecha de nacimiento" type="date" required />
+              <InputText name="fechaNacimiento" label="Fecha de nacimiento" type="date" required max={today}/>
             </div>
             <div className="field-container">
               <SelectInput
@@ -187,30 +189,19 @@ const Step1Form = () => {
               <InputText name="email" label="Correo electrónico" type="email" placeholder="correo@ejemplo.com" required />
             </div>
             <div className="field-container">
-              <InputText name="telefono" label="Teléfono" required onlyNumbers maxLength={8} />
+              <InputText name="telefono" label="Teléfono" required onlyNumbers maxLength={8} placeholder="Ej: 67559758"/>
             </div>
 
             {/* Botón */}
             <div className="field-container full-width">
-              <div className="form-actions">
-                <ButtonPrimary
-                  type="submit"
-                  buttonStyle="primary"
-                  disabled={!isValid || isSubmitting}
-                  onClick={() => {
-                    if (!isValid) {
-                      Swal.fire({
-                        icon: "error",
-                        title: "Campos incompletos",
-                        text: "Por favor, complete todos los campos requeridos",
-                        showConfirmButton: false,
-                        timer: 2000,
-                      });
-                    }
-                  }}
+            <div className="form-actions">
+              <DisabledButton
+                isValid={isValid}
+                isSubmitting={isSubmitting}
+                validationMessage="Por favor, complete todos los campos requeridos"
                 >
                   Registrar Participante
-                </ButtonPrimary>
+                </DisabledButton>
               </div>
             </div>
           </Form>
