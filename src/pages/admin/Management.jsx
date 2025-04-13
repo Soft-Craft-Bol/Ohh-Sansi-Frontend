@@ -1,39 +1,33 @@
 import React from "react";
 import Tabs from "../../components/tabs/Tabs";
-import GestionPeriod from "../../components/management/gestion/GestionPeriod";
 import FormArea from "../../components/management/formArea/FormArea";
-import GradosManagement from "../../components/management/grados/GradosManagement";
 import CategoriesManagement from "../../components/management/categories/CategoriesManagement";
 import CostsManagement from "../../components/management/costos/CostsManagement";
+import PeriodosManagement from "../../components/management/period/PeriodsManagement";
 import Header from "../../components/header/Header";
 import "./Management.css";
-import { Trophy, Calendar, ListChecks,CoinsIcon, Banknote } from 'lucide-react';
+import { Trophy, Calendar, ListChecks, CoinsIcon, Banknote } from 'lucide-react';
 
 
 const ManagementPage = () => {
   const tabs = [
-    { id: "periods", icon:<Calendar/>,label: " Periodos" },        
-    { id: "areas",icon:<ListChecks/>, label: " Áreas" },
-    {id: "grados", icon:<ListChecks/>, label: " Grados" }, 
-    {id: "categories", icon: <Trophy />, label: "Categorías" },          
-    { id: "costs", icon:<CoinsIcon/>, label: " Costos" },          
-    { id: "payments", icon:<Banknote/>,label: " Pagos" }        
-];
+    { id: "olimpiadas", icon: <Calendar />, label: " Periodos" },
+    { id: "areas", icon: <ListChecks />, label: " Áreas" },
+    { id: "categories", icon: <Trophy />, label: "Categorías" },
+    { id: "costs", icon: <CoinsIcon />, label: " Costos" },
+  ];
 
 
   const renderTabContent = (activeTab) => {
     switch (activeTab) {
       case "areas":
         return <FormArea />;
-      case "grados":
-        return <GradosManagement />;
       case "categories":
         return <CategoriesManagement />;
-      case "periods":
-        return <GestionPeriod />;
-        case "costs":
-          return <CostsManagement />;
-
+      case "olimpiadas":
+        return <PeriodosManagement />;
+      case "costs":
+        return <CostsManagement />;
       default:
         return null;
     }

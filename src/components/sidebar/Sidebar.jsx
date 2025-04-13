@@ -31,14 +31,11 @@ const Sidebar = ({ isSidebarVisible }) => {
       setActiveMenu("team");
     }else if (currentPath === "/orden-de-pago") {
       setActiveMenu("message");
-
     }else if (currentPath === "/estado-de-inscripcion") {
       setActiveMenu("inscriptionState");
     }else if (currentPath === "/register-excel"){
       setActiveMenu("excel");
     }
-
-
   }, [location]);
 
   return (

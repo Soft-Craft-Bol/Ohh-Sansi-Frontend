@@ -1,0 +1,72 @@
+.ec-event-card {
+  border: 1px solid #e0e0e0;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  transition: box-shadow 0.2s ease;
+}
+
+.ec-event-card:hover {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+.ec-event-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.ec-event-title {
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 16px;
+}
+
+.ec-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.ec-icon-edit {
+  cursor: pointer;
+  color: var(--yellow, #f4b400);
+}
+
+.ec-icon-delete {
+  cursor: pointer;
+  color: var(--red, #e53935);
+}
+
+.ec-eye {
+  color: green;
+}
+
+.ec-event-date {
+  font-size: 0.9em;
+  color: #444;
+  margin-top: 6px;
+}
+
+.ec-event-desc {
+  font-size: 0.85em;
+  color: #666;
+  margin-top: 4px;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .ec-event-title {
+    font-size: 14px;
+  }
+
+  .ec-event-date,
+  .ec-event-desc {
+    font-size: 0.8em;
+  }
+}

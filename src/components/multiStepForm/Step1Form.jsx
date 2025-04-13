@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import InputText from "../inputs/InputText";
 import { ButtonPrimary } from "../button/ButtonPrimary";
 import SelectInput from "../selected/SelectInput";
-import useFetchNivelesEscolares from "../../hooks/NivelEscolar/useFetchNivelesEscolares";
+import useFetchGrados from "../../hooks/NivelEscolar/useFetchGrados";
 import useFetchDepartamentos from "../../hooks/departamento/useFetchDepartamentos";
 import useFetchMunicipios from "../../hooks/departamento/useFetchMunicipios";
 import useFetchColegio from "../../hooks/Colegio/useFetchColegio";
@@ -14,14 +14,16 @@ import { registerParticipante } from "../../api/api";
 import Swal from "sweetalert2";
 import "./Step1Form.css";
 
+
 const Step1Form = () => {
   const navigate = useNavigate();
-  const { niveles, loading: loadingNiveles } = useFetchNivelesEscolares();
+  const { grados, loading: loadingGrados} = useFetchGrados();
   const { departamentos, loading: loadingDepartamentos } = useFetchDepartamentos();
   const [selectedDepartamento, setSelectedDepartamento] = useState("");
   const { municipios, loading: loadingMunicipios } = useFetchMunicipios(selectedDepartamento);
   const [selectedMunicipio, setSelectedMunicipio] = useState("");
   const { colegios, loading: loadingColegios } = useFetchColegio(selectedMunicipio);
+
 
   const loadSavedData = () => {
     const savedData = localStorage.getItem("participanteFormData");
@@ -168,13 +170,13 @@ const Step1Form = () => {
             </div>
             <div className="field-container">
               <SelectInput
-                label="Grado/Nivel"
+                label="Grado escolar"
                 name="grado"
-                options={niveles.map(n => ({
-                  value: n.idNivel.toString(),
-                  label: n.nombreNivelEscolar,
+                options={grados.map(n => ({
+                  value: n.idGrado.toString(),
+                  label: n.nombreGrado
                 }))}
-                loading={loadingNiveles}
+                loading={loadingGrados}
                 emptyMessage="No se encontraron niveles"
                 required
               />

@@ -1,23 +1,23 @@
 import { useState, useEffect } from "react";
-import { getNivelEscolar } from "../../api/api";
+import { getGrados } from "../../api/api";
 
-const useFetchNivelesEscolares = () => {
-  const [niveles, setNiveles] = useState([]); 
+const useFetchGrados = () => {
+  const [grados, setGrados] = useState([]); 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await getNivelEscolar();
+        const response = await getGrados();
         if (response.data && Array.isArray(response.data)) {
-          setNiveles(response.data);
+          setGrados(response.data);
         } else {
-          setNiveles([]);
+          setGrados([]);
         }
       } catch (err) {
         setError(err);
-        setNiveles([]);
+        setGrados([]);
       } finally {
         setLoading(false);
       }
@@ -26,7 +26,7 @@ const useFetchNivelesEscolares = () => {
     fetchData();
   }, []);
 
-  return { niveles, loading, error }; 
+  return { grados, loading, error }; 
 };
 
-export default useFetchNivelesEscolares;
+export default useFetchGrados;
