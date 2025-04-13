@@ -71,6 +71,15 @@
   font-size: 0.9rem;
   font-weight: 500;
 }
+.status-pending{
+  background-color: #ff9800;
+  color: white;
+  padding: 8px 15px;
+  border-radius: 20px;
+  font-family: var(--poppins);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
 
 .info-table {
   width: 100%;
@@ -150,6 +159,10 @@
 .ver-detalles:hover {
   text-decoration: underline;
 }
+.status-chip.pending {
+  background-color: #ffedd5; 
+  color: #f97316;
+}
 
 @media screen and (max-width: 1024px) {
   .table-header,
@@ -193,7 +206,7 @@
     font-size: 1rem;
   }
 
-  .status-complete {
+  .status-complete, .status-pending {
     padding: 6px 12px;
     font-size: 0.8rem;
   }
