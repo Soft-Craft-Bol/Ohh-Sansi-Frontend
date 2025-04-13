@@ -81,3 +81,28 @@
 	box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
 	transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
+
+/* Deshabiliar boton */
+
+.btn-disabled {
+	height: 40px;
+	width: 100%;
+	border-radius: 8px;
+	font-size: 16px;
+	font-family: Arial, sans-serif;
+	background: #a0a0a0; 
+	color: #e0e0e0; 
+	padding: 8px;
+	border: none;
+	box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+	transition: background-color 0.3s ease, box-shadow 0.3s ease;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	cursor: not-allowed; 
+}
+
+.btn-disabled:hover {
+	background: #a0a0a0; 
+	box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+}
