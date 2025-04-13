@@ -9,8 +9,15 @@ import './LoadExcel.css';
 import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom';
 import plantilla from '../../assets/PlantillaInscripcion.xlsx';
+import Table from '../table/Table';
 
 const validExtensions = ['.xlsx', '.xls', '.csv', '.xsb'];
+const columnasPermitidas = ['Nombres', 'Apellidos', 'NumeroDocumento', 'Institucion', 'Area', 'Tutor'];
+const columnas = columnasPermitidas.map((col) => ({
+  header: col,
+  accessor: col
+}));
+
 
 const LoadExcel = () => {
   const fileInputRef = useRef(null);
@@ -35,10 +42,18 @@ const LoadExcel = () => {
         const workbook = XLSX.read(data, { type: 'array' });
         const sheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[sheetName];
-        const json = XLSX.utils.sheet_to_json(worksheet);
-        console.log('Contenido del archivo:', json);
-    
-        setExcelData(json);
+        const jsonOriginal = XLSX.utils.sheet_to_json(worksheet);
+
+        // Filtrar las columnas
+        const jsonFiltrado = jsonOriginal.map((row) => {
+          const nuevoRow = {};
+          columnasPermitidas.forEach((columna) => {
+            nuevoRow[columna] = row[columna] ?? ''; 
+          });
+          return nuevoRow;
+        });
+
+        setExcelData(jsonFiltrado);
         setSubmitting(false);
         setButtonState('done');
       };
@@ -197,27 +212,10 @@ const LoadExcel = () => {
       </div>
     </form>
 
-      {excelData.length > 0 && (
+    {excelData.length > 0 && (
         <div className="table-container">
           <h3>Listado de Participantes Cargados</h3>
-          <table className="excel-table">
-            <thead>
-              <tr>
-                {Object.keys(excelData[0]).map((key) => (
-                  <th key={key}>{key}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {excelData.map((row, index) => (
-                <tr key={index}>
-                  {Object.keys(row).map((key) => (
-                    <td key={key}>{row[key]}</td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <Table data={excelData} columns={columnas} />
         </div>
       )}
       <ButtonPrimary type='submit' onClick={handleSubmit}>

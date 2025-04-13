@@ -5,6 +5,7 @@ import { MdOutlinePayment } from "react-icons/md";
 import { RiFileExcel2Line } from "react-icons/ri";
 import { signOut } from "../../utils/authFuntions";
 import { Link, useLocation } from "react-router-dom";
+import { FaQuestionCircle } from "react-icons/fa";
 import "./Sidebar.css";
 import logoOhSansi from "../../assets/img/sansi-logo-only.png";
 
@@ -30,6 +31,8 @@ const Sidebar = ({ isSidebarVisible }) => {
       setActiveMenu("team");
     }else if (currentPath === "/orden-de-pago") {
       setActiveMenu("message");
+    }else if (currentPath === "/estado-de-inscripcion") {
+      setActiveMenu("inscriptionState");
     }else if (currentPath === "/register-excel"){
       setActiveMenu("excel");
     }
@@ -75,12 +78,12 @@ const Sidebar = ({ isSidebarVisible }) => {
             <span className="text">Orden de pago</span>
           </Link>
         </li>
-        {/* <li className={activeMenu === "team" ? "active" : ""}>
-          <Link to="/inicio" className="link">
+        <li className={activeMenu === "inscriptionState" ? "active" : ""}>
+          <Link to="/estado-de-inscripcion" className="link">
             <FaQuestionCircle className="icon" />
-            <span className="text">Ayuda</span>
+            <span className="text">Estado de Inscripcion</span>
           </Link>
-        </li> */}
+        </li>
       </ul>
 
       <ul className="side-menu">

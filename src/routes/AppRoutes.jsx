@@ -14,6 +14,8 @@ import Step2Form from "../components/multiStepForm/Step2Form";
 import Step3Form from "../components/multiStepForm/Step3Form";
 import Step4Form from "../components/multiStepForm/Step4Form";
 import Step5Form from "../components/multiStepForm/Step5Form";
+import EstadoDeInscripcion from '../pages/estadoDeInscripcion/EstadoDeInscripcion';
+
 
 const LoginUser = lazy(() => import("../pages/login/LoginUser"));
 //const Formulario = lazy(() => import('../components/formulario/Formulario'));
@@ -53,7 +55,7 @@ const AppRoutes = () => {
 
       <Route
         path="/management"
-        element={<Layout><ManagementPage /></Layout>}
+        element={<PrivateRoute><Layout><ManagementPage /></Layout></PrivateRoute>}
       />
 
       <Route
@@ -72,6 +74,16 @@ const AppRoutes = () => {
           <PrivateRoute>
             <Layout>
               <OrdenDePago />
+            </Layout>
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/estado-de-inscripcion"
+        element={
+          <PrivateRoute>
+            <Layout>
+              <EstadoDeInscripcion />
             </Layout>
           </PrivateRoute>
         }
