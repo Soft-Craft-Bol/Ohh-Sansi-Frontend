@@ -20,9 +20,15 @@ const EstadoDeInscripcion = () => {
   } = useEstadoInscripcion();
 
   const utils = useInscripcionUtils(datosInscripcion);
+
   useEffect(() => {
     resetEstado();
   }, []);
+
+  const containerVariants = {
+    hidden: { opacity: 0, y: 50 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+  };
 
   return (
     <div className='estado-inscripcion'>
@@ -30,34 +36,54 @@ const EstadoDeInscripcion = () => {
         title="Estado de Inscripción"
         description="Consulta el estado de tu inscripción"
       />
-      <div className='top-container'>
+      
+      <motion.div
+        className='top-container'
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
         <BuscadorCodigo
           descripcion="Obtén información de la inscripción introduciendo el número de documento del participante"
           placeholder="Introduce el documento del participante"
           codigoIntroducidoTexto="Número de documento introducido:"
           codigoIntroducido={documento}
-          onInputChange={(e) => setDocumento(e.target.value)}
+          onInputChange={(e) => {
+            const value = e.target.value;
+            const soloNumeros = value.replace(/\D/g, '');
+            if (soloNumeros.length <= 10) {
+              setDocumento(soloNumeros);
+            }
+          }}
           onKeyPress={handleKeyPress}
           onSearch={handleSearch}
           error={error}
-          containerVariants={{
-            hidden: { opacity: 0, y: 50 },
-            visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
-          }}
+          containerVariants={containerVariants}
         />
-      </div>
-      
+      </motion.div>
+
       {cargando && (
-        <div className='page-padding text-center'>
+        <motion.div
+          className='page-padding text-center'
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
           <p>Cargando información...</p>
-        </div>
+        </motion.div>
       )}
       
       {mostrarDetalles && datosInscripcion && (
-        <DetallesInscripcion 
-          datosInscripcion={datosInscripcion}
-          utils={utils}
-        />
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          <DetallesInscripcion 
+            datosInscripcion={datosInscripcion}
+            utils={utils}
+          />
+        </motion.div>
       )}
     </div>
   );
