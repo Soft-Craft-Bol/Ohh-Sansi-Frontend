@@ -2,39 +2,36 @@ import { useState, useEffect } from "react";
 import "./Step3Form.css";
 import InputText from "../inputs/InputText";
 import { ButtonPrimary } from "../button/ButtonPrimary";
-import { getAllTutor } from "../../api/api"; 
+import { getAllTipoTutor, registerTutor } from "../../api/api";
 import registerTutorValidationSchema from "../../schemas/registerTutorValidate";
 import { Formik, Form } from "formik";
 import { toast } from "sonner";
 import SelectInput from "../selected/SelectInput";
-import Swal from "sweetalert2";
 
-const Step3Form = ({ onNext, onPrev, formData = {}, updateFormData }) => {
+const Step3Form = () => {
   const [tipoTutores, setTipoTutores] = useState([]);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [tutoresLocales, setTutoresLocales] = useState(formData.tutores || []);
+  const [tutoresLocales, setTutoresLocales] = useState([]);
+  const [ciParticipante, setCiParticipante] = useState("");
   const MAX_TUTORES = 2;
-  
-  useEffect(() => {
-    fetchData();
-  }, []);
 
   const initialValues = {
     idTipoTutor: "",
-    emailTutor: "", 
+    emailTutor: "",
     nombresTutor: "",
     apellidosTutor: "",
     telefono: "",
     carnetIdentidadTutor: "",
+    complementoCiTutor: "",
   };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   const fetchData = async () => {
     try {
-      const response = await getAllTutor();
-      const tipos = response.data?.tipoTutores || 
-              response.data?.data?.tipoTutores || 
-              response.data || 
-              [];
+      const response = await getAllTipoTutor();
+      const tipos = response.data?.tipoTutores || response.data?.data?.tipoTutores || response.data || [];
       setTipoTutores(Array.isArray(tipos) ? tipos : []);
     } catch (error) {
       console.error("Error fetching tutor types:", error);
@@ -43,39 +40,30 @@ const Step3Form = ({ onNext, onPrev, formData = {}, updateFormData }) => {
     }
   };
 
-  const agregarTutor = (tutor, { resetForm }) => {
+  const agregarTutor = (values, { resetForm }) => {
     if (tutoresLocales.length >= MAX_TUTORES) {
       toast.error(`Solo puede registrar un máximo de ${MAX_TUTORES} tutores`);
       return;
     }
 
-    // Verificar si ya existe un tutor con el mismo CI
-    const existe = tutoresLocales.some(t => 
-      t.carnetIdentidadTutor === tutor.carnetIdentidadTutor
-    );
-    
+    const existe = tutoresLocales.some((t) => t.carnetIdentidadTutor === values.carnetIdentidadTutor);
+
     if (existe) {
       toast.error("Ya existe un tutor con este número de documento");
       return;
     }
 
-    // Buscar el nombre del tipo de tutor
-    const tipoTutor = tipoTutores.find(t => t.idTipoTutor === Number(tutor.idTipoTutor));
-    
+    const tipoTutor = tipoTutores.find((t) => t.idTipoTutor === Number(values.idTipoTutor));
+
     const nuevoTutor = {
-      ...tutor,
-      idTipoTutor: Number(tutor.idTipoTutor),
-      tipoTutorNombre: tipoTutor?.nombreTipoTutor || "Sin tipo"
+      ...values,
+      idTipoTutor: Number(values.idTipoTutor),
+      tipoTutorNombre: tipoTutor?.nombreTipoTutor || "Sin tipo",
     };
 
     setTutoresLocales([...tutoresLocales, nuevoTutor]);
     resetForm();
-    toast.success("Tutor agregado localmente");
-    
-    // Mostrar mensaje si se alcanza el límite
-    if (tutoresLocales.length + 1 >= MAX_TUTORES) {
-      toast.info(`Ha alcanzado el límite máximo de ${MAX_TUTORES} tutores`);
-    }
+    toast.success("Tutor agregado correctamente");
   };
 
   const eliminarTutor = (index) => {
@@ -85,22 +73,52 @@ const Step3Form = ({ onNext, onPrev, formData = {}, updateFormData }) => {
     toast.success("Tutor eliminado");
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    updateFormData({ tutores: tutoresLocales });
-    onNext();
+  const handleRegistrarTutores = async () => {
+    if (!ciParticipante) {
+      toast.error("Debe ingresar el CI del participante antes de registrar tutores");
+      return;
+    }
+
+    if (tutoresLocales.length === 0) {
+      toast.error("Debe agregar al menos un tutor antes de registrar");
+      return;
+    }
+
+    try {
+      await registerTutor(ciParticipante, tutoresLocales);
+      toast.success("Tutores registrados correctamente");
+      setTutoresLocales([]);
+      setCiParticipante("");
+    } catch (error) {
+      console.error("Error al registrar los tutores:", error);
+      toast.error("Error al registrar los tutores");
+    }
   };
 
   return (
     <div className="step3-container">
       <h2 className="step3-title">Registro de Tutores</h2>
       <p className="step3-description">
-        Agregue los tutores del participante (Paso 3 de 5) - Máximo {MAX_TUTORES}
+        Registre uno o dos tutores para el participante. Máximo {MAX_TUTORES} tutores.
       </p>
-      
+
       <div className="step3-content">
-        {/* Formulario para agregar nuevos tutores */}
         <div className="step3-form-container">
+          <div className="step3-form-group">
+            <label className="ci-participante" htmlFor="ciParticipante">CI del Participante</label>
+            <input
+              id="ciParticipante"
+              name="ciParticipante"
+              type="text"
+              placeholder="Ingrese el CI del participante"
+              value={ciParticipante}
+              onChange={(e) => setCiParticipante(e.target.value)}
+              required
+              className="step3-input"
+              maxLength={10}
+            />
+          </div>
+
           <Formik
             initialValues={initialValues}
             validationSchema={registerTutorValidationSchema}
@@ -132,6 +150,8 @@ const Step3Form = ({ onNext, onPrev, formData = {}, updateFormData }) => {
                     type="text"
                     placeholder="Nombres del tutor"
                     required
+                    onlyLetters={true} 
+                    maxLength={50}
                   />
                 </div>
 
@@ -142,6 +162,8 @@ const Step3Form = ({ onNext, onPrev, formData = {}, updateFormData }) => {
                     type="text"
                     placeholder="Apellidos del tutor"
                     required
+                    onlyLetters={true} 
+                    maxLength={50}
                   />
                 </div>
 
@@ -162,6 +184,8 @@ const Step3Form = ({ onNext, onPrev, formData = {}, updateFormData }) => {
                     type="text"
                     placeholder="Teléfono del tutor"
                     required
+                    onlyNumbers 
+                    maxLength={8}
                   />
                 </div>
 
@@ -172,6 +196,19 @@ const Step3Form = ({ onNext, onPrev, formData = {}, updateFormData }) => {
                     type="text"
                     placeholder="Documento del tutor"
                     required
+                    onlyNumbers 
+                    maxLength={10}
+                  />
+                </div>
+
+                <div className="step3-form-group">
+                  <InputText
+                    name="complementoCiTutor"
+                    label="Complemento CI"
+                    type="text"
+                    placeholder="Complemento del documento"
+                    maxLength={2}  
+                    onlyAlphaNumeric
                   />
                 </div>
 
@@ -179,22 +216,9 @@ const Step3Form = ({ onNext, onPrev, formData = {}, updateFormData }) => {
                   <ButtonPrimary
                     type="submit"
                     buttonStyle="primary"
-                    disabled={!formik.isValid || isSubmitting || tutoresLocales.length >= MAX_TUTORES}
-                    onClick={() => {
-                      if (!formik.isValid) {
-                        Swal.fire({
-                          icon: 'error',
-                          title: 'Datos incompletos',
-                          text: 'Por favor, complete todos los campos requeridos',
-                          showConfirmButton: false,
-                          timer: 2000,
-                        });
-                      }
-                    }}
+                    disabled={!formik.isValid || tutoresLocales.length >= MAX_TUTORES}
                   >
-                    {tutoresLocales.length >= MAX_TUTORES ? 
-                      'Límite alcanzado' : 
-                      'Agregar Tutor'}
+                    {tutoresLocales.length >= MAX_TUTORES ? "Límite alcanzado" : "Agregar Tutor"}
                   </ButtonPrimary>
                 </div>
               </Form>
@@ -202,10 +226,9 @@ const Step3Form = ({ onNext, onPrev, formData = {}, updateFormData }) => {
           </Formik>
         </div>
 
-        {/* Lista de tutores agregados */}
         <div className="step3-tutores-list">
           <h3>Tutores Actuales ({tutoresLocales.length}/{MAX_TUTORES})</h3>
-          
+
           {tutoresLocales.length === 0 ? (
             <p className="no-tutores-message">No hay tutores agregados aún</p>
           ) : (
@@ -218,6 +241,7 @@ const Step3Form = ({ onNext, onPrev, formData = {}, updateFormData }) => {
                     <p><strong>Email:</strong> {tutor.emailTutor}</p>
                     <p><strong>Teléfono:</strong> {tutor.telefono}</p>
                     <p><strong>Documento:</strong> {tutor.carnetIdentidadTutor}</p>
+                    <p><strong>Complemento CI:</strong> {tutor.complementoCiTutor || "N/A"}</p>
                   </div>
                   <button
                     type="button"
@@ -233,22 +257,14 @@ const Step3Form = ({ onNext, onPrev, formData = {}, updateFormData }) => {
         </div>
       </div>
 
-      {/* Botones de navegación */}
       <div className="step3-navigation">
-        <ButtonPrimary 
-          type="button"
-          buttonStyle="secondary"
-          onClick={onPrev}
-        >
-          Anterior
-        </ButtonPrimary>
-        <ButtonPrimary 
+        <ButtonPrimary
           type="button"
           buttonStyle="primary"
-          onClick={handleSubmit}
+          onClick={handleRegistrarTutores}
           disabled={tutoresLocales.length === 0}
         >
-          Siguiente
+          Registrar Tutores
         </ButtonPrimary>
       </div>
     </div>

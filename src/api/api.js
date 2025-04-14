@@ -61,8 +61,9 @@ export const getCategories = () => api.get('/category');
 
 
 //TUTORES 
-export const getAllTutor = () => api.get('/tipo-tutor/findAllTipoTutor');
-export const registerTutor = (data) => api.post('/tutores/register-tutor', data);
+export const getAllTipoTutor = () => api.get('/tipo-tutor/findAllTipoTutor');
+export const registerTutor = (ciParticipante, data) => 
+  api.post(`/tutor/${ciParticipante}`, data);
 
 //OLIMPIADA
 export const getOlimpiadas = () => api.get('/olimpiada');
@@ -84,3 +85,9 @@ export const createOrdenPago = (data) => api.post('/orden-pago', data);
 
 //estado de inscripcoin
 export const getEstadoInscripcion = (ciParticipante) => api.get(`/estado-inscripcion/${ciParticipante}`);
+
+
+//catalogo
+export const getCatalogoAreasCategorias = (ciParticipante) => api.get(`/catalogo/ci-participante/${ciParticipante}`);
+export const setCatalogoAreasParticipante = (ciParticipante, data) => 
+  api.post(`/participante/register-participant-catalogo/${ciParticipante}`, data);

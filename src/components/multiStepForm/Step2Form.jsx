@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { toast } from "sonner";
 import InputText from "../inputs/InputText";
 import { ButtonPrimary } from "../button/ButtonPrimary";
-import { getAreaByIdGrade, getEstudianteByCarnet } from "../../api/api";
+import { getCatalogoAreasCategorias, setCatalogoAreasParticipante } from "../../api/api";
 import "./Step2Form.css";
 import { Form, Formik } from "formik";
 
@@ -26,74 +26,39 @@ const AsignarAreasForm = () => {
 
     setLoading(true);
     try {
-      const resEstudiante = await getEstudianteByCarnet(carnetNumerico);
-      console.log("Estudiante encontrado:", resEstudiante.data);
-      
-      if (!resEstudiante.data?.participante) {
-        throw new Error("No se encontró información del participante");
+      const resCatalogo = await getCatalogoAreasCategorias(carnetNumerico);
+      console.log("Catálogo de áreas:", resCatalogo.data);
+
+      if (resCatalogo.data.length === 0) {
+        setEstudiante({ carnetIdentidadParticipante: carnetNumerico });
+        setAreas([]);
+        toast.info("No hay materias disponibles para el grado del participante.");
+        return;
       }
-      
-      setEstudiante(resEstudiante.data.participante);
+      const combined = resCatalogo.data.map((item) => ({
+        idArea: item.id_area,
+        nombreArea: item.nombre_area,
+        nombreCortoArea: item.nombre_corto_area,
+        descripcionArea: item.descripcion_area,
+        precioArea: item.precio_olimpiada || 0,
+        categoria: {
+          id: item.id_categoria,
+          nombre: item.nombre_categoria,
+        },
+        idOlimpiada: item.id_olimpiada,
+        idCatalogo: item.id_catalogo,
+      }));
 
-      const idNivel = resEstudiante.data.participante.idNivel;
-      console.log("ID Nivel:", idNivel);
-
-      if (!idNivel) {
-        throw new Error("No se pudo determinar el nivel del estudiante");
-      }
-
-      const resAreas = await getAreaByIdGrade(idNivel);
-      const combined = processAreas(resAreas.data);
+      setEstudiante({ carnetIdentidadParticipante: carnetNumerico });
       setAreas(combined);
     } catch (err) {
-      console.error("Error buscando estudiante:", err);
+      console.error("Error buscando catálogo de áreas:", err);
       toast.error(err.message || "No se encontró el estudiante o las áreas");
       setEstudiante(null);
       setAreas([]);
     } finally {
       setLoading(false);
     }
-  };
-
-  const processAreas = (data) => {
-    const seen = new Set();
-    const result = [];
-
-    if (data.areas) {
-      data.areas.forEach((a) => {
-        if (!seen.has(a.idArea)) {
-          seen.add(a.idArea);
-          result.push({ 
-            ...a, 
-            source: "Nivel", 
-            categoria: null,
-            precioArea: a.precioArea || 0 // Asegurar que precioArea tenga valor
-          });
-        }
-      });
-    }
-
-    if (data.areasCategorias) {
-      data.areasCategorias.forEach((a) => {
-        if (!seen.has(a.idArea)) {
-          seen.add(a.idArea);
-          result.push({
-            idArea: a.idArea,
-            nombreArea: a.nombreArea,
-            precioArea: a.precioArea || 0, // Asegurar que precioArea tenga valor
-            descripcionArea: a.descripcionArea,
-            nombreCortoArea: a.nombreCortoArea,
-            source: "Categoría",
-            categoria: {
-              id: a.idCategoria,
-              nombre: a.codigoCategoria,
-            },
-          });
-        }
-      });
-    }
-
-    return result;
   };
 
   const toggleSeleccion = (id) => {
@@ -112,22 +77,24 @@ const AsignarAreasForm = () => {
       toast.error("Debe seleccionar al menos un área");
       return;
     }
-
+  
     try {
       const areasSeleccionadas = areas
         .filter((a) => seleccionadas.includes(a.idArea))
         .map((a) => ({
           idArea: a.idArea,
-          nombreArea: a.nombreArea,
-          precioArea: a.precioArea,
+          idCategoria: a.categoria.id,
+          idOlimpiada: a.idOlimpiada,
+          idCatalogo: a.idCatalogo,
         }));
-
-      // await asignarAreasEstudiante({ idEstudiante: estudiante.idParticipante, areas: areasSeleccionadas });
+      await setCatalogoAreasParticipante(estudiante.carnetIdentidadParticipante, areasSeleccionadas);
+  
       toast.success("Áreas asignadas correctamente");
       setEstudiante(null);
       setSeleccionadas([]);
       setAreas([]);
     } catch (e) {
+      console.error("Error al asignar las áreas:", e);
       toast.error("Error al asignar las áreas");
     }
   };
@@ -177,7 +144,6 @@ const AsignarAreasForm = () => {
 
       {estudiante && (
         <div>
-          <p><strong>Nombre:</strong> {`${estudiante.nombreParticipante} ${estudiante.apellidoPaterno} ${estudiante.apellidoMaterno}`}</p>
           <p><strong>CI:</strong> {estudiante.carnetIdentidadParticipante}</p>
 
           <span>Seleccione hasta 2 áreas:</span>
@@ -189,7 +155,16 @@ const AsignarAreasForm = () => {
                 className={`step2-card ${seleccionadas.includes(area.idArea) ? "selected" : ""}`}
                 onClick={() => toggleSeleccion(area.idArea)}
               >
-                <h3>{area.nombreArea}</h3>
+                <div className="area-header">
+                  <input 
+                    type="checkbox" 
+                    checked={seleccionadas.includes(area.idArea)}
+                    onChange={() => {}}
+                    className="area-checkbox"
+                  />
+                  <h3 className="area-title">{area.nombreArea}</h3>
+                  <span className="categoria-tag">(Categoría: {area.categoria.nombre})</span>
+                </div>
                 <p>{area.descripcionArea}</p>
                 <p className="costo">Bs {formatCurrency(area.precioArea)}</p>
               </div>

@@ -48,7 +48,7 @@ const Step1Form = () => {
 
   const handleSubmit = async (values) => {
     try {
-      localStorage.setItem("participanteFormData", JSON.stringify(values));
+      //localStorage.setItem("participanteFormData", JSON.stringify(values));
 
       const fechaNacimiento = new Date(values.fechaNacimiento);
       const hoy = new Date();
