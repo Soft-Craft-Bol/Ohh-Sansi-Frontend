@@ -84,3 +84,9 @@ export const createOrdenPago = (data) => api.post('/orden-pago', data);
 
 //estado de inscripcoin
 export const getEstadoInscripcion = (ciParticipante) => api.get(`/estado-inscripcion/${ciParticipante}`);
+
+
+//catalogo
+export const getCatalogoAreasCategorias = (ciParticipante) => api.get(`/catalogo/ci-participante/${ciParticipante}`);
+export const setCatalogoAreasParticipante = (ciParticipante, data) => 
+  api.post(`/participante/register-participant-catalogo/${ciParticipante}`, data);
