@@ -1,0 +1,47 @@
+.configurator {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+  
+  .period-selector {
+    display: flex;
+    gap: 1rem;
+    margin: 1rem 0;
+  }
+  
+  
+.period-btn {
+    position: relative;
+    background-color: white;
+    border: 2px solid #007bff;
+    padding: 0.6rem 1rem;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+  
+  .period-btn:hover {
+    background-color: #93a9c7;
+  }
+  
+  .period-btn.active {
+    background-color: var(--blue-color);
+    color:white;
+    font-weight: bold;
+  }
+  
+  .configured-list {
+    margin-top: 2rem;
+  }
+
+  .green-dot {
+    width: 10px;
+    height: 10px;
+    background-color: #34d058;
+    border-radius: 50%;
+    display: inline-block;
+    margin-left: 8px;
+  }
+  

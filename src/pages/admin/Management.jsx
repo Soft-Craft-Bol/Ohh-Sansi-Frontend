@@ -7,14 +7,16 @@ import PeriodosManagement from "../../components/management/period/PeriodsManage
 import Header from "../../components/header/Header";
 import "./Management.css";
 import { Trophy, Calendar, ListChecks, CoinsIcon, Banknote } from 'lucide-react';
+import CatalogoMangament from "../../components/management/catalogo/CatalogoManagement";
 
 
 const ManagementPage = () => {
   const tabs = [
     { id: "olimpiadas", icon: <Calendar />, label: " Periodos" },
+    {id:"catalogo", icon: <Banknote />, label: " Catálogos"},
     { id: "areas", icon: <ListChecks />, label: " Áreas" },
     { id: "categories", icon: <Trophy />, label: "Categorías" },
-    { id: "costs", icon: <CoinsIcon />, label: " Costos" },
+    { id: "costs", icon: <CoinsIcon />, label: " Costos" }
   ];
 
 
@@ -28,6 +30,8 @@ const ManagementPage = () => {
         return <PeriodosManagement />;
       case "costs":
         return <CostsManagement />;
+      case "catalogo":
+        return <CatalogoMangament />;
       default:
         return null;
     }

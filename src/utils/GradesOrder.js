@@ -15,7 +15,7 @@ export const GRADO_ORDEN = [
   
   export const ordenarGrados = (grados) => {
     return [...grados].sort((a, b) => {
-      return GRADO_ORDEN.indexOf(a.nombreNivelEscolar) - GRADO_ORDEN.indexOf(b.nombreNivelEscolar);
+      return GRADO_ORDEN.indexOf(a.nombreGrado) - GRADO_ORDEN.indexOf(b.nombreGrado);
     });
   };
   

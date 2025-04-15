@@ -59,7 +59,6 @@ export const getAreaByIdGrade = (id) => api.get(`/nivelescolar-categoria-area/ar
 export const createCategory = (data) => api.post('/grado-categoria/register', data);
 export const getCategories = () => api.get('/category');
 
-
 //TUTORES 
 export const getAllTipoTutor = () => api.get('/tipo-tutor/findAllTipoTutor');
 export const registerTutor = (ciParticipante, data) => 
@@ -70,6 +69,8 @@ export const getOlimpiadas = () => api.get('/olimpiada');
 export const saveOlimpiada = (data) => api.post('/olimpiada/register', data);
 export const savePrecioOlimpiada = (data) => api.put('/olimpiada/update-precio', data);
 
+//CatalogoOlimpiada
+export const getCatalogoOlimpiada = () => api.get('/catalogo-olimpiada');
 
 //FechaOlimpiada
 export const getOlimpiadasConEventos = () => api.get('/fecha-olimpiada/olimpiadas-con-eventos');

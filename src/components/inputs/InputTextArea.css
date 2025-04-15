@@ -18,7 +18,7 @@
     border: 1px solid var(--dark-grey, #ccc);
     background-color: #fff;
     color: var(--dark, #333);
-    font-family: var(--lato, Arial, sans-serif);
+    font-family: var(--lato);
     font-size: 1rem;
     transition: border-color 0.3s ease;
     resize: none;

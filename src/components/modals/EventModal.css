@@ -110,7 +110,7 @@
 }
 
 .em-switch input:checked + .em-slider {
-  background-color: var(--accent);
+  background-color: var(--blue-color);
 }
 
 .em-switch input:checked + .em-slider:before {
@@ -139,13 +139,14 @@
 }
 
 .em-actions .em-primary {
-  background-color: var(--dark);
+  background-color: var(--blue-color);
   color: white;
   transition: background 0.3s ease;
 }
 
 .em-actions .em-primary:hover {
-  background-color: #000;
+  background: #044994;
+	box-shadow: 3px 3px 7px rgba(0, 0, 0, 0.3);
 }
 
 /* Responsive */
