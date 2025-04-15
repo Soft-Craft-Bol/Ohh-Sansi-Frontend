@@ -1,18 +1,20 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import "./Step4Form.css";
 import BuscadorCodigo from "../buscadorCodigo/BuscadorCodigo";
-import { getTutorAreaParticipanteInfo } from "../../api/api";
+import { getTutorAreaParticipanteInfo, setTutorAreaParticipante } from "../../api/api";
 import Swal from "sweetalert2";
 
 const Step4Form = ({ formData, updateFormData, onNext, onPrev }) => {
   const [codigoIntroducido, setCodigoIntroducido] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [participanteData, setParticipanteData] = useState(null);
   const [tutoresAsignaciones, setTutoresAsignaciones] = useState([]);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(null);
-
+  const navigator = useNavigate();
   const containerVariants = {
     hidden: { opacity: 0, y: -20 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
@@ -163,7 +165,6 @@ const Step4Form = ({ formData, updateFormData, onNext, onPrev }) => {
       });
       return;
     }
-    
     const asignaciones = tutoresAsignaciones
       .filter(tutor => !tutor.esTutorLegal && tutor.areaId)
       .map(tutor => ({
@@ -173,6 +174,15 @@ const Step4Form = ({ formData, updateFormData, onNext, onPrev }) => {
       }));
 
     console.log("Asignaciones a enviar:", asignaciones);
+    
+    if (asignaciones.length === 0) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Atención',
+        text: 'No hay asignaciones para guardar',
+      });
+      return;
+    }
     
     try {
       const confirmResult = await Swal.fire({
@@ -185,6 +195,9 @@ const Step4Form = ({ formData, updateFormData, onNext, onPrev }) => {
       });
       
       if (confirmResult.isConfirmed) {
+        setSubmitting(true);
+        await setTutorAreaParticipante(asignaciones);
+        
         Swal.fire({
           icon: 'success',
           title: 'Éxito',
@@ -192,13 +205,21 @@ const Step4Form = ({ formData, updateFormData, onNext, onPrev }) => {
           timer: 2000,
           timerProgressBar: true
         });
+        if (onNext) {
+          onNext();
+        }
+        navigator("/home");
       }
     } catch (err) {
       console.error("Error al asignar áreas:", err);
       
       let errorMessage = "Error al asignar áreas a los tutores. Intente nuevamente.";
-      if (err.response && err.response.data && err.response.data.message) {
-        errorMessage = err.response.data.message;
+      if (err.response && err.response.data) {
+        if (err.response.data.message) {
+          errorMessage = err.response.data.message;
+        } else if (err.response.data.errors) {
+          errorMessage = err.response.data.errors;
+        }
       }
       
       Swal.fire({
@@ -206,6 +227,8 @@ const Step4Form = ({ formData, updateFormData, onNext, onPrev }) => {
         title: 'Error',
         text: errorMessage,
       });
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -214,6 +237,7 @@ const Step4Form = ({ formData, updateFormData, onNext, onPrev }) => {
       handleSearch();
     }
   }, []);
+  
   const getErrorMessage = (errorText) => {
     if (errorText.includes("Ci de participante no encontrado")) {
       return "CI de participante no encontrado, documento inválido";
@@ -322,9 +346,9 @@ const Step4Form = ({ formData, updateFormData, onNext, onPrev }) => {
               <button 
                 className="upload-excel-btn"
                 onClick={handleSubmitAsignaciones}
-                disabled={tutoresAsignaciones.some(t => !t.esTutorLegal && !t.area)}
+                disabled={tutoresAsignaciones.some(t => !t.esTutorLegal && !t.area) || submitting}
               >
-                Asignar áreas a tutores
+                {submitting ? 'Enviando...' : 'Asignar áreas a tutores'}
               </button>
             </div>
           </div>
