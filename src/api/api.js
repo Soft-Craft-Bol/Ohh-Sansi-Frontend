@@ -96,3 +96,4 @@ export const setCatalogoAreasParticipante = (ciParticipante, data) =>
 //areaTutor participante
 
 export const getTutorAreaParticipanteInfo = (ciParticipante) => api.get(`/tutor-area-participante/${ciParticipante}`);
+export const setTutorAreaParticipante = (data) => api.post('/tutor-area-participante/save', data);
