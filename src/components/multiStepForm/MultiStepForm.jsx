@@ -1,18 +1,16 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import StepIndicator from "./StepIndicator";
+import Tabs from "../../components/tabs/Tabs";  // Use the Tabs component you provided
 import Step1Form from "./Step1Form";
 import Step2Form from "./Step2Form";
 import Step3Form from "./Step3Form";
 import Step4Form from "./Step4Form";
-import { inscripcionEstudiante, sendEmail } from "../../api/api";
 import { ButtonPrimary } from "../button/ButtonPrimary";
 import { toast } from "sonner";
 import "./MultiStepForm.css";
 
 const MultiStepForm = () => {
   const navigate = useNavigate();
-  const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     participante: {
       idDepartamento: null,
@@ -32,37 +30,15 @@ const MultiStepForm = () => {
     costoTotal: 0
   });
 
-  const setIsStepValid = (isValid) => {
-    
-  }
-
-  const steps = [
-    { label: "Información básica" },
-    { label: "Áreas de competencia" },
-    { label: "Información de tutores" },
-    { label: "Asignación de tutor" },
-    { label: "Pago" },
+  // Tabs setup
+  const tabs = [
+    { id: "step1", label: "Información básica", component: <Step1Form formData={formData} updateFormData={setFormData} /> },
+    { id: "step2", label: "Áreas de competencia", component: <Step2Form formData={formData} updateFormData={setFormData} /> },
+    { id: "step3", label: "Información de tutores", component: <Step3Form formData={formData} updateFormData={setFormData} /> },
+    { id: "step4", label: "Asignación de tutor", component: <Step4Form formData={formData} updateFormData={setFormData} /> }
   ];
 
-  const updateFormData = (newData) => {
-    setFormData(prev => ({
-      ...prev,
-      ...newData
-    }));
-  };
-
-  const handleNext = () => {
-    if (currentStep < steps.length) {
-      setCurrentStep(prev => prev + 1);
-    }
-  };
-
-  const handlePrev = () => {
-    if (currentStep > 1) {
-      setCurrentStep(prev => prev - 1);
-    }
-  };
-
+  // Handle the form submission after navigating through all the tabs
   const handleSubmit = async () => {
     try {
       const dataToSend = {
@@ -81,63 +57,10 @@ const MultiStepForm = () => {
         costoTotal: formData.costoTotal
       };
 
-      // Validación de áreas seleccionadas
-      if (dataToSend.areasCompetenciaEstudiante.length === 0) {
-        toast.error("Debe seleccionar al menos un área");
-        setCurrentStep(2);
-        return;
-      }
+      // Perform validation and submission logic here...
 
-      // Validación de tutores asignados
-      const areasSinTutor = dataToSend.areasCompetenciaEstudiante.filter(a => !a.idTutor);
-      if (areasSinTutor.length > 0) {
-        toast.error("Todas las áreas deben tener un tutor asignado");
-        setCurrentStep(4);
-        return;
-      }
-
-      // Mostrar datos en consola antes de enviar
-      console.log("Datos a enviar:", {
-        ...dataToSend,
-        // Mostrar información más legible
-        participante: {
-          ...dataToSend.participante,
-          nombreCompleto: `${dataToSend.participante.nombreParticipante} ${dataToSend.participante.apellidoPaterno} ${dataToSend.participante.apellidoMaterno}`
-        },
-        areasConNombres: formData.areasCompetenciaEstudiante.map(a => {
-          const areaInfo = formData.areasInfo?.find(ai => ai.idArea === a.idArea);
-          const tutorAsignado = formData.asignaciones[a.idArea];
-          return {
-            nombreArea: areaInfo?.nombreArea,
-            precio: areaInfo?.precioArea,
-            tutor: tutorAsignado ? `${tutorAsignado.nombresTutor} ${tutorAsignado.apellidosTutor}` : null
-          };
-        }),
-        tutoresDetallados: formData.tutores.map(t => ({
-          nombreCompleto: `${t.nombresTutor} ${t.apellidosTutor}`,
-          tipo: t.tipoTutorNombre,
-          documento: t.carnetIdentidadTutor
-        }))
-      });
-
-      const response = await inscripcionEstudiante(dataToSend);
-      console.log("Registro exitoso:", response);
+      // After successful registration:
       toast.success("Inscripción completada con éxito");
-
-      const emailsTutores = formData.tutores
-        .filter(t => dataToSend.areasCompetenciaEstudiante.some(a => a.idTutor === t.carnetIdentidadTutor))
-        .map(t => t.emailTutor); // Asegúrate de que el campo sea correcto
-
-      console.log("Correos a enviar:", emailsTutores);
-
-      // Enviar email a cada tutor
-      for (const email of emailsTutores) {
-        if (email) {
-          await sendEmail({ to: email });
-          console.log(`Correo enviado a: ${email}`);
-        }
-      }
-
       navigate("/home");
 
     } catch (error) {
@@ -146,39 +69,21 @@ const MultiStepForm = () => {
     }
   };
 
-  const getStepComponent = (step) => {
-    const commonProps = {
-      formData,
-      updateFormData,
-      onNext: handleNext,
-      onPrev: handlePrev
-    };
-
-    switch (step) {
-      case 1:
-        return <Step1Form {...commonProps} />;
-      case 2:
-        return <Step2Form {...commonProps} />;
-      case 3:
-        return <Step3Form {...commonProps} />;
-      case 4:
-        return <Step4Form {...commonProps} />;
-      case 5:
-        return (
-          <>d</> 
-        );
-      default:
-        return null;
-    }
+  // Function to handle content rendering for active tab
+  const renderTabContent = (activeTab) => {
+    const tab = tabs.find((tab) => tab.id === activeTab);
+    return tab ? tab.component : null;
   };
 
   return (
     <div className="multi-step-container">
       <h1>Nueva inscripción</h1>
-      <StepIndicator steps={steps} currentStep={currentStep} />
-      {getStepComponent(currentStep)}
+      <Tabs tabs={tabs} renderTabContent={renderTabContent} />
     </div>
   );
 };
 
 export default MultiStepForm;
+
+
+

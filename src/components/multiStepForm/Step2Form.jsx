@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { toast } from "sonner";
 import InputText from "../inputs/InputText";
 import { ButtonPrimary } from "../button/ButtonPrimary";
-import { getAreaByIdGrade, getEstudianteByCarnet } from "../../api/api";
+import { getAreaByIdGrade, getEstudianteByCarnet, asignarAreasEstudiantes} from "../../api/api";
 import "./Step2Form.css";
 import { Form, Formik } from "formik";
 
@@ -29,25 +29,21 @@ const AsignarAreasForm = () => {
       const resEstudiante = await getEstudianteByCarnet(carnetNumerico);
       console.log("Estudiante encontrado:", resEstudiante.data);
       
-      if (!resEstudiante.data?.participante) {
+      if (!resEstudiante.data) {
         throw new Error("No se encontró información del participante");
       }
       
-      setEstudiante(resEstudiante.data.participante);
+      setEstudiante(resEstudiante.data);
 
-      const idNivel = resEstudiante.data.participante.idNivel;
+      const idNivel = resEstudiante.data.idGrado;
       console.log("ID Nivel:", idNivel);
-
-      if (!idNivel) {
-        throw new Error("No se pudo determinar el nivel del estudiante");
-      }
 
       const resAreas = await getAreaByIdGrade(idNivel);
       const combined = processAreas(resAreas.data);
       setAreas(combined);
     } catch (err) {
       console.error("Error buscando estudiante:", err);
-      toast.error(err.message || "No se encontró el estudiante o las áreas");
+      toast.error("No se encontró el estudiante o las áreas");
       setEstudiante(null);
       setAreas([]);
     } finally {
@@ -112,22 +108,27 @@ const AsignarAreasForm = () => {
       toast.error("Debe seleccionar al menos un área");
       return;
     }
-
+  
     try {
-      const areasSeleccionadas = areas
+      // Preparar los datos en el formato que espera el backend
+      const dataToSend = areas
         .filter((a) => seleccionadas.includes(a.idArea))
-        .map((a) => ({
-          idArea: a.idArea,
-          nombreArea: a.nombreArea,
-          precioArea: a.precioArea,
+        .map((area) => ({
+          idArea: area.idArea,
+          idCategoria: area.categoria?.id || null, // Si no tiene categoría, envía null
+          idOlimpiada: 1, // Esto parece ser un valor fijo según tu ejemplo
+          idCatalogo: area.idArea // O el valor correcto según tu lógica
         }));
-
-      // await asignarAreasEstudiante({ idEstudiante: estudiante.idParticipante, areas: areasSeleccionadas });
+  
+      // Llamar al endpoint con el carnet y los datos preparados
+      await asignarAreasEstudiantes(estudiante.carnetIdentidadParticipante, dataToSend);
+      
       toast.success("Áreas asignadas correctamente");
       setEstudiante(null);
       setSeleccionadas([]);
       setAreas([]);
     } catch (e) {
+      console.error("Error al asignar áreas:", e);
       toast.error("Error al asignar las áreas");
     }
   };
@@ -143,7 +144,7 @@ const AsignarAreasForm = () => {
 
   return (
     <div className="step2-container">
-      <h2>Asignar Áreas al Estudiante</h2>
+      <h2>Registrar áreas de competencia</h2>
 
       <div className="step2-carnet-container">
         <Formik
@@ -180,38 +181,76 @@ const AsignarAreasForm = () => {
           <p><strong>Nombre:</strong> {`${estudiante.nombreParticipante} ${estudiante.apellidoPaterno} ${estudiante.apellidoMaterno}`}</p>
           <p><strong>CI:</strong> {estudiante.carnetIdentidadParticipante}</p>
 
-          <span>Seleccione hasta 2 áreas:</span>
+          <span>Seleccione las áreas en las que desea participar(son permitidas máximo dos áreas de competencia)</span>
 
           <div className="step2-grid">
-            {areas.map((area) => (
-              <div
-                key={area.idArea}
-                className={`step2-card ${seleccionadas.includes(area.idArea) ? "selected" : ""}`}
-                onClick={() => toggleSeleccion(area.idArea)}
-              >
-                <h3>{area.nombreArea}</h3>
-                <p>{area.descripcionArea}</p>
-                <p className="costo">Bs {formatCurrency(area.precioArea)}</p>
-              </div>
-            ))}
+        {areas.length > 0 ? (
+          areas.map((area) => (
+            <div
+              key={area.idArea}
+              className={`step2-card ${seleccionadas.includes(area.idArea) ? "selected" : ""}`}
+              onClick={() => toggleSeleccion(area.idArea)}
+            >
+              <h3>
+                <input
+                  type="checkbox"
+                  checked={seleccionadas.includes(area.idArea)}
+                  onChange={() => toggleSeleccion(area.idArea)}
+                  className="mr-2"
+                />
+                {area.nombreArea}
+                <span className={`area-source ${area.source.toLowerCase()}`}>
+                  ({area.source}{area.categoria ? `: ${area.categoria.nombre}` : ''})
+                </span>
+              </h3>
+              <p>{area.descripcionArea}</p>
+              <p className="costo">Costo: Bs {area.precioArea.toFixed(2)}</p>
+            </div>
+          ))
+        ) : (
+          <div className="no-areas-message">
+            No hay áreas disponibles para este grado. Por favor seleccione otro grado.
           </div>
+        )}
+      </div>
 
           {seleccionadas.length > 0 && (
-            <div>
-              <h3>Áreas seleccionadas</h3>
-              <ul>
-                {seleccionadas.map((id) => {
-                  const area = areas.find((a) => a.idArea === id);
-                  return (
-                    <li key={id}>
-                      {area?.nombreArea} - Bs {formatCurrency(area?.precioArea)}
-                    </li>
-                  );
-                })}
-              </ul>
-              <p><strong>Total:</strong> Bs {formatCurrency(totalCosto)}</p>
+        <div className="step2-selected-container">
+          <div className="step2-selected-areas">
+            <h3>Áreas seleccionadas:</h3>
+            <div className="step2-selected-cards">
+              {seleccionadas.map((id) => {
+                const area = areas.find((a) => a.idArea === id);
+                return (
+                  <div key={id} className="step2-selected-card">
+                    <div>
+                      <h3>
+                        {area.nombreArea}
+                        <span className={`area-source ${area.source.toLowerCase()}`}>
+                          ({area.source}{area.categoria ? `: ${area.categoria.nombre}` : ''})
+                        </span>
+                      </h3>
+                      <p>{area.descripcionArea}</p>
+                      <p className="costo">Costo: Bs {area.precioArea.toFixed(2)}</p>
+                    </div>
+                    <button 
+                      type="button"
+                      className="remove-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        eliminarSeleccion(id);
+                      }}
+                    >
+                      ×
+                    </button>
+                  </div>
+                );
+              })}
             </div>
-          )}
+            <h2 className="step2-total">Total: Bs {totalCosto.toFixed(2)}</h2>
+          </div>
+        </div>
+      )}
 
           <ButtonPrimary onClick={handleGuardar}>Guardar Selección</ButtonPrimary>
         </div>

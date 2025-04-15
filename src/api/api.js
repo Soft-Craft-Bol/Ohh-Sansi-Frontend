@@ -50,6 +50,7 @@ export const updateArea = (id,data) => api.put(`/areas/${id}`, data);
 export const deleteArea = (id) => api.delete(`/areas/${id}`);
 
 export const getEstudianteByCarnet = (carnet) => api.get(`/participante/carnet/${carnet}`);
+export const asignarAreasEstudiantes = (carnet, data) => api.post(`/participante/register-participant-catalogo/${carnet}`, data);
 //AREA NIVEL ESCOLAR CATEGORIA
 export const getAreaByIdGrade = (id) => api.get(`/nivelescolar-categoria-area/areas-categorias/${id}`);
 export const getAreasGrados = () => api.get('/nivelescolar-categoria-area/areas-grados');
@@ -64,6 +65,7 @@ export const getCategories = () => api.get('/category');
 //TUTORES 
 export const getAllTutor = () => api.get('/tipo-tutor/findAllTipoTutor');
 export const registerTutor = (data) => api.post('/tutores/register-tutor', data);
+export const createTutor = (data) => api.post('/tutor', data);
 
 
 

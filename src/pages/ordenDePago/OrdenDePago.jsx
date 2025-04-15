@@ -1,9 +1,11 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 import "./OrdenDePago.css";
 import Header from "../../components/header/Header";
 import { FaSearch } from 'react-icons/fa';
 import OrdenPagoDetalle from "../../components/ordenPagoDetalle/OrdenPagoDetalle";
 import useOrdenPago from '../../hooks/ordenPago/useOrdenPago';
+import BuscadorCodigo from '../../components/buscadorCodigo/BuscadorCodigo';
 
 const OrdenDePago = () => {
   const {
@@ -20,27 +22,10 @@ const OrdenDePago = () => {
     handleGenerarOrden
   } = useOrdenPago();
 
-  const renderInputSection = () => (
-    <div className="buscador-codigo">
-      <p>Genera la orden de pago referente a la inscripción, introduciendo el código</p>
-      <div className="input-container">
-        <input
-          type="text"
-          placeholder="Introduce el código"
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-          onKeyPress={handleKeyPress}
-        />
-        <FaSearch className="search-icon" onClick={handleSearch} />
-      </div>
-      <div className="cont-cod-int">
-        <p className="code-text">Código introducido: </p>
-        <span className="codigo-introducido">{codigoIntroducido || "sin código"}</span>
-      </div>
-      {error && <div className="error-message">{error}</div>}
-    </div>
-  );
-  
+  const containerVariants = {
+    hidden: { opacity: 0, y: 50 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }, 
+  };
   const renderInfoSection = () => {
     if (!ordenData) return null;
 
@@ -57,28 +42,34 @@ const OrdenDePago = () => {
       : "No disponible";
     const correoResponsable = primerTutor?.email_tutor || "No disponible";
 
-    const costoPorArea = 35;
+    const costoPorArea = ordenData.olimpiadas[0]?.precio_olimpiada || 'Error';
+    console.log("Costo por área:", costoPorArea);
     const totalAPagar = totalAreas * costoPorArea;
 
     return (
-      <div className='info-box'>
-        <div className='resumen'>
+      <motion.div
+        className="info-box"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        <div className="resumen">
           <h3>Resumen de la inscripción</h3>
           <p>Total de participantes: <span className="bold-blue">{totalParticipantes}</span></p>
           <p>Total áreas inscritas: <span className="bold-blue">{totalAreas}</span></p>
           <p>Nombre del responsable: <span className="bold-blue">{nombreResponsable}</span></p>
           <p>Correo del responsable: <span className="bold-blue">{correoResponsable}</span></p>
         </div>
-        <div className='divider'></div>
-        <div className='pago'>
+        <div className="divider"></div>
+        <div className="pago">
           <h3>Detalles del pago</h3>
           <p>Costo por área: <span className="bold-blue">{costoPorArea} bs.</span></p>
           <div className="total-container">
-            <p className='total-pagar'>Total a pagar: </p>
+            <p className="total-pagar">Total a pagar: </p>
             <span className="big-bold-blue">{totalAPagar} bs.</span>
           </div>
         </div>
-      </div>
+      </motion.div>
     );
   };
 
@@ -88,14 +79,44 @@ const OrdenDePago = () => {
         title="Generación de Orden de Pago"
         description="Necesitas la orden de pago para realizar el pago de la inscripción."
       />
-      <div className="top-container">
-        {/* <h2>Generar orden de pago</h2> */}
-        {renderInputSection()}
-      </div>
-      <div className='info-container'>
+      <motion.div
+        className="top-container"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        <BuscadorCodigo
+          descripcion="Genera la orden de pago referente a la inscripción, introduciendo el código"
+          placeholder="Introduce el código"
+          codigoIntroducidoTexto="Código introducido:"
+          codigoIntroducido={inputValue}
+          // onInputChange={(e) => setInputValue(e.target.value)}
+          onInputChange={(e) => {
+            const value = e.target.value;
+            if (value.length <= 6) {
+              setInputValue(value);
+            }
+          }}
+          onKeyPress={handleKeyPress}
+          onSearch={handleSearch}
+          error={error}
+          containerVariants={containerVariants}
+        />
+      </motion.div>
+      <motion.div
+        className="info-container"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
         {renderInfoSection()}
         {ordenData && !mostrarDetalle && (
-          <div className='boton-generar'>
+          <motion.div
+            className="boton-generar"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+          >
             <button 
               onClick={handleGenerarOrden} 
               className="btn-generar"
@@ -103,16 +124,21 @@ const OrdenDePago = () => {
             >
               {isLoading ? 'Generando...' : 'Generar Orden de Pago'}
             </button>
-          </div>
+        </motion.div>
         )}
-      </div>
+      </motion.div>
       {mostrarDetalle && ordenGenerada && (
-        <div className='orden-detail'>
+        <motion.div
+          className="orden-detail"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
           <OrdenPagoDetalle 
             data={ordenGenerada}
             nit_tutor={ordenData.tutores[0]?.carnet_identidad_tutor || '000000000' }
           />
-        </div>
+        </motion.div>
       )}
     </div>
   );

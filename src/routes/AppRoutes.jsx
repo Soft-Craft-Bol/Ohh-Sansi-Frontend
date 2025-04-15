@@ -14,9 +14,12 @@ import Step2Form from "../components/multiStepForm/Step2Form";
 import Step3Form from "../components/multiStepForm/Step3Form";
 import Step4Form from "../components/multiStepForm/Step4Form";
 import Step5Form from "../components/multiStepForm/Step5Form";
+import EstadoDeInscripcion from '../pages/estadoDeInscripcion/EstadoDeInscripcion';
+
 
 const LoginUser = lazy(() => import("../pages/login/LoginUser"));
 //const Formulario = lazy(() => import('../components/formulario/Formulario'));
+import InscripcionExcel from '../pages/inscripcion/InscripcionExcel';
 
 const AppRoutes = () => {
   return (
@@ -46,6 +49,11 @@ const AppRoutes = () => {
       />
 
       <Route
+        path="/register-excel"
+        element={<PrivateRoute><Layout> <InscripcionExcel/> </Layout></PrivateRoute>}
+      />
+
+      <Route
         path="/management"
         element={<Layout><ManagementPage /></Layout>}
       />
@@ -66,6 +74,16 @@ const AppRoutes = () => {
           <PrivateRoute>
             <Layout>
               <OrdenDePago />
+            </Layout>
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/estado-de-inscripcion"
+        element={
+          <PrivateRoute>
+            <Layout>
+              <EstadoDeInscripcion />
             </Layout>
           </PrivateRoute>
         }

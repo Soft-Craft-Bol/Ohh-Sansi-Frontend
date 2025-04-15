@@ -30,7 +30,7 @@ const useOrdenPago = () => {
   useEffect(() => {
     const fetchOrdenData = async () => {
       if (!codigoIntroducido) return;
-      
+
       setIsLoading(true);
       try {
         const response = await getOrdenPagoDetailInfo(codigoIntroducido);
@@ -52,30 +52,30 @@ const useOrdenPago = () => {
 
   const handleGenerarOrden = async () => {
     if (!ordenData) return;
-    
+
     setIsLoading(true);
     try {
       const primeraInscripcion = ordenData.inscripcion?.[0];
       if (!primeraInscripcion) {
         throw new Error("No se encontró información de inscripción");
       }
-  
+
       const areas = ordenData.areas || [];
       const primerTutor = ordenData.tutores?.[0] || {};
-  
+
       const cantidadAreas = areas.length;
-      const precioPorArea = 35;
+      const precioPorArea = ordenData.olimpiadas[0]?.precio_olimpiada || 0;
       const montoTotalPago = cantidadAreas * precioPorArea;
-  
+
       const fechaActual = new Date();
       const fechaEmision = fechaActual.toISOString().split("T")[0];
       const fechaVencimiento = new Date(fechaActual);
       fechaVencimiento.setDate(fechaVencimiento.getDate() + 14);
       const fechaVencimientoStr = fechaVencimiento.toISOString().split("T")[0];
-  
+
       const montoLiteral = convertirNumeroAPalabras(montoTotalPago);
       const centavos = (montoTotalPago % 1).toFixed(2).split('.')[1];
-  
+
       const nuevaOrden = {
         idInscripcion: primeraInscripcion.id_inscripcion,
         idMetodoPago: 1,
@@ -91,14 +91,14 @@ const useOrdenPago = () => {
         concepto: "Pago de matrícula",
         precio_unitario: precioPorArea,
       };
-  
+
       console.log("Enviando orden:", nuevaOrden);
-  
+
       const response = await createOrdenPago(nuevaOrden);
       setOrdenGenerada(response.data);
       setMostrarDetalle(true);
       setError(null);
-      
+
     } catch (error) {
       console.error("Error completo:", error);
       setError(error.response?.data?.message || error.message);
