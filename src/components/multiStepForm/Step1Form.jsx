@@ -55,7 +55,7 @@ const Step1Form = () => {
       let edad = hoy.getFullYear() - fechaNacimiento.getFullYear(); // Cambiado a let
       const mes = hoy.getMonth() - fechaNacimiento.getMonth();
       if (mes < 0 || (mes === 0 && hoy.getDate() < fechaNacimiento.getDate())) {
-        edad--; // Ahora es válido porque edad es mutable
+        edad--;
       }
       const tutorRequerido = edad < 15;
   
@@ -200,8 +200,6 @@ const Step1Form = () => {
             <div className="field-container">
               <InputText name="telefono" label="Teléfono" required onlyNumbers maxLength={8} placeholder="Ej: 67559758"/>
             </div>
-
-            {/* Botón */}
             <div className="field-container full-width">
             <div className="form-actions">
               <DisabledButton
