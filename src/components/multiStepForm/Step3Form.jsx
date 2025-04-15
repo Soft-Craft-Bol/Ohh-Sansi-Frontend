@@ -115,6 +115,7 @@ const Step3Form = () => {
               onChange={(e) => setCiParticipante(e.target.value)}
               required
               className="step3-input"
+              maxLength={10}
             />
           </div>
 
@@ -149,6 +150,8 @@ const Step3Form = () => {
                     type="text"
                     placeholder="Nombres del tutor"
                     required
+                    onlyLetters={true} 
+                    maxLength={50}
                   />
                 </div>
 
@@ -159,6 +162,8 @@ const Step3Form = () => {
                     type="text"
                     placeholder="Apellidos del tutor"
                     required
+                    onlyLetters={true} 
+                    maxLength={50}
                   />
                 </div>
 
@@ -179,6 +184,8 @@ const Step3Form = () => {
                     type="text"
                     placeholder="Teléfono del tutor"
                     required
+                    onlyNumbers 
+                    maxLength={8}
                   />
                 </div>
 
@@ -189,6 +196,8 @@ const Step3Form = () => {
                     type="text"
                     placeholder="Documento del tutor"
                     required
+                    onlyNumbers 
+                    maxLength={10}
                   />
                 </div>
 
@@ -198,6 +207,8 @@ const Step3Form = () => {
                     label="Complemento CI"
                     type="text"
                     placeholder="Complemento del documento"
+                    maxLength={2}  
+                    onlyAlphaNumeric
                   />
                 </div>
 
