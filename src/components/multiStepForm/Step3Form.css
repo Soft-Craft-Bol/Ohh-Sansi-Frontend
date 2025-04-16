@@ -75,6 +75,7 @@
   font-family: var(--lato);
   background: var(--light);
   color: var(--dark);
+
 }
 
 .step3-form-group input::placeholder,

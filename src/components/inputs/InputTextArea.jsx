@@ -31,8 +31,8 @@ function InputTextarea({
                 onBlur={onBlur}
                 required
             />
-            <div>{touched && error && <p className="error">{error}</p>}</div>
-            <div>  
+            <div>
+                {touched && error && <p className="error">{error}</p>}
                 <p className="char-count">{value.length} / {maxLength}</p>
             </div>
 

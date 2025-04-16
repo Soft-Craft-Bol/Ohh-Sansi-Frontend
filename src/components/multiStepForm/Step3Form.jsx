@@ -182,7 +182,7 @@ const Step3Form = () => {
                     value={formik.values.idTipoTutor}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
-                    className="step3-select"
+                    className="select"
                     required
                   />
                 </div>

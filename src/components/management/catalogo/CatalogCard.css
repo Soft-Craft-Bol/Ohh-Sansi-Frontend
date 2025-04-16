@@ -1,0 +1,38 @@
+.catalog-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid #ddd;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    background-color: #fff;
+    flex-wrap: wrap;
+  }
+  
+  .catalog-info {
+    flex: 1;
+  }
+  
+  .catalog-area {
+    font-weight: bold;
+    margin-bottom: 4px;
+  }
+  
+  .catalog-categories {
+    color: #666;
+    font-size: 0.9rem;
+  }
+
+  .catalog-grades {
+    color: #666;
+    font-size: 0.9rem;
+  }
+  
+  .delete-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+  }
+  

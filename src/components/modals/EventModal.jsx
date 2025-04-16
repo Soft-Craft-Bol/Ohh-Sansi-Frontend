@@ -57,12 +57,6 @@ const EventModal = ({ onClose, onSave }) => {
               />
             </div>
           </div>
-          <label>Descripción (opcional)</label>
-          <textarea
-            name="descripcion"
-            value={formData.descripcion}
-            onChange={handleChange}
-          />
 
           <div className="em-toggle">
             <span>Evento público</span>

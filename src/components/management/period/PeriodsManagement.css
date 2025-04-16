@@ -1,29 +1,13 @@
-.periodos-wrapper {
-  padding: 20px;
-}
-
 .page-header {
   margin-bottom: 30px;
 }
-
-.gestion-title {
-  font-size: 28px;
-  font-weight: bold;
-  margin-bottom: 5px;
-}
-
-.gestion-subtitle {
-  font-size: 16px;
-  color: #666;
-}
-
 .periodos-management {
   display: flex;
   gap: 40px;
   flex-wrap: wrap;
+  
 }
 
-/* 🧱 Formulario lateral */
 .side-form {
   flex: 1;
   min-width: 280px;
@@ -34,13 +18,11 @@
   border: 1px solid #ddd;
 }
 
-/* 📜 Lista de periodos */
 .periodos-list {
   flex: 2;
   min-width: 400px;
 }
 
-/* 🔧 Form control */
 .form-group {
   margin-bottom: 20px;
 }
@@ -62,7 +44,6 @@
   font-size: 12px;
 }
 
-/* 🔘 Toggle switch */
 .switch-group {
   display: flex;
   align-items: center;
@@ -108,7 +89,6 @@
   background-color: var(--blue-color);
 }
 
-/* 📭 Caja vacía eventos */
 .empty-event-box {
   background-color: #f3f4f6;
   padding: 10px;
@@ -118,7 +98,6 @@
   text-align: center;
 }
 
-/* 🗒️ Preview eventos */
 .event-preview-list {
   list-style: none;
   padding: 0;
@@ -126,7 +105,6 @@
   font-size: 14px;
 }
 
-/* 🔘 Botones */
 .add-btn,
 .register-btn {
   background-color: var(--blue-color);
@@ -144,7 +122,6 @@
   opacity: 0.9;
 }
 
-/* 📱📱📱 Responsive rules */
 @media (max-width: 768px) {
   .periodos-management {
     flex-direction: column;
@@ -170,7 +147,7 @@
 
 @media (max-width: 480px) {
   .gestion-title {
-    font-size: 20px;
+    font-size:18px;
   }
 
   .side-form,

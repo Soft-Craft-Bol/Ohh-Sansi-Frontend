@@ -8,7 +8,7 @@ import {
 } from '../../../api/api';
 import './PeriodsManagement.css';
 import { Switch } from '@headlessui/react';
-import { toast } from 'sonner';
+import Swal from 'sweetalert2';
 
 const PeriodosManagement = () => {
   const [periodoActual, setPeriodoActual] = useState('');
@@ -22,9 +22,12 @@ const PeriodosManagement = () => {
     try {
       const res = await getOlimpiadasConEventos();
       setPeriodos(res.data || []);
-      console.log('Periodos cargados:', res.data);
     } catch (error) {
-      toast.error('Error al cargar los periodos');
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text:'Error al cargar los periodos'
+    });
       console.error(error);
     }
   };
@@ -35,13 +38,17 @@ const PeriodosManagement = () => {
 
   const registrarPeriodo = async () => {
     if (!periodoActual) {
-      toast.warning('Ingrese un año válido');
+        Swal.fire({
+            icon: 'warning',
+            title: 'Advertencia',
+            text: 'Ingrese un año válido'
+          });
       return;
     }
 
     try {
       const payload = {
-        nombreOlimpiada: `Periodo Olímpico ${periodoActual}`,
+        anio: `${periodoActual}`,
         estadoOlimpiada: isActivo,
         eventos: eventosTemp.map(e => ({
           nombreEvento: e.titulo,
@@ -54,15 +61,30 @@ const PeriodosManagement = () => {
       const res = await saveFechaConOlimpiada(payload);
 
       if (res.data?.success) {
-        toast.success(res.data.message || 'Periodo registrado correctamente');
+        Swal.fire({
+            icon: 'success',
+            title: '¡Éxito!',
+            text: res.data.message || 'Periodo registrado correctamente',
+            timer: 2000,
+            showConfirmButton: false
+          });
         setIdOlimpiadaActual(res.data.idOlimpiada); 
         fetchPeriodos(); 
         resetForm();
       } else {
-        toast.error(res.data.message || 'Error al registrar periodo');
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: res.data.message || 'Error al registrar periodo'
+          });
       }
     } catch (error) {
-      toast.error('Error al registrar periodo');
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Error al registrar periodo'
+          });
+          
       console.error(error);
     }
   };
@@ -86,17 +108,36 @@ const PeriodosManagement = () => {
 
         const res = await saveFechaOlimpiada(payload);
         if (res.data?.success) {
-          toast.success(res.data.message || 'Evento guardado');
+            Swal.fire({
+                icon: 'success',
+                title: '¡Evento guardado!',
+                text: res.data.message || 'Evento guardado correctamente',
+                timer: 2000,
+                showConfirmButton: false
+              });     
           fetchPeriodos(); 
         } else {
-          toast.error(res.data.message || 'Error al guardar evento');
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: res.data.message || 'Error al guardar evento'
+              });              
         }
       } catch (err) {
-        toast.error('Error al guardar evento');
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Error al guardar evento'
+          });  
         console.error(err);
       }
     } else {
-        toast.error('No hay periodo activo para guardar el evento');
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'No hay periodo activo para guardar el evento'
+          });
+          
       const eventoFormat = {
         titulo: evento.nombre,
         fechaInicio: evento.fechaInicio,
@@ -109,7 +150,7 @@ const PeriodosManagement = () => {
   };
 
   return (
-    <div className="periodos-wrapper">
+    <div className="periodos-wrapper page-padding">
       <div className="page-header">
         <h1 className="gestion-title">Gestión de Periodos Olímpicos</h1>
         <p className="gestion-subtitle">Agrega y gestiona los periodos olímpicos y sus eventos.</p>
