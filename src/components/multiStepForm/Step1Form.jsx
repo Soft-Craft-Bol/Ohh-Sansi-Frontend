@@ -14,7 +14,7 @@ import { registerParticipante } from "../../api/api";
 import Swal from "sweetalert2";
 import "./Step1Form.css";
 import DisabledButton from "../button/DisabledButton";
-
+import { useEffect } from "react";
 
 const Step1Form = () => {
   const navigate = useNavigate();
@@ -25,6 +25,7 @@ const Step1Form = () => {
   const { municipios, loading: loadingMunicipios } = useFetchMunicipios(selectedDepartamento);
   const [selectedMunicipio, setSelectedMunicipio] = useState("");
   const { colegios, loading: loadingColegios } = useFetchColegio(selectedMunicipio);
+  const [loadingOverlay, setLoadingOverlay] = useState(false);
 
 
   const loadSavedData = () => {
@@ -46,13 +47,12 @@ const Step1Form = () => {
         };
   };
 
-  const handleSubmit = async (values) => {
+  const handleSubmit = async (values, resetForm) => {
+    setLoadingOverlay(true);
     try {
-      //localStorage.setItem("participanteFormData", JSON.stringify(values));
-
       const fechaNacimiento = new Date(values.fechaNacimiento);
       const hoy = new Date();
-      let edad = hoy.getFullYear() - fechaNacimiento.getFullYear(); // Cambiado a let
+      let edad = hoy.getFullYear() - fechaNacimiento.getFullYear();
       const mes = hoy.getMonth() - fechaNacimiento.getMonth();
       if (mes < 0 || (mes === 0 && hoy.getDate() < fechaNacimiento.getDate())) {
         edad--;
@@ -78,36 +78,88 @@ const Step1Form = () => {
       const response = await registerParticipante(participanteData);
   
       if (response && response.data && response.data.existe) {
-        toast.error("El participante ya está registrado con ese documento.");
+        Swal.fire({
+          icon: "error",
+          title: "Participante ya registrado",
+          text: "Ya existe un registro con ese documento de identidad.",
+          confirmButtonText: "Aceptar",
+        });
         return;
       }
   
-      toast.success("Participante registrado exitosamente");
       Swal.fire({
         icon: "success",
         title: "¡Formulario guardado!",
         text: "La información fue completada correctamente.",
         confirmButtonText: "Continuar",
       }).then(() => {
-        navigate("/areas-competencia");
+        resetForm();
+        localStorage.removeItem("participanteFormData");
       });
     } catch (error) {
       console.error("Error al registrar participante:", error);
-      toast.error(
-        error.response?.data?.message || "Error al registrar participante"
-      );
+      Swal.fire({
+        icon: "error",
+        title: "Error al registrar",
+        text: error.response?.data?.message || "Ocurrió un error inesperado",
+        confirmButtonText: "Cerrar",
+      });
+    } finally {
+      setLoadingOverlay(false);
+    }
+  };  
+
+  useEffect(() => {
+  const handleKeyPress = (e) => {
+    if (e.key === "Enter") {
+      const submitButton = document.querySelector("button[type='submit']");
+      if (submitButton) {
+        submitButton.click();
+      }
     }
   };
 
+  window.addEventListener("keydown", handleKeyPress);
+  return () => {
+    window.removeEventListener("keydown", handleKeyPress);
+  };
+}, []);
+
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      const form = document.querySelector("form");
+      const inputs = form.querySelectorAll("input, select");
+      let hasData = false;
+  
+      inputs.forEach((input) => {
+        if (input.value && input.value.trim() !== "") {
+          hasData = true;
+        }
+      });
+  
+      if (hasData) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+  
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, []);
+  
+
   return (
     <div className="form-container">
+      {loadingOverlay && <div className="overlay"></div>}
       <h1>Registro de Participante</h1>
       <span className="form-description">Ingrese los datos del participante</span>
 
       <Formik
         initialValues={loadSavedData()}
         validationSchema={inscripcionSchema}
-        onSubmit={handleSubmit}
+        onSubmit={(values, { resetForm }) => handleSubmit(values, resetForm)}
         validateOnBlur={true}
         validateOnChange={true}
       >
