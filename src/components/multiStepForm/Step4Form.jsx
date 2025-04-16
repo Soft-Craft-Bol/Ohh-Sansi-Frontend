@@ -21,7 +21,17 @@ const Step4Form = ({ formData, updateFormData, onNext, onPrev }) => {
   };
 
   const handleInputChange = (e) => {
-    setCodigoIntroducido(e.target.value);
+    const value = e.target.value;
+    if (value.length <= 11 && /^\d*$/.test(value)) {
+      setCodigoIntroducido(value);
+      setError("");
+    } else if (value.length > 11) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'El carnet no puede tener más de 11 dígitos'
+      });
+    }
   };
 
   const handleKeyPress = (e) => {
@@ -42,6 +52,27 @@ const Step4Form = ({ formData, updateFormData, onNext, onPrev }) => {
       });
       return;
     }
+
+    const carnetNumerico = parseInt(codigoIntroducido, 10);
+  if (isNaN(carnetNumerico)) {
+    setError("El carnet debe ser un número válido");
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'El carnet debe ser un número válido',
+    });
+    return;
+  }
+
+  if (carnetNumerico > 2147483647) {
+    setError("El carnet excede el valor máximo permitido");
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'El carnet excede el valor máximo permitido (2,147,483,647)',
+    });
+    return;
+  }
     
     setLoading(true);
     setError("");
