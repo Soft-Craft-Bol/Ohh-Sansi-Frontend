@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
+import Swal from 'sweetalert2';
 import "./OrdenDePago.css";
 import Header from "../../components/header/Header";
-import { FaSearch } from 'react-icons/fa';
 import OrdenPagoDetalle from "../../components/ordenPagoDetalle/OrdenPagoDetalle";
 import useOrdenPago from '../../hooks/ordenPago/useOrdenPago';
 import BuscadorCodigo from '../../components/buscadorCodigo/BuscadorCodigo';
@@ -21,11 +21,23 @@ const OrdenDePago = () => {
     handleKeyPress,
     handleGenerarOrden
   } = useOrdenPago();
+  useEffect(() => {
+    if (error) {
+      Swal.fire({
+        title: 'Error',
+        text: error,
+        icon: 'error',
+        confirmButtonText: 'Aceptar',
+        confirmButtonColor: '#3085d6'
+      });
+    }
+  }, [error]);
 
   const containerVariants = {
     hidden: { opacity: 0, y: 50 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }, 
   };
+  
   const renderInfoSection = () => {
     if (!ordenData) return null;
 
@@ -43,7 +55,6 @@ const OrdenDePago = () => {
     const correoResponsable = primerTutor?.email_tutor || "No disponible";
 
     const costoPorArea = ordenData.olimpiadas[0]?.precio_olimpiada || 'Error';
-    console.log("Costo por área:", costoPorArea);
     const totalAPagar = totalAreas * costoPorArea;
 
     return (
@@ -72,6 +83,42 @@ const OrdenDePago = () => {
       </motion.div>
     );
   };
+  const showSuccessMessage = () => {
+    Swal.fire({
+      title: '¡Éxito!',
+      text: 'Orden de pago generada correctamente',
+      icon: 'success',
+      confirmButtonText: 'Continuar',
+      confirmButtonColor: '#3085d6'
+    });
+  };
+  const handleGenerarOrdenWithFeedback = async () => {
+    Swal.fire({
+      title: 'Generando orden...',
+      text: 'Por favor espere mientras se procesa la solicitud',
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+
+    try {
+      await handleGenerarOrden();
+      Swal.close();
+      if (!error) {
+        showSuccessMessage();
+      }
+    } catch (err) {
+      Swal.fire({
+        title: 'Error',
+        text: 'Ocurrió un error al generar la orden de pago',
+        icon: 'error',
+        confirmButtonText: 'Aceptar',
+        confirmButtonColor: '#3085d6'
+      });
+    }
+  };
 
   return (
     <div className="orden-de-pago">
@@ -89,8 +136,8 @@ const OrdenDePago = () => {
           descripcion="Genera la orden de pago referente a la inscripción, introduciendo el código"
           placeholder="Introduce el código"
           codigoIntroducidoTexto="Código introducido:"
-          codigoIntroducido={inputValue}
-          // onInputChange={(e) => setInputValue(e.target.value)}
+          codigoIntroducido={codigoIntroducido}
+          inputValue={inputValue} // Pasando inputValue al componente
           onInputChange={(e) => {
             const value = e.target.value;
             if (value.length <= 6) {
@@ -99,7 +146,7 @@ const OrdenDePago = () => {
           }}
           onKeyPress={handleKeyPress}
           onSearch={handleSearch}
-          error={error}
+          error={null}
           containerVariants={containerVariants}
         />
       </motion.div>
@@ -118,7 +165,7 @@ const OrdenDePago = () => {
             animate="visible"
           >
             <button 
-              onClick={handleGenerarOrden} 
+              onClick={handleGenerarOrdenWithFeedback} 
               className="btn-generar"
               disabled={isLoading}
             >

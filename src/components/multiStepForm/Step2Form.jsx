@@ -42,8 +42,17 @@ const AsignarAreasForm = () => {
   };
 
   const handleInputChange = (e) => {
-    setCodigoIntroducido(e.target.value);
-    setError("");
+    const value = e.target.value;
+    if (value.length <= 11 && /^\d*$/.test(value)) {
+      setCodigoIntroducido(value);
+      setError("");
+    } else if (value.length > 11) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'El carnet no puede tener más de 11 dígitos'
+      });
+    }
   };
 
   const handleKeyPress = (e) => {
@@ -61,22 +70,22 @@ const AsignarAreasForm = () => {
       });
       return;
     }
-
+  
     const carnetNumerico = parseInt(carnet, 10);
-    if (isNaN(carnetNumerico)) {
+    if (isNaN(carnetNumerico) || carnetNumerico > 2147483647) {
       Swal.fire({
         icon: 'error',
         title: 'Error',
-        text: 'El carnet debe contener solo números'
+        text: 'El carnet debe ser un número válido dentro del rango permitido (-2,147,483,648 a 2,147,483,647)'
       });
       return;
     }
-
+  
     setLoading(true);
     try {
       const resCatalogo = await getCatalogoAreasCategorias(carnetNumerico);
       console.log("Catálogo de áreas:", resCatalogo.data);
-
+  
       if (resCatalogo.data.length === 0) {
         setEstudiante({ carnetIdentidadParticipante: carnetNumerico });
         setAreas([]);
@@ -100,16 +109,26 @@ const AsignarAreasForm = () => {
         idOlimpiada: item.id_olimpiada,
         idCatalogo: item.id_catalogo,
       }));
-
+  
       setEstudiante({ carnetIdentidadParticipante: carnetNumerico });
       setAreas(combined);
     } catch (err) {
       console.error("Error buscando catálogo de áreas:", err);
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: err.response.data.message || "No se encontró el estudiante o las áreas"
-      });
+  
+      if (err.message === "Network Error") {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Error en la red, intenta más tarde'
+        });
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: err.response?.data?.message || "No se encontró el estudiante o las áreas"
+        });
+      }
+  
       setEstudiante(null);
       setAreas([]);
       setError(err.message || "No se encontró el estudiante o las áreas");
@@ -200,7 +219,7 @@ const AsignarAreasForm = () => {
           onInputChange={handleInputChange}
           onKeyPress={handleKeyPress}
           onSearch={() => buscarEstudiante(codigoIntroducido)}
-          error={error}
+          //error={error}
           containerVariants={containerVariants}
         />
       </div>
