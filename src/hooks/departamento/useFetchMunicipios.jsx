@@ -1,19 +1,31 @@
 import { useState, useEffect } from "react";
 import { getMunicipiosByDepartamento } from "../../api/api";
 
+const municipiosCache = new Map();
+
 const useFetchMunicipios = (idDepartamento) => {
   const [municipios, setMunicipios] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!!idDepartamento);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!idDepartamento) return; 
+    if (!idDepartamento) return;
+
+    if (municipiosCache.has(idDepartamento)) {
+      setMunicipios(municipiosCache.get(idDepartamento));
+      setLoading(false);
+      return;
+    }
 
     const fetchData = async () => {
+      setLoading(true);
       try {
         const response = await getMunicipiosByDepartamento(idDepartamento);
-        if (response.data.municipios && Array.isArray(response.data.municipios)) {
-          setMunicipios(response.data.municipios);
+        const data = response.data?.municipios ?? [];
+
+        if (Array.isArray(data)) {
+          municipiosCache.set(idDepartamento, data);
+          setMunicipios(data);
         } else {
           setMunicipios([]);
         }
@@ -26,7 +38,7 @@ const useFetchMunicipios = (idDepartamento) => {
     };
 
     fetchData();
-  }, [idDepartamento]); 
+  }, [idDepartamento]);
 
   return { municipios, loading, error };
 };

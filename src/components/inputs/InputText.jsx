@@ -35,6 +35,10 @@ function InputText({ label, required, type = "text", as = "input", showCounter =
             if (props.onlyAlphaNumeric === true) {
               value = value.replace(/[^a-zA-Z0-9]/g, "");
             }
+
+            if (props.onlyLettersCapital === true) {
+              value = value.replace(/[^A-Z]/g, "");
+            }
         
             field.onChange({
                 target: {

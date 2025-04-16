@@ -1,11 +1,10 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Tabs from "../../components/tabs/Tabs";  // Use the Tabs component you provided
+import Tabs from "../../components/tabs/Tabs"; 
 import Step1Form from "./Step1Form";
 import Step2Form from "./Step2Form";
 import Step3Form from "./Step3Form";
 import Step4Form from "./Step4Form";
-import { ButtonPrimary } from "../button/ButtonPrimary";
 import { toast } from "sonner";
 import "./MultiStepForm.css";
 
