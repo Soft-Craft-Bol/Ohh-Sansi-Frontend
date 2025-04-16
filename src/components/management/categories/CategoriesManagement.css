@@ -21,6 +21,20 @@
   box-sizing: border-box;
 }
 
+.category-form h2 {
+  text-align: center;
+  color: var(--blue);
+  font-family: var(--poppins);
+  font-size: 25px;
+}
+
+.category-container-wrapper .category-form p {
+  text-align: center;
+  color: black;
+  font-family: var(--poppins);
+  margin-bottom: 1rem;
+}
+
 .category-list {
   flex: 1 1 350px;
   min-width: 300px;

@@ -3,6 +3,13 @@
     margin: 0 auto;
     padding: 2rem;
   }
+
+  .configurator h2 {
+    text-align: center;
+    font-size: 28px;
+    font-family: var(--poppins);
+    color: var(--blue-color);
+  }
   
   .period-selector {
     display: flex;

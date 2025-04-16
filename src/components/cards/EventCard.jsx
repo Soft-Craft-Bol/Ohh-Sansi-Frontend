@@ -25,8 +25,8 @@ const EventCard = ({ evento, onEdit, onDelete }) => {
           <FiEye className="ec-eye" />
         </div>
         <div className="ec-actions">
-          <FiEdit2 className="ec-icon-edit" onClick={onEdit} />
-          <FiTrash2 className="ec-icon-delete" onClick={onDelete} />
+       {/*    <FiEdit2 className="ec-icon-edit" onClick={onEdit} />
+          <FiTrash2 className="ec-icon-delete" onClick={onDelete} /> */}
         </div>
       </div>
       <div className="ec-event-date">

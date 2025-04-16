@@ -18,9 +18,20 @@
   border: 1px solid #ddd;
 }
 
+.side-form h2{
+  font-size: 28px;
+  color: var(--blue-color);
+  margin-bottom: 10px;
+}
+
 .periodos-list {
   flex: 2;
   min-width: 400px;
+}
+.periodos-list h2 {
+  font-size: 24px;
+  color: var(--blue-color);
+  margin-bottom: 10px;
 }
 
 .form-group {

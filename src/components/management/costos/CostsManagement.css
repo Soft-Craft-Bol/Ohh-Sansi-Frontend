@@ -19,6 +19,12 @@
   box-sizing: border-box;
 }
 
+.costs-container-wrapper .costs-form h2{
+  text-align: center;
+  color: var(--blue-color);
+  font-size: 25px;
+}
+
 .costs-list {
   flex: 1 1 320px;
   max-width: 100%;

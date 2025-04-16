@@ -1,81 +1,108 @@
-import React, { useState } from 'react';
-import './EventModal.css';
+import React from "react";
+import { Formik, Form, Field, ErrorMessage } from "formik";
+import "./EventModal.css";
+import EventValidationSchema from "../../schemas/EventValidationSchema";
 
-const EventModal = ({ onClose, onSave }) => {
-  const [formData, setFormData] = useState({
-    nombre: '',
-    fechaInicio: '',
-    fechaFin: '',
-    descripcion: '',
-    publico: false
-  });
+const EVENTOS_VALIDOS = [
+  "Pre-Inscripciones",
+  "Inscripciones",
+  "Fase Previa",
+  "Fase-Clasificatoria",
+  "Fase-Final",
+  "Resultados",
+  "Premiación"
+];
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData({
-      ...formData,
-      [name]: type === 'checkbox' ? checked : value
-    });
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onSave(formData);
-    onClose();
-  };
-
+const EventModal = ({ periodo, onClose, onSave }) => {
   return (
     <div className="em-backdrop">
       <div className="em-container">
         <h3>Agregar evento</h3>
-        <form onSubmit={handleSubmit}>
-          <label>Nombre del evento</label>
-          <input
-            name="nombre"
-            type="text"
-            value={formData.nombre}
-            onChange={handleChange}
-            placeholder="Inscripciones"
-          />
-          <div className="em-date-row">
-            <div>
-              <label>Fecha inicio</label>
-              <input
-                type="date"
-                name="fechaInicio"
-                value={formData.fechaInicio}
-                onChange={handleChange}
-              />
-            </div>
-            <div>
-              <label>Fecha fin</label>
-              <input
-                type="date"
-                name="fechaFin"
-                value={formData.fechaFin}
-                onChange={handleChange}
-              />
-            </div>
-          </div>
+        <Formik
+          initialValues={{
+            nombre: "",
+            fechaInicio: `${periodo}-01-01`,
+            fechaFin: `${periodo}-01-02`,
+            publico: false
 
-          <div className="em-toggle">
-            <span>Evento público</span>
-            <label className="em-switch">
-              <input
-                type="checkbox"
-                name="publico"
-                checked={formData.publico}
-                onChange={handleChange}
-              />
-              <span className="em-slider round" />
-            </label>
-          </div>
+          }}
+          validationSchema={EventValidationSchema}
+          onSubmit={(values, { setSubmitting }) => {
+            onSave(values);
+            setSubmitting(false); 
+            onClose();
+          }}
+        >
+          {({ setFieldValue, values }) => (
+            <Form>
+              <label>Nombre del evento</label>
+              <Field as="select" name="nombre" className="em-select">
+                <option value="">Seleccione un evento</option>
+                {EVENTOS_VALIDOS.map(evento => (
+                  <option key={evento} value={evento}>
+                    {evento}
+                  </option>
+                ))}
+              </Field>
+              <ErrorMessage name="nombre" component="div" className="error-message" />
 
-          <div className="em-actions">
-            <button type="button" onClick={onClose}>Cancelar</button>
-            <button type="submit" className="em-primary">Guardar evento</button>
-          </div>
-        </form>
+              <div className="em-date-row">
+                <div>
+                  <label>Fecha inicio</label>
+                  <Field
+                    type="date"
+                    name="fechaInicio"
+                    min={`${periodo}-01-01`}
+                    max={`${periodo}-12-31`}
+                    onChange={(e) => {
+                      const fechaSeleccionada = e.target.value;
+                      if (fechaSeleccionada.startsWith(`${periodo}-`)) {
+                        setFieldValue("fechaInicio", fechaSeleccionada);
+                      } else {
+                        setFieldValue("fechaInicio", `${periodo}-01-01`);
+                      }
+                    }}
+                  />
+                  <ErrorMessage name="fechaInicio" component="div" className="error-message" />
+                </div>
+                <div>
+                  <label>Fecha fin</label>
+                  <Field
+                    type="date"
+                    name="fechaFin"
+                    min={`${periodo}-01-01`}
+                    max={`${periodo}-12-31`}
+                    onChange={(e) => {
+                      const fechaSeleccionada = e.target.value;
+                      if (fechaSeleccionada.startsWith(`${periodo}-`)) {
+                        setFieldValue("fechaFin", fechaSeleccionada);
+                      } else {
+                        setFieldValue("fechaFin", `${periodo}-01-02`);
+                      }
+                    }}
+                  />
+                  <ErrorMessage name="fechaFin" component="div" className="error-message" />
+                </div>
+              </div>
+
+              <div className="em-toggle">
+                <span>Evento público</span>
+                <label className="em-switch">
+                  <Field type="checkbox" name="publico" />
+                  <span className="em-slider round" />
+                </label>
+              </div>
+
+              <div className="em-actions">
+                <button type="button" onClick={onClose}>Cancelar</button>
+                <button type="submit" className="em-primary" disabled={!values.nombre}>
+                  Guardar evento
+                </button>
+              </div>
+              
+            </Form>
+          )}
+        </Formik>
       </div>
     </div>
   );

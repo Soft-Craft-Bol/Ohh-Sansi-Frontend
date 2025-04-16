@@ -28,7 +28,16 @@
   margin-bottom: 1.5rem;
   color: var(--dark);
 }
-
+.em-container select {
+  width: 100%;
+  padding: 10px 12px;
+  margin-top: 6px;
+  margin-bottom: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #f9f7f7;
+  font-size: 14px;
+}	
 .em-container input[type="text"],
 .em-container input[type="date"],
 .em-container textarea {
