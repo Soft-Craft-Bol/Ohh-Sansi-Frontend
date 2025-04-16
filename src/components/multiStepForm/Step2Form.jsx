@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import { motion } from "framer-motion";
 import { Form, Formik } from "formik";
@@ -7,13 +7,19 @@ import { ButtonPrimary } from "../button/ButtonPrimary";
 import { getCatalogoAreasCategorias, setCatalogoAreasParticipante } from "../../api/api";
 import "./Step2Form.css";
 
-const AsignarAreasForm = () => {
+const AsignarAreasForm = ({ participanteCI }) => {
   const [estudiante, setEstudiante] = useState(null);
   const [areas, setAreas] = useState([]);
   const [seleccionadas, setSeleccionadas] = useState([]);
   const [loading, setLoading] = useState(false);
   const [codigoIntroducido, setCodigoIntroducido] = useState("");
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (participanteCI && participanteCI.trim() !== "") {
+      buscarEstudiante(participanteCI);
+    }
+  }, [participanteCI]);
 
   const containerVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -172,7 +178,7 @@ const AsignarAreasForm = () => {
           idOlimpiada: a.idOlimpiada,
           idCatalogo: a.idCatalogo,
         }));
-      await setCatalogoAreasParticipante(estudiante.carnetIdentidadParticipante, areasSeleccionadas);
+      await setCatalogoAreasParticipante(estudiante.carnetIdentidadParticipante, dataToSend);
   
       Swal.fire({
         icon: 'success',

@@ -47,6 +47,7 @@ const CatalogoMangament = () => {
 
     const activeOlimpiadaNombre = olimpiadas.find(o => o.idOlimpiada === activeOlimpiadaId)?.nombreOlimpiada || '';
     const catalogosFiltrados = catalogoById.filter(item => item.nombreOlimpiada === activeOlimpiadaNombre);
+    console.log(catalogosFiltrados);
 
     return (
         <div className="configurator page-padding">
@@ -79,7 +80,7 @@ const CatalogoMangament = () => {
                             key={i}
                             area={item.nombreArea}
                             categories={item.nombreCategoria}
-                            grades={item.grados}
+                            grades={item.grados.join(', ')}
                         />
                     ))
                 )}
