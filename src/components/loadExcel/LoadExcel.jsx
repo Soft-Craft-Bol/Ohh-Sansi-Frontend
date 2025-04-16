@@ -43,6 +43,19 @@ const LoadExcel = () => {
         const sheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[sheetName];
         const jsonOriginal = XLSX.utils.sheet_to_json(worksheet);
+        
+        if (jsonOriginal.length > 600) {
+          Swal.fire({
+            icon: "error",
+            title: "El archivo contiene más de 600 registros",
+            text: "Por favor, reduzca la cantidad o seleccione otro archivo",
+            showConfirmButton: false,
+            timer: 2500,
+          });
+          setSubmitting(false);
+          setButtonState('error');
+          return; 
+        }
 
         // Filtrar las columnas
         const jsonFiltrado = jsonOriginal.map((row) => {
@@ -65,7 +78,21 @@ const LoadExcel = () => {
   const handleFileChange = (event) => {
     const file = event.currentTarget.files[0];
     if (!file) return;
-
+    // (3 MB = 3 * 1024 * 1024 bytes)
+    const maxSize = 3 * 1024 * 1024;
+    if (file.size > maxSize) {
+      formik.setFieldError('file', 'El archivo excede el tamaño máximo permitido (3 MB)');
+      formik.setFieldValue('file', null);
+      formik.setFieldTouched('file', true);
+      Swal.fire({
+        icon: "error",
+        title: "Archivo demasiado grande",
+        text: "El tamaño máximo permitido es de 3 MB.",
+        showConfirmButton: false,
+        timer: 2000,
+      });
+      return;
+    }
     const extension = file.name.slice(file.name.lastIndexOf('.'));
     if (!validExtensions.includes(extension)) {
       formik.setFieldError('file', 'Formato de archivo no válido');
@@ -73,8 +100,8 @@ const LoadExcel = () => {
       formik.setFieldTouched('file', true);
       Swal.fire({
         icon: "error",
-        title: "Formato de archivo no válido",
-        text: "Por favor, seleccione un archivo con las extensiones permitidas",
+        title: "Formato de archivo incorrecto",
+        text: "formatos permitidos: .xlsx, .xls",
         showConfirmButton: false,
         timer: 2000,
       });
@@ -218,9 +245,12 @@ const LoadExcel = () => {
           <Table data={excelData} columns={columnas} />
         </div>
       )}
-      <ButtonPrimary type='submit' onClick={handleSubmit}>
+      <div style={{display: "flex", justifyContent:"flex-end"}}>
+        <ButtonPrimary type='submit' onClick={handleSubmit}>
         Registrar participantes
       </ButtonPrimary>
+      </div>
+      
     </div>
   );
 };

@@ -5,14 +5,19 @@ import { ButtonPrimary } from "../button/ButtonPrimary";
 import { getAllTipoTutor, registerTutor } from "../../api/api";
 import registerTutorValidationSchema from "../../schemas/registerTutorValidate";
 import { Formik, Form } from "formik";
-import { toast } from "sonner";
+import Swal from "sweetalert2";
 import SelectInput from "../selected/SelectInput";
 
 const Step3Form = () => {
   const [tipoTutores, setTipoTutores] = useState([]);
   const [tutoresLocales, setTutoresLocales] = useState([]);
   const [ciParticipante, setCiParticipante] = useState("");
-  const MAX_TUTORES = 2;
+  const MAX_TUTORES = 3;
+  const LIMITE_POR_TIPO = {
+    LEGAL: 1,
+    ACADEMICO: 2
+  };
+  
 
   const initialValues = {
     idTipoTutor: "",
@@ -35,21 +40,30 @@ const Step3Form = () => {
       setTipoTutores(Array.isArray(tipos) ? tipos : []);
     } catch (error) {
       console.error("Error fetching tutor types:", error);
-      toast.error("Error al cargar tipos de tutor");
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "No se pudo cargar los tipos de tutores",
+        confirmButtonText: "Aceptar",
+      });
       setTipoTutores([]);
     }
   };
 
   const agregarTutor = (values, { resetForm }) => {
     if (tutoresLocales.length >= MAX_TUTORES) {
-      toast.error(`Solo puede registrar un máximo de ${MAX_TUTORES} tutores`);
+      Swal.fire({icon:'error',
+        title: "error",
+        text:`Solo puede registrar un máximo de ${MAX_TUTORES} tutores`});
       return;
     }
 
     const existe = tutoresLocales.some((t) => t.carnetIdentidadTutor === values.carnetIdentidadTutor);
 
     if (existe) {
-      toast.error("Ya existe un tutor con este número de documento");
+      Swal.fire({icon:'error',
+        title:"Error",
+        text:"Ya existe un tutor con este número de documento"});
       return;
     }
 
@@ -63,43 +77,72 @@ const Step3Form = () => {
 
     setTutoresLocales([...tutoresLocales, nuevoTutor]);
     resetForm();
-    toast.success("Tutor agregado correctamente");
+    Swal.fire({icon:'success',
+      title:"Éxito",
+      text:"Tutor agregado correctamente"});
   };
 
   const eliminarTutor = (index) => {
     const nuevosTutores = [...tutoresLocales];
     nuevosTutores.splice(index, 1);
     setTutoresLocales(nuevosTutores);
-    toast.success("Tutor eliminado");
+    Swal.fire({icon:'success',
+      title:"Éxito",
+      text:"Tutor eliminado"});
+  };
+  const getTipoTutorDisponible = () => {
+    const counts = {};
+  
+    tutoresLocales.forEach((t) => {
+      const tipo = t.tipoTutorNombre?.toUpperCase();
+      counts[tipo] = (counts[tipo] || 0) + 1;
+    });
+  
+    return tipoTutores.filter((tipo) => {
+      const tipoNombre = tipo.nombreTipoTutor?.toUpperCase();
+      const limite = LIMITE_POR_TIPO[tipoNombre];
+      const actual = counts[tipoNombre] || 0;
+      return limite ? actual < limite : true;
+    });
   };
 
   const handleRegistrarTutores = async () => {
     if (!ciParticipante) {
-      toast.error("Debe ingresar el CI del participante antes de registrar tutores");
+      Swal.fire({icon:'error',
+        title:"Error",
+        text:"Debe ingresar el CI del participante antes de registrar tutores"});
       return;
     }
 
     if (tutoresLocales.length === 0) {
-      toast.error("Debe agregar al menos un tutor antes de registrar");
+      Swal.fire({icon:'error',
+        title:'Error',
+        text:"Debe agregar al menos un tutor antes de registrar"});
       return;
     }
 
     try {
       await registerTutor(ciParticipante, tutoresLocales);
-      toast.success("Tutores registrados correctamente");
+      Swal.fire({icon:'success',title:"Éxito",text:"Tutores registrados correctamente"});
       setTutoresLocales([]);
       setCiParticipante("");
     } catch (error) {
       console.error("Error al registrar los tutores:", error);
-      toast.error("Error al registrar los tutores");
+      const errorMessage = error?.response?.data?.message || "Error al registrar los tutores";
+
+    Swal.fire({
+      icon: "error",
+      title: "Error",
+      text: errorMessage
+    });
     }
   };
 
   return (
-    <div className="step3-container">
+    <div className="step3-container page-padding">
       <h2 className="step3-title">Registro de Tutores</h2>
       <p className="step3-description">
-        Registre uno o dos tutores para el participante. Máximo {MAX_TUTORES} tutores.
+        Registre uno o {MAX_TUTORES} tutores para el participante. Máximo {MAX_TUTORES} tutores.
       </p>
 
       <div className="step3-content">
@@ -131,10 +174,11 @@ const Step3Form = () => {
                   <SelectInput
                     label="Tipo de Tutor"
                     name="idTipoTutor"
-                    options={tipoTutores.map((tipo) => ({
+                    options={getTipoTutorDisponible().map((tipo) => ({
                       value: tipo.idTipoTutor,
                       label: tipo.nombreTipoTutor,
                     }))}
+                    
                     value={formik.values.idTipoTutor}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
