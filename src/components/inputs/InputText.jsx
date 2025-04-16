@@ -3,7 +3,7 @@ import { useField } from "formik";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import "./InputText.css";
 
-function InputText({ label, required, type = "text", as = "input", showCounter = false, ...props }) {
+function InputText({ label, required, type = "text", as = "input", showCounter = false, maxLength, ...props}) {
     const [field, meta, helpers] = useField(props);
     const [showPassword, setShowPassword] = useState(false);
 
