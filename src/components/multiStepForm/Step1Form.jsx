@@ -51,6 +51,16 @@ const Step1Form = () => {
     if (isSubmittingForm) return;
     setIsSubmittingForm(true);
     setLoadingOverlay(true);
+    Swal.fire({
+      title: 'Registrando participante...',
+      text: 'Por favor, espere...',
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+      showConfirmButton: false,
+      didOpen: () => {
+        Swal.showLoading();
+      },
+    });
     try {
       const fechaNacimiento = new Date(values.fechaNacimiento);
       const hoy = new Date();
@@ -89,6 +99,7 @@ const Step1Form = () => {
         return;
       }
 
+      Swal.close();
       Swal.fire({
         icon: "success",
         title: "¡Formulario guardado!",
