@@ -1,17 +1,28 @@
 import { useState, useEffect } from "react";
 import { getDepartamentos } from "../../api/api";
 
+let cachedDepartamentos = null;
+
 const useFetchDepartamentos = () => {
-  const [departamentos, setDepartamentos] = useState([]); 
-  const [loading, setLoading] = useState(true);
+  const [departamentos, setDepartamentos] = useState([]);
+  const [loading, setLoading] = useState(!cachedDepartamentos);
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    if (cachedDepartamentos) {
+      setDepartamentos(cachedDepartamentos);
+      setLoading(false);
+      return;
+    }
+
     const fetchData = async () => {
       try {
         const response = await getDepartamentos();
-        if (response.data.departamentos && Array.isArray(response.data.departamentos)) {
-          setDepartamentos(response.data.departamentos);
+        const data = response.data?.departamentos ?? [];
+
+        if (Array.isArray(data)) {
+          cachedDepartamentos = data;
+          setDepartamentos(data);
         } else {
           setDepartamentos([]);
         }
@@ -26,7 +37,7 @@ const useFetchDepartamentos = () => {
     fetchData();
   }, []);
 
-  return { departamentos, loading, error }; 
+  return { departamentos, loading, error };
 };
 
 export default useFetchDepartamentos;

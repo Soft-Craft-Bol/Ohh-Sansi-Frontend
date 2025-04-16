@@ -1,17 +1,26 @@
 import { useState, useEffect } from "react";
 import { getGrados } from "../../api/api";
 
+let gradosCache = null;
+
 const useFetchGrados = () => {
-  const [grados, setGrados] = useState([]); 
-  const [loading, setLoading] = useState(true);
+  const [grados, setGrados] = useState([]);
+  const [loading, setLoading] = useState(!gradosCache);
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    if (gradosCache) {
+      setGrados(gradosCache);
+      setLoading(false);
+      return;
+    }
+
     const fetchData = async () => {
       try {
         const response = await getGrados();
         if (response.data && Array.isArray(response.data.data)) {
-          setGrados(response.data.data);
+          gradosCache = response.data.data; 
+          setGrados(gradosCache);
         } else {
           setGrados([]);
         }
@@ -25,9 +34,8 @@ const useFetchGrados = () => {
 
     fetchData();
   }, []);
-  console.log("Grados cargados:", grados);
 
-  return { grados, loading, error }; 
+  return { grados, loading, error };
 };
 
 export default useFetchGrados;

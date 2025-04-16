@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { Formik, Form } from "formik";
-import { toast } from "sonner";
 import InputText from "../inputs/InputText";
 import { ButtonPrimary } from "../button/ButtonPrimary";
 import SelectInput from "../selected/SelectInput";
@@ -9,7 +8,6 @@ import useFetchDepartamentos from "../../hooks/departamento/useFetchDepartamento
 import useFetchMunicipios from "../../hooks/departamento/useFetchMunicipios";
 import useFetchColegio from "../../hooks/Colegio/useFetchColegio";
 import inscripcionSchema from "../../schemas/InscripcionValidate";
-import { useNavigate } from "react-router-dom";
 import { registerParticipante } from "../../api/api";
 import Swal from "sweetalert2";
 import "./Step1Form.css";
@@ -17,7 +15,6 @@ import DisabledButton from "../button/DisabledButton";
 import { useEffect } from "react";
 
 const Step1Form = () => {
-  const navigate = useNavigate();
   const today = new Date().toISOString().split("T")[0];
   const { grados, loading: loadingGrados } = useFetchGrados();
   const { departamentos, loading: loadingDepartamentos } = useFetchDepartamentos();
@@ -49,8 +46,10 @@ const Step1Form = () => {
 
   const handleSubmit = async (values, resetForm) => {
     if (isSubmittingForm) return;
+  
     setIsSubmittingForm(true);
     setLoadingOverlay(true);
+  
     Swal.fire({
       title: 'Registrando participante...',
       text: 'Por favor, espere...',
@@ -61,6 +60,7 @@ const Step1Form = () => {
         Swal.showLoading();
       },
     });
+  
     try {
       const fechaNacimiento = new Date(values.fechaNacimiento);
       const hoy = new Date();
@@ -70,7 +70,7 @@ const Step1Form = () => {
         edad--;
       }
       const tutorRequerido = edad < 15;
-
+  
       const participanteData = {
         idDepartamento: parseInt(values.departamento),
         idMunicipio: parseInt(values.municipio),
@@ -86,8 +86,7 @@ const Step1Form = () => {
         emailParticipante: values.email || null,
         tutorRequerido,
       };
-
-      const response = await registerParticipante(participanteData);
+      const response = await registerParticipante(participanteData); 
 
       if (response?.data?.existe) {
         Swal.fire({
@@ -98,6 +97,7 @@ const Step1Form = () => {
         });
         return;
       }
+
       Swal.close();
       Swal.fire({
         icon: "success",
@@ -110,6 +110,7 @@ const Step1Form = () => {
         localStorage.removeItem("participanteFormData");
         onRegistroExitoso(values.documento);
       });
+  
     } catch (error) {
       console.error("Error al registrar participante:", error);
       Swal.fire({
@@ -122,7 +123,7 @@ const Step1Form = () => {
       setLoadingOverlay(false);
       setIsSubmittingForm(false);
     }
-  };
+  };  
 
   useEffect(() => {
     const handleKeyPress = (e) => {
@@ -176,12 +177,17 @@ const Step1Form = () => {
         initialValues={loadSavedData()}
         validationSchema={inscripcionSchema}
         onSubmit={(values, { resetForm }) => handleSubmit(values, resetForm)}
-        validateOnBlur={true}
+        validateOnBlur={false}
         validateOnChange={true}
       >
         {({ values, setFieldValue, isValid, isSubmitting }) => (
           <Form className="step1-grid">
-            {/* Campos */}
+            <div className="field-container">
+              <InputText name="documento" label="Documento de Identidad" required onlyNumbers maxLength={9} placeholder="Ej: 12354987" />
+            </div>
+            <div className="field-container">
+              <InputText name="complemento" label="Complemento" maxLength={2} onlyAlphaNumeric placeholder="Ej: 1T" />
+            </div>
             <div className="field-container">
               <InputText name="nombre" label="Nombre" required onlyLetters={true} maxLength={50} placeholder="Ej: Edwin"
               />
@@ -189,12 +195,6 @@ const Step1Form = () => {
             <div className="field-container">
               <InputText name="apellido" label="Apellido" required onlyLetters maxLength={50} placeholder="Ej: Sánchez Velarde"
               />
-            </div>
-            <div className="field-container">
-              <InputText name="documento" label="Documento de Identidad" required onlyNumbers maxLength={9} placeholder="Ej: 12354987" />
-            </div>
-            <div className="field-container">
-              <InputText name="complemento" label="Complemento" maxLength={2} onlyAlphaNumeric placeholder="Ej: 1T" />
             </div>
             <div className="field-container">
               <InputText name="fechaNacimiento" label="Fecha de nacimiento" type="date" required max={today} />

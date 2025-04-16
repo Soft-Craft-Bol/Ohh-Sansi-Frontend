@@ -241,7 +241,7 @@ const Step3Form = () => {
                     placeholder="Documento del tutor"
                     required
                     onlyNumbers 
-                    maxLength={10}
+                    maxLength={9}
                   />
                 </div>
 
