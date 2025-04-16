@@ -1,38 +1,99 @@
 import React, { useState } from "react";
-import { toast } from "sonner";
-import InputText from "../inputs/InputText";
+import Swal from "sweetalert2";
+import { motion } from "framer-motion";
+import { Form, Formik } from "formik";
+import BuscadorCodigo from "./../buscadorCodigo/BuscadorCodigo";
 import { ButtonPrimary } from "../button/ButtonPrimary";
 import { getCatalogoAreasCategorias, setCatalogoAreasParticipante } from "../../api/api";
 import "./Step2Form.css";
-import { Form, Formik } from "formik";
 
 const AsignarAreasForm = () => {
   const [estudiante, setEstudiante] = useState(null);
   const [areas, setAreas] = useState([]);
   const [seleccionadas, setSeleccionadas] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [codigoIntroducido, setCodigoIntroducido] = useState("");
+  const [error, setError] = useState("");
+
+  const containerVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: { 
+        duration: 0.5 
+      } 
+    }
+  };
+
+  const listVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 10 },
+    visible: { opacity: 1, y: 0 }
+  };
+
+  const handleInputChange = (e) => {
+    const value = e.target.value;
+    if (value.length <= 11 && /^\d*$/.test(value)) {
+      setCodigoIntroducido(value);
+      setError("");
+    } else if (value.length > 11) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'El carnet no puede tener más de 11 dígitos'
+      });
+    }
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === "Enter") {
+      buscarEstudiante(codigoIntroducido);
+    }
+  };
 
   const buscarEstudiante = async (carnet) => {
     if (!carnet || carnet.trim() === "") {
-      toast.error("Por favor ingrese un número de carnet");
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Por favor ingrese un número de carnet'
+      });
       return;
     }
-
+  
     const carnetNumerico = parseInt(carnet, 10);
-    if (isNaN(carnetNumerico)) {
-      toast.error("El carnet debe contener solo números");
+    if (isNaN(carnetNumerico) || carnetNumerico > 2147483647) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'El carnet debe ser un número válido dentro del rango permitido (-2,147,483,648 a 2,147,483,647)'
+      });
       return;
     }
-
+  
     setLoading(true);
     try {
       const resCatalogo = await getCatalogoAreasCategorias(carnetNumerico);
       console.log("Catálogo de áreas:", resCatalogo.data);
-
+  
       if (resCatalogo.data.length === 0) {
         setEstudiante({ carnetIdentidadParticipante: carnetNumerico });
         setAreas([]);
-        toast.info("No hay materias disponibles para el grado del participante.");
+        Swal.fire({
+          icon: 'info',
+          title: 'Información',
+          text: 'No hay materias disponibles para el grado del participante.'
+        });
         return;
       }
       const combined = resCatalogo.data.map((item) => ({
@@ -48,14 +109,29 @@ const AsignarAreasForm = () => {
         idOlimpiada: item.id_olimpiada,
         idCatalogo: item.id_catalogo,
       }));
-
+  
       setEstudiante({ carnetIdentidadParticipante: carnetNumerico });
       setAreas(combined);
     } catch (err) {
       console.error("Error buscando catálogo de áreas:", err);
-      toast.error(err.message || "No se encontró el estudiante o las áreas");
+  
+      if (err.message === "Network Error") {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Error en la red, intenta más tarde'
+        });
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: err.response?.data?.message || "No se encontró el estudiante o las áreas"
+        });
+      }
+  
       setEstudiante(null);
       setAreas([]);
+      setError(err.message || "No se encontró el estudiante o las áreas");
     } finally {
       setLoading(false);
     }
@@ -65,7 +141,11 @@ const AsignarAreasForm = () => {
     setSeleccionadas((prev) => {
       if (prev.includes(id)) return prev.filter((a) => a !== id);
       if (prev.length >= 2) {
-        toast.error("Máximo 2 áreas permitidas");
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Máximo 2 áreas permitidas'
+        });
         return prev;
       }
       return [...prev, id];
@@ -74,7 +154,11 @@ const AsignarAreasForm = () => {
 
   const handleGuardar = async () => {
     if (!estudiante || seleccionadas.length === 0) {
-      toast.error("Debe seleccionar al menos un área");
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Debes seleccionar al menos un área'
+      });
       return;
     }
   
@@ -90,13 +174,22 @@ const AsignarAreasForm = () => {
         }));
       await setCatalogoAreasParticipante(estudiante.carnetIdentidadParticipante, areasSeleccionadas);
   
-      toast.success("Áreas asignadas correctamente");
+      Swal.fire({
+        icon: 'success',
+        title: '¡Éxito!',
+        text: 'Áreas asignadas correctamente'
+      });
       setEstudiante(null);
       setSeleccionadas([]);
       setAreas([]);
+      setCodigoIntroducido("");
     } catch (e) {
       console.error("Error al asignar las áreas:", e);
-      toast.error("Error al asignar las áreas");
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Error al asignar las áreas'
+      });
     }
   };
 
@@ -110,51 +203,61 @@ const AsignarAreasForm = () => {
   };
 
   return (
-    <div className="step2-container">
-      <h2>Registrar áreas de competencia</h2>
+    <motion.div 
+      className="step2-container"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      <h2>Asignar Áreas al Estudiante</h2>
 
       <div className="step2-carnet-container">
-        <Formik
-          initialValues={{ carnet: "" }}
-          onSubmit={async (values, { setSubmitting }) => {
-            try {
-              await buscarEstudiante(values.carnet);
-            } finally {
-              setSubmitting(false);
-            }
-          }}
-        >
-          {({ isSubmitting }) => (
-            <Form>
-              <InputText
-                id="carnet"
-                name="carnet"
-                label="Carnet del Estudiante"
-                placeholder="Ej: 123456789"
-                type="number"
-              />
-              <ButtonPrimary type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Buscando..." : "Buscar Estudiante"}
-              </ButtonPrimary>
-            </Form>
-          )}
-        </Formik>
+        <BuscadorCodigo
+          descripcion="Ingrese el carnet del estudiante para buscar áreas disponibles"
+          placeholder="Ej: 123456789"
+          codigoIntroducidoTexto="Carnet introducido:"
+          codigoIntroducido={codigoIntroducido}
+          onInputChange={handleInputChange}
+          onKeyPress={handleKeyPress}
+          onSearch={() => buscarEstudiante(codigoIntroducido)}
+          //error={error}
+          containerVariants={containerVariants}
+        />
       </div>
 
-      {loading && <div>Cargando...</div>}
+      {loading && (
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3 }}
+          className="loading-indicator"
+        >
+          Cargando...
+        </motion.div>
+      )}
 
       {estudiante && (
-        <div>
-          <p><strong>CI:</strong> {estudiante.carnetIdentidadParticipante}</p>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <span>Seleccione hasta 2 áreas:</span>
 
-          <span>Seleccione las áreas en las que desea participar(son permitidas máximo dos áreas de competencia)</span>
-
-          <div className="step2-grid">
+          <motion.div 
+            className="step2-grid"
+            variants={listVariants}
+            initial="hidden"
+            animate="visible"
+          >
             {areas.map((area) => (
-              <div
+              <motion.div
                 key={area.idArea}
                 className={`step2-card ${seleccionadas.includes(area.idArea) ? "selected" : ""}`}
                 onClick={() => toggleSeleccion(area.idArea)}
+                variants={itemVariants}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
               >
                 <div className="area-header">
                   <input 
@@ -168,52 +271,41 @@ const AsignarAreasForm = () => {
                 </div>
                 <p>{area.descripcionArea}</p>
                 <p className="costo">Bs {formatCurrency(area.precioArea)}</p>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
 
           {seleccionadas.length > 0 && (
-        <div className="step2-selected-container">
-          <div className="step2-selected-areas">
-            <h3>Áreas seleccionadas:</h3>
-            <div className="step2-selected-cards">
-              {seleccionadas.map((id) => {
-                const area = areas.find((a) => a.idArea === id);
-                return (
-                  <div key={id} className="step2-selected-card">
-                    <div>
-                      <h3>
-                        {area.nombreArea}
-                        <span className={`area-source ${area.source.toLowerCase()}`}>
-                          ({area.source}{area.categoria ? `: ${area.categoria.nombre}` : ''})
-                        </span>
-                      </h3>
-                      <p>{area.descripcionArea}</p>
-                      <p className="costo">Costo: Bs {area.precioArea.toFixed(2)}</p>
-                    </div>
-                    <button 
-                      type="button"
-                      className="remove-btn"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        eliminarSeleccion(id);
-                      }}
-                    >
-                      ×
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
-            <h2 className="step2-total">Total: Bs {totalCosto.toFixed(2)}</h2>
-          </div>
-        </div>
-      )}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              <h3>Áreas seleccionadas</h3>
+              <motion.ul variants={listVariants} initial="hidden" animate="visible">
+                {seleccionadas.map((id) => {
+                  const area = areas.find((a) => a.idArea === id);
+                  return (
+                    <motion.li key={id} variants={itemVariants}>
+                      {area?.nombreArea} - Bs {formatCurrency(area?.precioArea)}
+                    </motion.li>
+                  );
+                })}
+              </motion.ul>
+              <p><strong>Total:</strong> Bs {formatCurrency(totalCosto)}</p>
+            </motion.div>
+          )}
 
-          <ButtonPrimary onClick={handleGuardar}>Guardar Selección</ButtonPrimary>
-        </div>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+          >
+            <ButtonPrimary onClick={handleGuardar}>Guardar Selección</ButtonPrimary>
+          </motion.div>
+        </motion.div>
       )}
-    </div>
+    </motion.div>
   );
 };
 

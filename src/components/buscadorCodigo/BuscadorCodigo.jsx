@@ -13,6 +13,7 @@ const BuscadorCodigo = ({
   onSearch,
   error,
   containerVariants,
+  inputValue,
 }) => {
   return (
     <motion.div
@@ -26,7 +27,7 @@ const BuscadorCodigo = ({
         <input
           type="text"
           placeholder={placeholder}
-          value={codigoIntroducido} 
+          value={inputValue} // Usar inputValue en lugar de codigoIntroducido
           onChange={onInputChange}
           onKeyPress={onKeyPress}
         />

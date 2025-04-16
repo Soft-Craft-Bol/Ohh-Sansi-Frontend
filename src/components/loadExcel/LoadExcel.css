@@ -133,7 +133,7 @@
     border-radius: 50%;
     border: 3px solid var(--blue);
     border-left-color: transparent;
-    animation: rotation 1.4s ease 0.5s infinite;
+    animation: rotation 1.4s ease 0.5s infinite !important;
     display: inline-block;
   }
 
@@ -143,14 +143,9 @@
     }
     
   }
-  .btn-loader-active :hover{
-    background-color: #1cef69;
-  }
 
   .btn-loading{
-    background-color: #22c55e;
+    background-color: #22c55e !important;
   }
 
-  .btn-loading :hover{
-    background-color: #1cef69;
-  }
+  

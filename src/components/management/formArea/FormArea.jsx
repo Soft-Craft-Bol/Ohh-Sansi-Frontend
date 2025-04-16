@@ -1,14 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { Formik, Form } from "formik";
-import { toast } from "sonner";
-import { FaEdit, FaTrash } from "react-icons/fa";
+import Swal from "sweetalert2";
 import InputText from "../../inputs/InputText";
 import { ButtonPrimary } from "../../button/ButtonPrimary";
-import {
-  addArea,
-  getAreas,
-  updateArea,
-} from "../../../api/api";
+import {addArea, getAreas, updateArea} from "../../../api/api";
 import { areaValidationSchema } from "../../../schemas/areaValidation";
 import "./FormArea.css";
 import InputTextarea from "../../inputs/InputTextArea";
@@ -31,7 +26,12 @@ const FormArea = () => {
       setAreas(response.data?.areas || []);
     } catch (error) {
       console.error("Error fetching areas:", error);
-      toast.error("Error al cargar las áreas existentes");
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Error al cargar las áreas',
+      });
+      
       setAreas([]);
     } finally {
       setIsLoading(false);
@@ -58,10 +58,9 @@ const FormArea = () => {
   const handleSubmit = async (values, { resetForm }) => {
     setIsSubmitting(true);
     try {
-      // Eliminar espacios innecesarios y poner en formato adecuado
       const nombreLimpio = values.name.trim().replace(/\s+/g, ' ');
       const nombreCapitalizado = nombreLimpio.charAt(0).toUpperCase() + nombreLimpio.slice(1).toLowerCase();
-      
+
       const areaData = {
         nombreArea: nombreCapitalizado,
         precioArea: parseFloat(values.precioArea),
@@ -69,18 +68,31 @@ const FormArea = () => {
         descripcionArea: values.description.trim(),
         areaStatus: values.isActive
       };
-  
+
       if (editingId) {
         const response = await updateArea(editingId, areaData);
         setAreas(areas.map(area =>
           area.idArea === editingId ? response.data : area
         ));
-        toast.success("Área actualizada con éxito");
+        Swal.fire({
+          icon: 'success',
+          title: '¡Area guardada!',
+          text: 'Area actualizada correctamente',
+          timer: 2000,
+          showConfirmButton: false
+        });
+        
         fetchAreas();
       } else {
         const response = await addArea(areaData);
         setAreas(prev => [...prev, response.data]);
-        toast.success("Área registrada con éxito");
+        Swal.fire({
+          icon: 'success',
+          title: '¡Éxito!',
+          text: 'Área registrada correctamente',
+          timer: 2000,
+          showConfirmButton: false
+        });
         fetchAreas();
       }
       resetForm();
@@ -91,12 +103,16 @@ const FormArea = () => {
         error.message ||
         (editingId ? "Error al actualizar el área" : "Error al registrar el área");
 
-      toast.error(errorMessage);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: errorMessage,
+        });
     } finally {
       setIsSubmitting(false);
     }
   };
-  
+
 
   const handleEditArea = (id) => {
     const areaToEdit = areas.find(area => area.idArea === id);
@@ -109,8 +125,6 @@ const FormArea = () => {
   const initialValues = {
     name: "",
     description: "",
-    precioArea: "",
-    isActive: true
   };
 
   if (editingId) {
@@ -124,63 +138,63 @@ const FormArea = () => {
   }
 
   return (
-    <div className="form-container">
-      <div className="tabs">
-        <h2 className="gestion-title"> Áreas de Competencia</h2>
-        <p className="gestion-subtitle">
-          Añada áreas de competencia
-        </p>
+    <div className="form-area-wrapper page-padding">
+      <div className="form-container-area">
+        <div className="tabs">
+          <h2> Áreas de Competencia</h2>
+          <p>Añada áreas de competencia</p>
+        </div>
+        <Formik
+          initialValues={initialValues}
+          validationSchema={areaValidationSchema}
+          onSubmit={handleSubmit}
+          enableReinitialize
+          context={{ existingAreas: areas.map((area) => area.nombreArea) }}
+
+        >
+          {(formik) => (
+            <Form >
+              <div>
+                <InputText
+                  label="Nombre del área"
+                  name="name"
+                  type="text"
+                  required
+                  placeholder="Ej: Matemáticas"
+                  maxLength={30}
+                  showCounter={true}
+                />
+              </div>
+              <div>
+                <InputTextarea
+                  label="Descripción del área"
+                  name="description"
+                  placeholder="Breve descripción del área"
+                  maxLength={200}
+                  value={formik.values.description}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  touched={formik.touched.description}
+                  error={formik.errors.description}
+                  required
+                />
+              </div>
+
+
+              <div>
+                <ButtonPrimary
+                  type="submit"
+                  className="btn-submit-azul"
+                  disabled={!formik.isValid || isSubmitting}
+                >
+                  {editingId ? 'Actualizar área' : 'Añadir área'}
+                </ButtonPrimary>
+
+              </div>
+            </Form>
+          )}
+        </Formik>
       </div>
-      <Formik
-        initialValues={initialValues}
-        validationSchema={areaValidationSchema}
-        onSubmit={handleSubmit}
-        enableReinitialize
-      >
-        {(formik) => (
-          <Form className="form">
-            <div>
-              <InputText
-                label="Nombre del área"
-                name="name"
-                type="text"
-                required
-                placeholder="Ej: Matemáticas"
-                maxLength={30}
-              />
-              <p className="char-count">{formik.values.name.length}/30</p>
-
-            </div>
-            <div>
-              <InputTextarea
-                label="Descripción del área"
-                name="description"
-                placeholder="Breve descripción del área"
-                maxLength={200}
-                value={formik.values.description}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                touched={formik.touched.description}
-                error={formik.errors.description}
-                required
-              />
-            </div>
-
-
-            <div>
-              <ButtonPrimary
-                type="submit"
-                className="btn-submit-azul"
-                disabled={!formik.isValid || isSubmitting}
-              >
-                {editingId ? 'Actualizar área' : 'Añadir área'}
-              </ButtonPrimary>
-
-            </div>
-          </Form>
-        )}
-      </Formik>
-
       <div className="area-list">
         <h3>Áreas registradas</h3>
         {isLoading ? (
