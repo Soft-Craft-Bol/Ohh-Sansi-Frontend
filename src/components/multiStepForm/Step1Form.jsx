@@ -19,35 +19,37 @@ import { useEffect } from "react";
 const Step1Form = () => {
   const navigate = useNavigate();
   const today = new Date().toISOString().split("T")[0];
-  const { grados, loading: loadingGrados} = useFetchGrados();
+  const { grados, loading: loadingGrados } = useFetchGrados();
   const { departamentos, loading: loadingDepartamentos } = useFetchDepartamentos();
   const [selectedDepartamento, setSelectedDepartamento] = useState("");
   const { municipios, loading: loadingMunicipios } = useFetchMunicipios(selectedDepartamento);
   const [selectedMunicipio, setSelectedMunicipio] = useState("");
   const { colegios, loading: loadingColegios } = useFetchColegio(selectedMunicipio);
   const [loadingOverlay, setLoadingOverlay] = useState(false);
-
+  const [isSubmittingForm, setIsSubmittingForm] = useState(false);
 
   const loadSavedData = () => {
     const savedData = localStorage.getItem("participanteFormData");
     return savedData
       ? JSON.parse(savedData)
       : {
-          nombre: "",
-          apellido: "",
-          documento: "",
-          complemento: "",
-          fechaNacimiento: "",
-          departamento: "",
-          municipio: "",
-          institucion: "",
-          grado: "",
-          email: "",
-          telefono: "",
-        };
+        nombre: "",
+        apellido: "",
+        documento: "",
+        complemento: "",
+        fechaNacimiento: "",
+        departamento: "",
+        municipio: "",
+        institucion: "",
+        grado: "",
+        email: "",
+        telefono: "",
+      };
   };
 
   const handleSubmit = async (values, resetForm) => {
+    if (isSubmittingForm) return;
+    setIsSubmittingForm(true);
     setLoadingOverlay(true);
     try {
       const fechaNacimiento = new Date(values.fechaNacimiento);
@@ -58,7 +60,7 @@ const Step1Form = () => {
         edad--;
       }
       const tutorRequerido = edad < 15;
-  
+
       const participanteData = {
         idDepartamento: parseInt(values.departamento),
         idMunicipio: parseInt(values.municipio),
@@ -74,10 +76,10 @@ const Step1Form = () => {
         emailParticipante: values.email || null,
         tutorRequerido,
       };
-  
+
       const response = await registerParticipante(participanteData);
-  
-      if (response && response.data && response.data.existe) {
+
+      if (response?.data?.existe) {
         Swal.fire({
           icon: "error",
           title: "Participante ya registrado",
@@ -86,7 +88,7 @@ const Step1Form = () => {
         });
         return;
       }
-  
+
       Swal.fire({
         icon: "success",
         title: "¡Formulario guardado!",
@@ -106,49 +108,51 @@ const Step1Form = () => {
       });
     } finally {
       setLoadingOverlay(false);
+      setIsSubmittingForm(false);
     }
-  };  
+  };
 
   useEffect(() => {
-  const handleKeyPress = (e) => {
-    if (e.key === "Enter") {
-      const submitButton = document.querySelector("button[type='submit']");
-      if (submitButton) {
-        submitButton.click();
+    const handleKeyPress = (e) => {
+      if (e.key === "Enter" && !isSubmittingForm) {
+        const submitButton = document.querySelector("button[type='submit']");
+        if (submitButton) {
+          submitButton.click();
+        }
       }
-    }
-  };
+    };
 
-  window.addEventListener("keydown", handleKeyPress);
-  return () => {
-    window.removeEventListener("keydown", handleKeyPress);
-  };
-}, []);
+    window.addEventListener("keydown", handleKeyPress);
+    return () => {
+      window.removeEventListener("keydown", handleKeyPress);
+    };
+  }, [isSubmittingForm]);
+
 
   useEffect(() => {
     const handleBeforeUnload = (e) => {
       const form = document.querySelector("form");
       const inputs = form.querySelectorAll("input, select");
       let hasData = false;
-  
+
       inputs.forEach((input) => {
         if (input.value && input.value.trim() !== "") {
           hasData = true;
         }
       });
-  
+
       if (hasData) {
         e.preventDefault();
         e.returnValue = "";
       }
     };
-  
+
     window.addEventListener("beforeunload", handleBeforeUnload);
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
   }, []);
-  
+
 
   return (
     <div className="form-container">
@@ -167,21 +171,21 @@ const Step1Form = () => {
           <Form className="step1-grid">
             {/* Campos */}
             <div className="field-container">
-              <InputText name="nombre" label="Nombre" required onlyLetters={true} maxLength={50} placeholder="Ej: Edwin" 
+              <InputText name="nombre" label="Nombre" required onlyLetters={true} maxLength={50} placeholder="Ej: Edwin"
               />
             </div>
             <div className="field-container">
               <InputText name="apellido" label="Apellido" required onlyLetters maxLength={50} placeholder="Ej: Sánchez Velarde"
-               />
+              />
             </div>
             <div className="field-container">
-              <InputText name="documento" label="Documento de Identidad" required onlyNumbers maxLength={10} placeholder="Ej: 12354987"/>
+              <InputText name="documento" label="Documento de Identidad" required onlyNumbers maxLength={10} placeholder="Ej: 12354987" />
             </div>
             <div className="field-container">
-              <InputText name="complemento" label="Complemento"  maxLength={2}  onlyAlphaNumeric placeholder="Ej: 1T"/>
+              <InputText name="complemento" label="Complemento" maxLength={2} onlyAlphaNumeric placeholder="Ej: 1T" />
             </div>
             <div className="field-container">
-              <InputText name="fechaNacimiento" label="Fecha de nacimiento" type="date" required max={today}/>
+              <InputText name="fechaNacimiento" label="Fecha de nacimiento" type="date" required max={today} />
             </div>
             <div className="field-container">
               <SelectInput
@@ -250,14 +254,14 @@ const Step1Form = () => {
               <InputText name="email" label="Correo electrónico" type="email" placeholder="correo@ejemplo.com" required />
             </div>
             <div className="field-container">
-              <InputText name="telefono" label="Teléfono" required onlyNumbers maxLength={8} placeholder="Ej: 67559758"/>
+              <InputText name="telefono" label="Teléfono" required onlyNumbers maxLength={8} placeholder="Ej: 67559758" />
             </div>
             <div className="field-container full-width">
-            <div className="form-actions">
-              <DisabledButton
-                isValid={isValid}
-                isSubmitting={isSubmitting}
-                validationMessage="Por favor, complete todos los campos requeridos"
+              <div className="form-actions">
+                <DisabledButton
+                  isValid={isValid}
+                  isSubmitting={isSubmitting}
+                  validationMessage="Por favor, complete todos los campos requeridos"
                 >
                   Registrar Participante
                 </DisabledButton>
