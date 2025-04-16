@@ -92,3 +92,9 @@ export const getEstadoInscripcion = (ciParticipante) => api.get(`/estado-inscrip
 export const getCatalogoAreasCategorias = (ciParticipante) => api.get(`/catalogo/ci-participante/${ciParticipante}`);
 export const setCatalogoAreasParticipante = (ciParticipante, data) => 
   api.post(`/participante/register-participant-catalogo/${ciParticipante}`, data);
+
+
+//areaTutor participante
+
+export const getTutorAreaParticipanteInfo = (ciParticipante) => api.get(`/tutor-area-participante/${ciParticipante}`);
+export const setTutorAreaParticipante = (data) => api.post('/tutor-area-participante/save', data);

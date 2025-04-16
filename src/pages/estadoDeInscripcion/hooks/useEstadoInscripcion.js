@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { getEstadoInscripcion } from '../../../api/api';
+import Swal from 'sweetalert2';
 
 const useEstadoInscripcion = () => {
   const [documento, setDocumento] = useState('');
@@ -32,8 +33,14 @@ const useEstadoInscripcion = () => {
       setMostrarDetalles(true);
     } catch (err) {
       console.error('Error al obtener datos de inscripción:', err);
-      setError('No se pudo obtener la información. Verifica el número de documento.');
+      setError('Error de conexión, inténtalo más tarde');
       setMostrarDetalles(false);
+      Swal.fire({
+        icon: "error",
+        title: "Error de conexión",
+        text: "No se pudo conectar al servidor. Intenta más tarde.",
+        showConfirmButton: false
+      })
     } finally {
       setCargando(false);
     }

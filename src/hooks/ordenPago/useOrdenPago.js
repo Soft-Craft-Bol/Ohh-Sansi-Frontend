@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import Swal from 'sweetalert2';
 import { getOrdenPagoDetailInfo, createOrdenPago } from '../../api/api';
 import { convertirNumeroAPalabras } from '../../utils/numberUtils';
 
@@ -16,11 +17,15 @@ const useOrdenPago = () => {
       setCodigoIntroducido(inputValue.trim());
       setInputValue("");
       setError(null);
+    } else {
+      Swal.fire({
+        title: 'Campo vacío',
+        text: 'Por favor, introduce un código válido',
+        icon: 'warning',
+        confirmButtonText: 'Aceptar',
+        confirmButtonColor: '#3085d6'
+      });
     }
-  };
-
-  const handleInputChange = (e) => {
-    setInputValue(e.target.value);
   };
 
   const handleKeyPress = (event) => {
@@ -40,8 +45,13 @@ const useOrdenPago = () => {
         console.log("Datos recibidos:", response.data);
       } catch (error) {
         console.error("Error al obtener los datos:", error.response?.data || error.message);
+        if (!error.response) {
+          setError("Error de conexión. Por favor verifica tu conexión a internet e intenta nuevamente.");
+        } else {
+          setError("No se encontró la inscripción con el código proporcionado");
+        }
+        
         setOrdenData(null);
-        setError("No se encontró la inscripción con el código proporcionado");
       } finally {
         setIsLoading(false);
       }
@@ -101,7 +111,11 @@ const useOrdenPago = () => {
 
     } catch (error) {
       console.error("Error completo:", error);
-      setError(error.response?.data?.message || error.message);
+      if (!error.response) {
+        setError("Error de conexión. Por favor verifica tu conexión a internet e intenta nuevamente.");
+      } else {
+        setError(error.response?.data?.message || error.message);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -117,7 +131,6 @@ const useOrdenPago = () => {
     error,
     isLoading,
     handleSearch,
-    handleInputChange,
     handleKeyPress,
     handleGenerarOrden
   };

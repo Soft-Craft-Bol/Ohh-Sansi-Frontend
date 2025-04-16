@@ -3,7 +3,7 @@ import { useField } from "formik";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import "./InputText.css";
 
-function InputText({ label, required, type = "text", as = "input", showCounter = false, maxLength, ...props }) {
+function InputText({ label, required, type = "text", as = "input", showCounter = false, ...props }) {
     const [field, meta, helpers] = useField(props);
     const [showPassword, setShowPassword] = useState(false);
 
@@ -19,7 +19,7 @@ function InputText({ label, required, type = "text", as = "input", showCounter =
           {...props}
           type={type === "password" && showPassword ? "text" : type}
           max={props.max}
-          maxLength={maxLength}
+          maxLength={props.maxLength}
           
           onChange={(e) => {
             let value = e.target.value;
