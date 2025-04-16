@@ -97,16 +97,18 @@ const Step1Form = () => {
         });
         return;
       }
-  
+
       Swal.close();
       Swal.fire({
         icon: "success",
         title: "¡Formulario guardado!",
         text: "La información fue completada correctamente.",
         confirmButtonText: "Continuar",
+        
       }).then(() => {
         resetForm();
         localStorage.removeItem("participanteFormData");
+        onRegistroExitoso(values.documento);
       });
   
     } catch (error) {
