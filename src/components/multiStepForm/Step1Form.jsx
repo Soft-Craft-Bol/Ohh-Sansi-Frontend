@@ -190,7 +190,7 @@ const Step1Form = () => {
               />
             </div>
             <div className="field-container">
-              <InputText name="documento" label="Documento de Identidad" required onlyNumbers maxLength={10} placeholder="Ej: 12354987" />
+              <InputText name="documento" label="Documento de Identidad" required onlyNumbers maxLength={9} placeholder="Ej: 12354987" />
             </div>
             <div className="field-container">
               <InputText name="complemento" label="Complemento" maxLength={2} onlyAlphaNumeric placeholder="Ej: 1T" />
