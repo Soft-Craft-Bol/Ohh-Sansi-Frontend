@@ -25,6 +25,7 @@ const Step1Form = () => {
   const { municipios, loading: loadingMunicipios } = useFetchMunicipios(selectedDepartamento);
   const [selectedMunicipio, setSelectedMunicipio] = useState("");
   const { colegios, loading: loadingColegios } = useFetchColegio(selectedMunicipio);
+  const [loadingOverlay, setLoadingOverlay] = useState(false);
 
 
   const loadSavedData = () => {
@@ -46,13 +47,12 @@ const Step1Form = () => {
         };
   };
 
-  const handleSubmit = async (values) => {
+  const handleSubmit = async (values, resetForm) => {
+    setLoadingOverlay(true);
     try {
-      //localStorage.setItem("participanteFormData", JSON.stringify(values));
-
       const fechaNacimiento = new Date(values.fechaNacimiento);
       const hoy = new Date();
-      let edad = hoy.getFullYear() - fechaNacimiento.getFullYear(); // Cambiado a let
+      let edad = hoy.getFullYear() - fechaNacimiento.getFullYear();
       const mes = hoy.getMonth() - fechaNacimiento.getMonth();
       if (mes < 0 || (mes === 0 && hoy.getDate() < fechaNacimiento.getDate())) {
         edad--;
@@ -84,7 +84,6 @@ const Step1Form = () => {
           text: "Ya existe un registro con ese documento de identidad.",
           confirmButtonText: "Aceptar",
         });
-        
         return;
       }
   
@@ -94,7 +93,8 @@ const Step1Form = () => {
         text: "La información fue completada correctamente.",
         confirmButtonText: "Continuar",
       }).then(() => {
-        navigate("/areas-competencia");
+        resetForm();
+        localStorage.removeItem("participanteFormData");
       });
     } catch (error) {
       console.error("Error al registrar participante:", error);
@@ -104,9 +104,10 @@ const Step1Form = () => {
         text: error.response?.data?.message || "Ocurrió un error inesperado",
         confirmButtonText: "Cerrar",
       });
-      
+    } finally {
+      setLoadingOverlay(false);
     }
-  };
+  };  
 
   useEffect(() => {
   const handleKeyPress = (e) => {
@@ -151,13 +152,14 @@ const Step1Form = () => {
 
   return (
     <div className="form-container">
+      {loadingOverlay && <div className="overlay"></div>}
       <h1>Registro de Participante</h1>
       <span className="form-description">Ingrese los datos del participante</span>
 
       <Formik
         initialValues={loadSavedData()}
         validationSchema={inscripcionSchema}
-        onSubmit={handleSubmit}
+        onSubmit={(values, { resetForm }) => handleSubmit(values, resetForm)}
         validateOnBlur={true}
         validateOnChange={true}
       >
