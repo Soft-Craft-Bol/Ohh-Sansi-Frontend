@@ -10,13 +10,23 @@ const registerTutorValidationSchema = Yup.object().shape({
     .required('Los apellidos son requeridos'),
   emailTutor: Yup.string()
     .email('Ingrese un email válido')
+    .test('valid-domain', 'Email no permitido', (value) => {
+      if (!value) return true;
+      const validDomains = ['gmail.com', 'outlook.com', 'hotmail.com', 'yahoo.com', 'edu.pe'];
+      const [, domain] = value.split('@');
+      return validDomains.some(d => domain?.endsWith(d));})
     .required('El email es requerido'),
   telefono: Yup.string()
+    .min(7, 'Debe tener al menos 7 números')
     .matches(/^[0-9]+$/, 'Solo números permitidos')
     .required('El teléfono es requerido'),
   carnetIdentidadTutor: Yup.string()
+    .min(6, 'Debe tener al menos 6 números')
     .matches(/^[0-9]+$/, 'Solo números permitidos')
     .required('El documento es requerido'),
+  complementoCiTutor: Yup.string()
+    .min(2, 'Debe tener 2 caracteres')
+    .required('El documento es requerido'), 
 });
 
 export default registerTutorValidationSchema;

@@ -3,7 +3,7 @@ import { useField } from "formik";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import "./InputText.css";
 
-function InputText({ label, required, type = "text", as = "input", showCounter = false, maxLength, ...props }) {
+function InputText({ label, required, type = "text", as = "input", showCounter = false, ...props }) {
     const [field, meta, helpers] = useField(props);
     const [showPassword, setShowPassword] = useState(false);
 
@@ -18,12 +18,22 @@ function InputText({ label, required, type = "text", as = "input", showCounter =
           {...field}
           {...props}
           type={type === "password" && showPassword ? "text" : type}
-          maxLength={maxLength}
+          max={props.max}
+          maxLength={props.maxLength}
+          
           onChange={(e) => {
             let value = e.target.value;
     
             if (props.onlyNumbers === true) {
                 value = value.replace(/\D/g, "");
+            }
+
+            if (props.onlyLetters === true) {
+              value = value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑü\s]/g, "");
+            }
+
+            if (props.onlyAlphaNumeric === true) {
+              value = value.replace(/[^a-zA-Z0-9]/g, "");
             }
         
             field.onChange({

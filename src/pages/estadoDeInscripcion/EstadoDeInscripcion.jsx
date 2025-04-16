@@ -1,27 +1,33 @@
-import React, { useState } from 'react';
+import React, { useEffect } from 'react';
 import "./EstadoDeInscripcion.css";
 import Header from "../../components/header/Header";
 import BuscadorCodigo from '../../components/buscadorCodigo/BuscadorCodigo';
-
+import DetallesInscripcion from './components/DetallesInscripcion';
+import useEstadoInscripcion from './hooks/useEstadoInscripcion';
+import useInscripcionUtils from './hooks/useInscripcionUtils';
+import { motion } from 'framer-motion';
 const EstadoDeInscripcion = () => {
-  const [documento, setDocumento] = useState('14382800');
-  const [error, setError] = useState('');
-  const [mostrarDetalles, setMostrarDetalles] = useState(true);
+  const {
+    documento,
+    setDocumento,
+    error,
+    mostrarDetalles,
+    datosInscripcion,
+    cargando,
+    resetEstado,
+    handleSearch,
+    handleKeyPress
+  } = useEstadoInscripcion();
 
-  const handleSearch = () => {
-    if (!documento) {
-      setError('Por favor, introduce un número de documento válido.');
-      return;
-    }
-    setError('');
-    console.log(`Buscando información para el documento: ${documento}`);
-    setMostrarDetalles(true);
-  };
+  const utils = useInscripcionUtils(datosInscripcion);
 
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
-      handleSearch();
-    }
+  useEffect(() => {
+    resetEstado();
+  }, []);
+
+  const containerVariants = {
+    hidden: { opacity: 0, y: 50 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
   };
 
   return (
@@ -30,82 +36,54 @@ const EstadoDeInscripcion = () => {
         title="Estado de Inscripción"
         description="Consulta el estado de tu inscripción"
       />
-      <div className='top-container'>
-        <h2>Estado de la inscripción</h2>
+      
+      <motion.div
+        className='top-container'
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
         <BuscadorCodigo
           descripcion="Obtén información de la inscripción introduciendo el número de documento del participante"
           placeholder="Introduce el documento del participante"
           codigoIntroducidoTexto="Número de documento introducido:"
           codigoIntroducido={documento}
-          onInputChange={(e) => setDocumento(e.target.value)}
+          onInputChange={(e) => {
+            const value = e.target.value;
+            const soloNumeros = value.replace(/\D/g, '');
+            if (soloNumeros.length <= 10) {
+              setDocumento(soloNumeros);
+            }
+          }}
           onKeyPress={handleKeyPress}
           onSearch={handleSearch}
           error={error}
-          containerVariants={{
-            hidden: { opacity: 0, y: 50 },
-            visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
-          }}
+          containerVariants={containerVariants}
         />
-      </div>
+      </motion.div>
+
+      {cargando && (
+        <motion.div
+          className='page-padding text-center'
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          <p>Cargando información...</p>
+        </motion.div>
+      )}
       
-      {mostrarDetalles && (
-        <div className='detail-info-cont page-padding'>
-          <h2>Detalles del estado de inscripcion</h2>
-          
-          <div className="info-card">
-            <div className="info-header">
-              <div className="info-user">
-                <h3>Nombre: Alfredo Ernesto Torrico Garcia</h3>
-                <p>Ultima actualización: 27 de marzo de 2025, 19:35</p>
-              </div>
-              <div className="status-badge">
-                <span className="status-complete">Inscripción completada</span>
-              </div>
-            </div>
-            
-            <div className="info-table">
-              <div className="table-header">
-                <div className="col-etapa">ETAPA</div>
-                <div className="col-estado">ESTADO</div>
-                <div className="col-fecha">FECHA DE REGISTRO</div>
-                <div className="col-comentarios">COMENTARIOS</div>
-                <div className="col-acciones">ACCIONES</div>
-              </div>
-              
-              <div className="table-row">
-                <div className="col-etapa">Registro de datos del participante</div>
-                <div className="col-estado"><span className="status-chip complete">✓ Completado</span></div>
-                <div className="col-fecha">24/03/2025 15:40</div>
-                <div className="col-comentarios">Datos registrados correctamente</div>
-                <div className="col-acciones"><a href="#" className="ver-detalles">Ver detalles</a></div>
-              </div>
-              
-              <div className="table-row">
-                <div className="col-etapa">Registro de áreas de competencia</div>
-                <div className="col-estado"><span className="status-chip complete">✓ Completado</span></div>
-                <div className="col-fecha">25/03/2025 19:58</div>
-                <div className="col-comentarios">Datos registrados correctamente</div>
-                <div className="col-acciones"><a href="#" className="ver-detalles">Ver detalles</a></div>
-              </div>
-              
-              <div className="table-row">
-                <div className="col-etapa">Registro de datos del tutor</div>
-                <div className="col-estado"><span className="status-chip complete">✓ Completado</span></div>
-                <div className="col-fecha">25/03/2025 8:37</div>
-                <div className="col-comentarios">Tutor registrado correctamente</div>
-                <div className="col-acciones"><a href="#" className="ver-detalles">Ver detalles</a></div>
-              </div>
-              
-              <div className="table-row">
-                <div className="col-etapa">Generacion de orden de pago</div>
-                <div className="col-estado"><span className="status-chip generado">✓ Generado</span></div>
-                <div className="col-fecha">29/03/2025 2:31</div>
-                <div className="col-comentarios"></div>
-                <div className="col-acciones"><a href="#" className="ver-detalles">Ver detalles</a></div>
-              </div>
-            </div>
-          </div>
-        </div>
+      {mostrarDetalles && datosInscripcion && (
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          <DetallesInscripcion 
+            datosInscripcion={datosInscripcion}
+            utils={utils}
+          />
+        </motion.div>
       )}
     </div>
   );
