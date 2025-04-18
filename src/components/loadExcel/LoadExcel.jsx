@@ -8,11 +8,11 @@ import { ButtonPrimary } from '../button/ButtonPrimary';
 import './LoadExcel.css';
 import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom';
-import plantilla from '../../assets/PlantillaInscripcion.xlsx';
+import plantilla from '../../assets/PlantillaParticipante.xlsx';
 import Table from '../table/Table';
 
 const validExtensions = ['.xlsx', '.xls', '.csv', '.xsb'];
-const columnasPermitidas = ['Nombres', 'Apellidos', 'NumeroDocumento', 'Institucion', 'Area', 'Tutor'];
+const columnasPermitidas = ['Nombres', 'Apellido Paterno', 'Apellido Materno', 'FechaNacimiento', 'Colegio', 'Carnet'];
 const columnas = columnasPermitidas.map((col) => ({
   header: col,
   accessor: col
@@ -40,11 +40,22 @@ const LoadExcel = () => {
       reader.onload = (event) => {
         const data = new Uint8Array(event.target.result);
         const workbook = XLSX.read(data, { type: 'array' });
-        const sheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[sheetName];
-        const jsonOriginal = XLSX.utils.sheet_to_json(worksheet);
-        
-        if (jsonOriginal.length > 600) {
+      
+        // HOJA 1 - Participantes
+        const hoja1 = workbook.Sheets['Hoja1'];
+        const jsonHoja1 = XLSX.utils.sheet_to_json(hoja1);
+      
+        const columnasHoja1 = ['Nombres', 'Apellido Paterno', 'Apellido Materno', 'FechaNacimiento', 'Colegio', 'Carnet'];
+        const participantes = jsonHoja1.map((row) => {
+          const nuevo = {};
+          columnasHoja1.forEach((col) => {
+            nuevo[col] = row[col] ?? '';
+          });
+          return nuevo;
+        });
+      
+        // Limite de registros
+        if (participantes.length > 600) {
           Swal.fire({
             icon: "error",
             title: "El archivo contiene más de 600 registros",
@@ -54,22 +65,46 @@ const LoadExcel = () => {
           });
           setSubmitting(false);
           setButtonState('error');
-          return; 
+          return;
+        }
+      
+        setExcelData(participantes);
+      
+        // Procesar la hoja 2 para generar JSON
+        const sheet2 = workbook.Sheets["Hoja2"];
+        if (!sheet2) {
+          console.error("No se encontró la Hoja2");
+          return;
         }
 
-        // Filtrar las columnas
-        const jsonFiltrado = jsonOriginal.map((row) => {
-          const nuevoRow = {};
-          columnasPermitidas.forEach((columna) => {
-            nuevoRow[columna] = row[columna] ?? ''; 
-          });
-          return nuevoRow;
-        });
+        const dataHoja2 = XLSX.utils.sheet_to_json(sheet2, { header: 1 });
+        const headers = dataHoja2[0];
+        const rows = dataHoja2.slice(1);
 
-        setExcelData(jsonFiltrado);
+        const datosParticipantes = [];
+
+        for (const fila of rows) {
+          const obj = {};
+          headers.forEach((header, i) => {
+            let valor = fila[i];
+
+            // mappeo
+            if (valor === "true") valor = true;
+            if (valor === "false") valor = false;
+
+            obj[header] = valor;
+          });
+          if (!obj.carnetIdentidadParticipante || obj.carnetIdentidadParticipante === 0) break;
+
+          datosParticipantes.push(obj);
+        };
+      
+        console.log("Participantes de Hoja2:", datosParticipantes);
+      
         setSubmitting(false);
         setButtonState('done');
       };
+      
     
       reader.readAsArrayBuffer(file);
     },
