@@ -131,7 +131,7 @@
     width: 24px;
     height: 24px;
     border-radius: 50%;
-    border: 3px solid var(--blue);
+    border: 3px solid white;
     border-left-color: transparent;
     animation: rotation 1.4s ease 0.5s infinite !important;
     display: inline-block;
