@@ -30,27 +30,27 @@ const AppRoutes = () => {
       {/*<Route path="/formulario" element= {<Layout><Formulario /></Layout>} />*/}
 
       {/* Ruta raíz protegida */}
-      <Route path="/" element={<PrivateRoute><Layout><MainContent /></Layout></PrivateRoute>}/>
+      <Route path="/" element={<Layout><MainContent /></Layout>}/>
 
 
       {/* Otras rutas protegidas */}
       <Route
         path="/home"
-        element={<PrivateRoute><Layout><MainContent /></Layout></PrivateRoute>}
+        element={<Layout><MainContent /></Layout>}
       />
       <Route
         path="/inicio"
-        element={<PrivateRoute><Layout><Inicio /></Layout></PrivateRoute>}
+        element={<Layout><Inicio /></Layout>}
       />
 
       <Route
         path="/form"
-        element={<PrivateRoute><Layout><MultiStepForm /></Layout></PrivateRoute>}
+        element={<Layout><MultiStepForm /></Layout>}
       />
 
       <Route
         path="/register-excel"
-        element={<PrivateRoute><Layout> <InscripcionExcel/> </Layout></PrivateRoute>}
+        element={<Layout> <InscripcionExcel/> </Layout>}
       />
 
       <Route
@@ -61,41 +61,36 @@ const AppRoutes = () => {
       <Route
         path="/registro-materias"
         element={
-          <PrivateRoute>
+          
             <Layout>
               <FormArea />
             </Layout>
-          </PrivateRoute>
+          
         }
       />
       <Route
         path="/orden-de-pago"
         element={
-          <PrivateRoute>
             <Layout>
               <OrdenDePago />
             </Layout>
-          </PrivateRoute>
         }
       />
       <Route
         path="/estado-de-inscripcion"
         element={
-          <PrivateRoute>
             <Layout>
               <EstadoDeInscripcion />
             </Layout>
-          </PrivateRoute>
         }
       />
-      <Route path="/step1" element= {<PrivateRoute><Layout><Step1Form/></Layout></PrivateRoute>}/>
-      <Route path="/step2" element= {<PrivateRoute><Layout><Step2Form/></Layout></PrivateRoute>}/>
-      <Route path="/step3" element= {<PrivateRoute><Layout><Step3Form/></Layout></PrivateRoute>}/>
-      <Route path="/step4" element= {<PrivateRoute><Layout><Step4Form/></Layout></PrivateRoute>}/>
-      <Route path="/step5" element= {<PrivateRoute><Layout><Step5Form/></Layout></PrivateRoute>}/>
+      <Route path="/step1" element= {<Layout><Step1Form/></Layout>}/>
+      <Route path="/step2" element= {<Layout><Step2Form/></Layout>}/>
+      <Route path="/step3" element= {<Layout><Step3Form/></Layout>}/>
+      <Route path="/step4" element= {<Layout><Step4Form/></Layout>}/>
+      <Route path="/step5" element= {<Layout><Step5Form/></Layout>}/>
 
-      {/* Ruta de error 404 */}
-      <Route path="*" element={<NotFound404 />} />
+      
     </Routes>
   );
 };
