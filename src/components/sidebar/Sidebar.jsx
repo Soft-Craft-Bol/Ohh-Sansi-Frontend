@@ -19,7 +19,7 @@ const Sidebar = ({ isSidebarVisible }) => {
 
   useEffect(() => {
     const currentPath = location.pathname;
-    if (currentPath === "/home") {
+    if (currentPath === "/") {
       setActiveMenu("dashboard");
     } else if (currentPath === "/form") {
       setActiveMenu("analytics");
@@ -40,7 +40,7 @@ const Sidebar = ({ isSidebarVisible }) => {
 
   return (
     <section id="sidebar" className={!isSidebarVisible ? "hide" : ""}>
-      <Link to="/home" className="brand">
+      <Link to="/" className="brand">
         <div className="icon">
           <img src={logoOhSansi} alt="logoOhSansi" />
         </div>
