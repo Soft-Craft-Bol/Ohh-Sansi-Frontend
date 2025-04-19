@@ -45,30 +45,45 @@ const CostsManagement = () => {
   const handleSubmit = async (values, { resetForm }) => {
     try {
       const response = await savePrecioOlimpiada(values);
-      const message =
-        response?.data?.message || "Costo registrado exitosamente!";
-
-        Swal.fire({
-          icon: 'success',
-          title: '¡Evento guardado!',
-          text: message,
-          timer: 3000,
-          showConfirmButton: false
-        });
-        
-
+      const success = response?.data?.success;
+      const message = response?.data?.message || "Costo registrado exitosamente!";
+  
+      if (!success) {
+        throw new Error(message); 
+      }
+  
+      Swal.fire({
+        icon: 'success',
+        title: '¡Precio actualizado!',
+        text: message,
+        timer: 3000,
+        showConfirmButton: false
+      });
+  
       await fetchData();
       resetForm();
     } catch (error) {
-      console.error("Error saving price:", error);
+      console.error(error);
+      const backendMsg =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Error al guardar el costo de la olimpiada. Intenta nuevamente.";
+  
       Swal.fire({
         icon: 'error',
-        title: 'Error',
-        text: 'Error al guardar el costo de la olimpiada',
+        title: 'Ups... algo salió mal',
+        text: backendMsg,
+        showCloseButton: true,
+        showClass: {
+          popup: 'animate__animated animate__fadeInDown',
+        },
+        hideClass: {
+          popup: 'animate__animated animate__fadeOutUp',
+        }
       });
-      
     }
   };
+  
 
   return (
     <div className="costs-container-wrapper page-padding">
