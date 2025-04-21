@@ -46,11 +46,16 @@ export const verificarSerTutor = async (ci, onSuccess, onError) => {
 
   try {
     const res = await getEstudianteByCarnet(ci);
+    if (res.data.fechaNacimiento) { //if exists
+      const nombre = res.data.nombreParticipante?.split(" ")[0] || "";
 
-    if (res.data?.nombres && res.data?.apellidos) {
-      const nombre = res.data.nombres.split(" ")[0];
-      const apellidos = res.data.apellidos.split(" ");
-      const apellidoInicial = apellidos.length > 0 ? apellidos[0][0] + "." : "";
+      const apellidoPaternoInicial = res.data.apellidoPaterno
+        ? res.data.apellidoPaterno[0].toUpperCase() + ".": "";
+
+      const apellidoMaternoInicial = res.data.apellidoMaterno
+        ? res.data.apellidoMaterno[0].toUpperCase() + ".": "";
+
+      const apellidoInicial = `${apellidoPaternoInicial} ${apellidoMaternoInicial}`.trim();
 
       const { value: emailConfirm } = await Swal.fire({
         title: `¿Conoces a ${nombre} ${apellidoInicial}?`,
@@ -115,6 +120,6 @@ export const verificarSerTutor = async (ci, onSuccess, onError) => {
       title: "No se pudo verificar el CI"
     });
 
-    onError?.(); // Por ejemplo para limpiar el campo
+    onError?.();
   }
 };
