@@ -1,55 +1,43 @@
-import { useEffect, useState } from "react";
+import Swal from "sweetalert2";
 import { getEstudianteByCarnet, verifyEstudiante } from "../../api/api";
 
-const LoaderInfo = ({ permit, ci, valuePermit, onDataComplete }) => {
-  const [exists, setExists] = useState(false);
-  const [status, setStatus] = useState("idle"); // 'idle', 'checking', 'verifying', 'done', 'error'
+export const verificarParticipante = async (ci, onComplete, onError) => {
+  if (!ci) return;
 
-  useEffect(() => {
-    if (permit && ci) {
-      const fetchData = async () => {
-        setStatus("checking");
-        try {
-          const res = await getEstudianteByCarnet(ci);
-          setExists(res.data.exists);
-          setStatus(res.data.exists ? "awaiting-permit" : "idle");
-        } catch (error) {
-          setStatus("error");
-        }
-      };
-  
-      fetchData();
-    }
-  }, [ci, permit]);
-  
+  try {
 
-  useEffect(() => {
-    const verificar = async () => {
-      if (status === "awaiting-permit" && valuePermit && ci) {
-        setStatus("verifying");
-        try {
-          const res = await verifyEstudiante({ ci, valuePermit });
-          setStatus("done");
-          onDataComplete(res.data);
-        } catch (err) {
-          setStatus("error");
-        }
+    const res = await getEstudianteByCarnet(ci);
+    console.log("Respuesta de la API:", res);  // Verificar la respuesta de la API
+
+    if (res.data.fechaNacimiento) {
+      const { value: valuePermit } = await Swal.fire({
+        title: "Participante encontrado",
+        text: "Por favor, ingresa tu correo electrónico para verificar tu identidad y auto completar tu información",
+        input: "email",
+        inputPlaceholder: "correo@ejemplo.com",
+        confirmButtonText: "Verificar",
+        showCancelButton: true,
+        cancelButtonText: "Cancelar",
+        inputValidator: (value) => {
+          if (!value) return "Debes ingresar un correo";
+        },
+      });
+
+      if (!valuePermit) {
+        console.log("Verificación cancelada o correo vacío");
+        return;
       }
-    };
-  
-    verificar();
-  }, [valuePermit, status, ci]);
-  
 
-  return (
-    <div>
-      {status === "checking" && <p>Buscando datos...</p>}
-      {status === "awaiting-permit" && <p>Datos encontrados. Esperando permiso.</p>}
-      {status === "verifying" && <p>Verificando permiso...</p>}
-      {status === "done" && <p>Datos completados exitosamente ✅</p>}
-      {status === "error" && <p>Error al obtener los datos ❌</p>}
-    </div>
-  );
+      const result = await verifyEstudiante({ ci, valuePermit });
+      console.log("Resultado de la verificación:", result);
+
+      onComplete?.(result.data);
+    } else {
+      console.log("CI no encontrado");
+      onError?.("No se encontró el participante con el CI proporcionado.");
+    }
+  } catch (error) {
+    console.error("Error en encontrar ci:", error);
+    onError?.("No se pudo verificar la información.");
+  }
 };
-
-export default LoaderInfo;

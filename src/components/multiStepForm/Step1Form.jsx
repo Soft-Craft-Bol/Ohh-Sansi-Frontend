@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Formik, Form } from "formik";
 import InputText from "../inputs/InputText";
-import { ButtonPrimary } from "../button/ButtonPrimary";
+import {verificarParticipante} from "../loaderInfo/LoaderInfo";
 import SelectInput from "../selected/SelectInput";
 import useFetchGrados from "../../hooks/NivelEscolar/useFetchGrados";
 import useFetchDepartamentos from "../../hooks/departamento/useFetchDepartamentos";
@@ -12,7 +12,7 @@ import { registerParticipante } from "../../api/api";
 import Swal from "sweetalert2";
 import "./Step1Form.css";
 import DisabledButton from "../button/DisabledButton";
-import { useEffect } from "react";
+import useDebounce from "../../hooks/WriteInputs/useDebounce";
 
 const Step1Form = () => {
   const today = new Date().toISOString().split("T")[0];
@@ -166,7 +166,6 @@ const Step1Form = () => {
     };
   }, []);
 
-
   return (
     <div className="form-container">
       {loadingOverlay && <div className="overlay"></div>}
@@ -174,17 +173,46 @@ const Step1Form = () => {
       <span className="form-description">Ingrese los datos del participante</span>
 
       <Formik
-        initialValues={loadSavedData()}
+        //initialValues={loadSavedData()} perdon queria hacer pruebas UnU
+        initialValues={{
+          nombre: "",
+          apellido: "",
+          documento: "",
+          complemento: "",
+          fechaNacimiento: "",
+          departamento: "",
+          municipio: "",
+          institucion: "",
+          grado: "",
+          email: "",
+          telefono: "",}}
         validationSchema={inscripcionSchema}
         onSubmit={(values, { resetForm }) => handleSubmit(values, resetForm)}
         validateOnBlur={false}
         validateOnChange={true}
       >
-        {({ values, setFieldValue, isValid, isSubmitting }) => (
+        {({ values, setFieldValue, isValid, isSubmitting }) => {
+          const debouncedCI = useDebounce(values.documento, 600);
+
+          // Llamar a la función verificarParticipante cuando el CI cambia
+          useEffect(() => {
+            if (debouncedCI) {
+              verificarParticipante(debouncedCI, (data) => {
+                console.log("Datos del participante:", data);
+                setFieldValue("nombre", data.nombreParticipante || "");
+                setFieldValue("apellido", `${data.apellidoPaterno || ""} ${data.apellidoMaterno || ""}`.trim());
+              }, (msg) => {
+                console.error("Error:", msg);
+              });
+            }
+          }, [debouncedCI, setFieldValue]);
+
+          return (
           <Form className="step1-grid">
             <div className="field-container">
               <InputText name="documento" label="Documento de Identidad" required onlyNumbers maxLength={9} placeholder="Ej: 12354987" />
             </div>
+
             <div className="field-container">
               <InputText name="complemento" label="Complemento" maxLength={2} onlyAlphaNumeric placeholder="Ej: 1T" />
             </div>
@@ -280,7 +308,8 @@ const Step1Form = () => {
               </div>
             </div>
           </Form>
-        )}
+          );
+        }}
       </Formik>
     </div>
   );
