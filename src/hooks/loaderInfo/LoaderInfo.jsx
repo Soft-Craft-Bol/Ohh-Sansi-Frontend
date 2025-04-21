@@ -7,9 +7,8 @@ export const verificarParticipante = async (ci, onComplete, onError) => {
   try {
 
     const res = await getEstudianteByCarnet(ci);
-    console.log("Respuesta de la API:", res);  // Verificar la respuesta de la API
 
-    if (res.data.fechaNacimiento) {
+    if (res.data.fechaNacimiento) { //if exists
       const { value: valuePermit } = await Swal.fire({
         title: "Participante encontrado",
         text: "Por favor, ingresa tu correo electrónico para verificar tu identidad y auto completar tu información",

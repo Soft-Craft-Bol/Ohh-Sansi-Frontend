@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Formik, Form } from "formik";
 import InputText from "../inputs/InputText";
-import {verificarParticipante} from "../loaderInfo/LoaderInfo";
+import {verificarParticipante} from "../../hooks/loaderInfo/LoaderInfo";
 import SelectInput from "../selected/SelectInput";
 import useFetchGrados from "../../hooks/NivelEscolar/useFetchGrados";
 import useFetchDepartamentos from "../../hooks/departamento/useFetchDepartamentos";
@@ -192,15 +192,23 @@ const Step1Form = () => {
         validateOnChange={true}
       >
         {({ values, setFieldValue, isValid, isSubmitting }) => {
-          const debouncedCI = useDebounce(values.documento, 600);
+          const debouncedCI = useDebounce(values.documento, 1000);
 
-          // Llamar a la función verificarParticipante cuando el CI cambia
           useEffect(() => {
-            if (debouncedCI) {
+            if (debouncedCI && debouncedCI !== "completed" ) {
               verificarParticipante(debouncedCI, (data) => {
-                console.log("Datos del participante:", data);
                 setFieldValue("nombre", data.nombreParticipante || "");
                 setFieldValue("apellido", `${data.apellidoPaterno || ""} ${data.apellidoMaterno || ""}`.trim());
+                setFieldValue("fechaNacimiento", data.fechaNacimiento ? data.fechaNacimiento.split("T")[0] : ""); // formatear fecha
+                setFieldValue("documento", data.carnetIdentidadParticipante || "");
+                setFieldValue("complemento", data.complementoCiParticipante || "");
+                setFieldValue("email", data.emailParticipante || "");
+                
+                setFieldValue("departamento", data.idDepartamento?.toString() || "");
+                setFieldValue("municipio", data.idMunicipio?.toString() || "");
+                setFieldValue("institucion", data.idColegio?.toString() || "");
+                setFieldValue("grado", data.idGrado?.toString() || "");
+                debouncedCI = "completed";  //para evitar se repita NO FUNCIONA
               }, (msg) => {
                 console.error("Error:", msg);
               });
