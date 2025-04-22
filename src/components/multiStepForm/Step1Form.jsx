@@ -1,23 +1,19 @@
 import React, { useState } from "react";
 import { Formik, Form } from "formik";
-import { toast } from "sonner";
 import InputText from "../inputs/InputText";
-import { ButtonPrimary } from "../button/ButtonPrimary";
 import SelectInput from "../selected/SelectInput";
 import useFetchGrados from "../../hooks/NivelEscolar/useFetchGrados";
 import useFetchDepartamentos from "../../hooks/departamento/useFetchDepartamentos";
 import useFetchMunicipios from "../../hooks/departamento/useFetchMunicipios";
 import useFetchColegio from "../../hooks/Colegio/useFetchColegio";
 import inscripcionSchema from "../../schemas/InscripcionValidate";
-import { useNavigate } from "react-router-dom";
 import { registerParticipante } from "../../api/api";
 import Swal from "sweetalert2";
 import "./Step1Form.css";
 import DisabledButton from "../button/DisabledButton";
 import { useEffect } from "react";
 
-const Step1Form = () => {
-  const navigate = useNavigate();
+const Step1Form = ({ onRegistroExitoso, onParticipanteExistente, onComplete  }) => {
   const today = new Date().toISOString().split("T")[0];
   const { grados, loading: loadingGrados } = useFetchGrados();
   const { departamentos, loading: loadingDepartamentos } = useFetchDepartamentos();
@@ -96,7 +92,10 @@ const Step1Form = () => {
           text: "Ya existe un registro con ese documento de identidad.",
           confirmButtonText: "Aceptar",
         });
+        onParticipanteExistente(values.documento);
+        onComplete();
         return;
+        
       }
       Swal.close();
       Swal.fire({
@@ -106,9 +105,11 @@ const Step1Form = () => {
         confirmButtonText: "Continuar",
         
       }).then(() => {
+        onRegistroExitoso(values.documento);
+        onComplete();
         resetForm();
         localStorage.removeItem("participanteFormData");
-        onRegistroExitoso(values.documento);
+        
       });
     } catch (error) {
       console.error("Error al registrar participante:", error);

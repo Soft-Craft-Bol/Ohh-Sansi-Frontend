@@ -7,7 +7,7 @@ import { ButtonPrimary } from "../button/ButtonPrimary";
 import { getCatalogoAreasCategorias, setCatalogoAreasParticipante } from "../../api/api";
 import "./Step2Form.css";
 
-const AsignarAreasForm = ({ participanteCI }) => {
+const AsignarAreasForm = ({ participanteCI, shouldSearch, onSearchComplete, onComplete, autoNavigate }) => {
   const [estudiante, setEstudiante] = useState(null);
   const [areas, setAreas] = useState([]);
   const [seleccionadas, setSeleccionadas] = useState([]);
@@ -16,10 +16,24 @@ const AsignarAreasForm = ({ participanteCI }) => {
   const [error, setError] = useState("");
 
   useEffect(() => {
+    console.log("Participante CI:", participanteCI);
     if (participanteCI && participanteCI.trim() !== "") {
-      buscarEstudiante(participanteCI);
+      if (shouldSearch) {
+        buscarEstudiante(participanteCI);
+        //onSearchComplete(); // Notificar que la búsqueda se completó
+      }
     }
-  }, [participanteCI]);
+  }, [participanteCI, shouldSearch, onSearchComplete]);
+
+  useEffect(() => {
+    if (autoNavigate && seleccionadas.length > 0) {
+      // Esperar un momento para que el usuario vea el mensaje de éxito
+      const timer = setTimeout(() => {
+        onComplete();
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [autoNavigate, seleccionadas, onComplete]);
 
   const containerVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -184,6 +198,8 @@ const AsignarAreasForm = ({ participanteCI }) => {
         icon: 'success',
         title: '¡Éxito!',
         text: 'Áreas asignadas correctamente'
+      }).then(() => {
+        onComplete(); // Llamar a la función de completar el paso
       });
       setEstudiante(null);
       setSeleccionadas([]);
