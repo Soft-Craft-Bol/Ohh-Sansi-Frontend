@@ -14,7 +14,7 @@ const Step3Form = () => {
   const [tipoTutores, setTipoTutores] = useState([]);
   const [tutoresLocales, setTutoresLocales] = useState([]);
   const [ciParticipante, setCiParticipante] = useState("");
-  const debouncedCiParticipante = useDebounce(ciParticipante, 1000);
+  let debouncedCiParticipante = useDebounce(ciParticipante, 1000);
   const [ciVerificado, setCiVerificado] = useState(false);
 
   const MAX_TUTORES = 3;
@@ -39,7 +39,7 @@ const Step3Form = () => {
   }, []);
 
   useEffect(() => {
-    if (debouncedCiParticipante && !ciVerificado) {
+    if (debouncedCiParticipante.length >= 5 && !ciVerificado) {
       verificarSerTutor(
         debouncedCiParticipante,
         (data) => {
@@ -47,7 +47,6 @@ const Step3Form = () => {
         },
         () => {
           // Si falla, limpia el campo y reset del estado
-          setCiParticipante("");
           setCiVerificado(false);
         }
       );
@@ -177,7 +176,10 @@ const Step3Form = () => {
               type="text"
               placeholder="Ingrese el CI del participante"
               value={ciParticipante}
-              onChange={(e) => setCiParticipante(e.target.value)}
+              onChange={(e) => {
+                setCiParticipante(e.target.value);
+                setCiVerificado(false);
+              }}
               required
               className="step3-input"
               maxLength={10}
