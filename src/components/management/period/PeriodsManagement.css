@@ -1,17 +1,30 @@
-.page-header {
+.periodos-header {
   margin-bottom: 30px;
 }
+
+.periodos-header h1 {
+  font-size: 32px;
+  color: var(--blue-color);
+  font-weight: 600;
+  text-align: center;
+}
+
+.periodos-header p { 
+  text-align: center;
+}
+
 .periodos-management {
   display: flex;
   gap: 40px;
   flex-wrap: wrap;
+  margin: 0 auto; 
   
 }
 
 .side-form {
   flex: 1;
   min-width: 280px;
-  max-width: 350px;
+  max-width: 500px;
   background-color: #fafafa;
   padding: 20px;
   border-radius: 12px;
@@ -59,6 +72,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  margin-bottom: 10px;
 }
 
 .custom-switch {
@@ -161,7 +175,9 @@
     font-size:18px;
   }
 
-  .side-form,
+  .side-form{
+    padding: 16px;
+  }
   .periodos-list {
     padding: 16px;
   }
