@@ -31,8 +31,6 @@ const CategoriesManagement = () => {
       setGradosCategorias(
         Array.isArray(gradocategoriasRes.data) ? gradocategoriasRes.data : []
       );
-
-      console.log("Grados Categorías:", gradocategoriasRes.data);
     } catch (error) {
       console.error("Error fetching data:", error);
       Swal.fire({
@@ -85,7 +83,6 @@ const CategoriesManagement = () => {
                 return;
               }
 
-              // Lógica para enviar la categoría y grados seleccionados al backend
               try {
                 await createCategory({
                   nombreCategoria: values.nombreCategoria,
@@ -99,11 +96,18 @@ const CategoriesManagement = () => {
                 });
 
                 resetForm();
+                await fetchData();
               } catch (error) {
+                console.error("Error al crear la categoría:", error);
+
+                const backendMessage =
+                  error?.response?.data?.message ||
+                  "Hubo un problema al crear la categoría.";
+
                 Swal.fire({
                   icon: "error",
                   title: "Error",
-                  text: "Hubo un problema al crear la categoría.",
+                  text: backendMessage,
                 });
               }
             }}
@@ -187,7 +191,7 @@ const CategoriesManagement = () => {
                             .sort((a, b) => GRADO_ORDEN.indexOf(a) - GRADO_ORDEN.indexOf(b));
 
                           if (nombres.length === 0) return "—";
-                          if (nombres.length === 1) return nombres[0]; 
+                          if (nombres.length === 1) return nombres[0];
                           return `${nombres[0]} - ${nombres[nombres.length - 1]}`;
                         })()
                         : "—",

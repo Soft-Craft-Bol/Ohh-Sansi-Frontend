@@ -1,5 +1,5 @@
 import React from 'react';
-import { FiEdit2, FiTrash2, FiEye } from 'react-icons/fi';
+import { FiEdit2, FiTrash2, FiEye, FiEyeOff } from 'react-icons/fi';
 import './EventCard.css';
 
 const EventCard = ({ evento, onEdit, onDelete }) => {
@@ -22,16 +22,16 @@ const EventCard = ({ evento, onEdit, onDelete }) => {
       <div className="ec-event-top">
         <div className="ec-event-title">
           {evento.nombreEvento}
-          <FiEye className="ec-eye" />
-        </div>
-        <div className="ec-actions">
-       {/*    <FiEdit2 className="ec-icon-edit" onClick={onEdit} />
-          <FiTrash2 className="ec-icon-delete" onClick={onDelete} /> */}
+          {evento.esPublica ? (
+            <FiEye className="ec-eye" />
+          ) : (
+            <FiEyeOff className="ec-eye-locked" />
+          )}
         </div>
       </div>
       <div className="ec-event-date">
-      {fechaInicio}
-      {fechaFin && ` - ${fechaFin}`}
+        {fechaInicio}
+        {fechaFin && ` - ${fechaFin}`}
       </div>
       <div className="ec-event-desc">
         {evento.descripcion}
