@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { GRADO_ORDEN, ordenarGrados } from '../../utils/GradesOrder';
 
 const useCategoriaFormat = (categories = [], grados = []) => {
   const gradoMap = useMemo(() => {
@@ -9,18 +10,21 @@ const useCategoriaFormat = (categories = [], grados = []) => {
     return categories.map(cat => {
       const nombresGrados = (cat.grados || [])
         .map(id => gradoMap[id])
-        .filter(Boolean)
-        .sort((a, b) => a.localeCompare(b)); 
+        .filter(Boolean);
 
-      const rango = nombresGrados.length === 0
+      const nombresGradosOrdenados = ordenarGrados(
+        nombresGrados.map(nombre => ({ nombreGrado: nombre }))
+      ).map(g => g.nombreGrado);
+
+      const rango = nombresGradosOrdenados.length === 0
         ? 'Sin grados'
-        : nombresGrados.length === 1
-          ? nombresGrados[0]
-          : `${nombresGrados[0]} - ${nombresGrados[nombresGrados.length - 1]}`;
+        : nombresGradosOrdenados.length === 1
+          ? nombresGradosOrdenados[0]
+          : `${nombresGradosOrdenados[0]} - ${nombresGradosOrdenados[nombresGradosOrdenados.length - 1]}`;
 
       return {
         label: `${cat.nombreCategoria} (${rango})`,
-        value: cat.nombreCategoria
+        value: cat.idCategoria
       };
     });
   }, [categories, gradoMap]);
