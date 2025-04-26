@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Formik, Form } from "formik";
 import InputText from "../inputs/InputText";
 import SelectInput from "../selected/SelectInput";
@@ -11,7 +11,7 @@ import { registerParticipante } from "../../api/api";
 import Swal from "sweetalert2";
 import "./Step1Form.css";
 import DisabledButton from "../button/DisabledButton";
-import { useEffect } from "react";
+import useDebounce from "../../hooks/WriteInputs/useDebounce";
 
 const Step1Form = ({ onRegistroExitoso, onParticipanteExistente, onComplete  }) => {
   const today = new Date().toISOString().split("T")[0];
@@ -45,8 +45,10 @@ const Step1Form = ({ onRegistroExitoso, onParticipanteExistente, onComplete  }) 
 
   const handleSubmit = async (values, resetForm) => {
     if (isSubmittingForm) return;
+  
     setIsSubmittingForm(true);
     setLoadingOverlay(true);
+  
     Swal.fire({
       title: 'Registrando participante...',
       text: 'Por favor, espere...',
@@ -57,6 +59,7 @@ const Step1Form = ({ onRegistroExitoso, onParticipanteExistente, onComplete  }) 
         Swal.showLoading();
       },
     });
+  
     try {
       const fechaNacimiento = new Date(values.fechaNacimiento);
       const hoy = new Date();
@@ -66,7 +69,7 @@ const Step1Form = ({ onRegistroExitoso, onParticipanteExistente, onComplete  }) 
         edad--;
       }
       const tutorRequerido = edad < 15;
-
+  
       const participanteData = {
         idDepartamento: parseInt(values.departamento),
         idMunicipio: parseInt(values.municipio),
@@ -82,8 +85,7 @@ const Step1Form = ({ onRegistroExitoso, onParticipanteExistente, onComplete  }) 
         emailParticipante: values.email || null,
         tutorRequerido,
       };
-
-      const response = await registerParticipante(participanteData);
+      const response = await registerParticipante(participanteData); 
 
       if (response?.data?.existe) {
         Swal.fire({
@@ -97,6 +99,7 @@ const Step1Form = ({ onRegistroExitoso, onParticipanteExistente, onComplete  }) 
         return;
         
       }
+
       Swal.close();
       Swal.fire({
         icon: "success",
@@ -111,6 +114,7 @@ const Step1Form = ({ onRegistroExitoso, onParticipanteExistente, onComplete  }) 
         localStorage.removeItem("participanteFormData");
         
       });
+  
     } catch (error) {
       console.error("Error al registrar participante:", error);
       Swal.fire({
@@ -123,7 +127,7 @@ const Step1Form = ({ onRegistroExitoso, onParticipanteExistente, onComplete  }) 
       setLoadingOverlay(false);
       setIsSubmittingForm(false);
     }
-  };
+  };  
 
   useEffect(() => {
     const handleKeyPress = (e) => {
@@ -166,7 +170,6 @@ const Step1Form = ({ onRegistroExitoso, onParticipanteExistente, onComplete  }) 
     };
   }, []);
 
-
   return (
     <div className="form-container">
       {loadingOverlay && <div className="overlay"></div>}
@@ -174,15 +177,57 @@ const Step1Form = ({ onRegistroExitoso, onParticipanteExistente, onComplete  }) 
       <span className="form-description">Ingrese los datos del participante</span>
 
       <Formik
-        initialValues={loadSavedData()}
+        //initialValues={loadSavedData()} perdon queria hacer pruebas UnU
+        initialValues={{
+          nombre: "",
+          apellido: "",
+          documento: "",
+          complemento: "",
+          fechaNacimiento: "",
+          departamento: "",
+          municipio: "",
+          institucion: "",
+          grado: "",
+          email: "",
+          telefono: "",}}
         validationSchema={inscripcionSchema}
         onSubmit={(values, { resetForm }) => handleSubmit(values, resetForm)}
-        validateOnBlur={true}
+        validateOnBlur={false}
         validateOnChange={true}
       >
-        {({ values, setFieldValue, isValid, isSubmitting }) => (
+        {({ values, setFieldValue, isValid, isSubmitting }) => {
+          const debouncedCI = useDebounce(values.documento, 1000);
+
+          useEffect(() => {
+            if (debouncedCI && debouncedCI !== "completed" ) {
+              verificarParticipante(debouncedCI, (data) => {
+                setFieldValue("nombre", data.nombreParticipante || "");
+                setFieldValue("apellido", `${data.apellidoPaterno || ""} ${data.apellidoMaterno || ""}`.trim());
+                setFieldValue("fechaNacimiento", data.fechaNacimiento ? data.fechaNacimiento.split("T")[0] : ""); // formatear fecha
+                setFieldValue("documento", data.carnetIdentidadParticipante || "");
+                setFieldValue("complemento", data.complementoCiParticipante || "");
+                setFieldValue("email", data.emailParticipante || "");
+                
+                setFieldValue("departamento", data.idDepartamento?.toString() || "");
+                setFieldValue("municipio", data.idMunicipio?.toString() || "");
+                setFieldValue("institucion", data.idColegio?.toString() || "");
+                setFieldValue("grado", data.idGrado?.toString() || "");
+                debouncedCI = "completed";  //para evitar se repita NO FUNCIONA
+              }, (msg) => {
+                console.error("Error:", msg);
+              });
+            }
+          }, [debouncedCI, setFieldValue]);
+
+          return (
           <Form className="step1-grid">
-            {/* Campos */}
+            <div className="field-container">
+              <InputText name="documento" label="Documento de Identidad" required onlyNumbers maxLength={9} placeholder="Ej: 12354987" />
+            </div>
+
+            <div className="field-container">
+              <InputText name="complemento" label="Complemento" maxLength={2} onlyAlphaNumeric placeholder="Ej: 1T" />
+            </div>
             <div className="field-container">
               <InputText name="nombre" label="Nombre" required onlyLetters={true} maxLength={50} placeholder="Ej: Edwin"
               />
@@ -190,12 +235,6 @@ const Step1Form = ({ onRegistroExitoso, onParticipanteExistente, onComplete  }) 
             <div className="field-container">
               <InputText name="apellido" label="Apellido" required onlyLetters maxLength={50} placeholder="Ej: Sánchez Velarde"
               />
-            </div>
-            <div className="field-container">
-              <InputText name="documento" label="Documento de Identidad" required onlyNumbers maxLength={9} placeholder="Ej: 12354987" />
-            </div>
-            <div className="field-container">
-              <InputText name="complemento" label="Complemento" maxLength={2} onlyAlphaNumeric placeholder="Ej: 1T" />
             </div>
             <div className="field-container">
               <InputText name="fechaNacimiento" label="Fecha de nacimiento" type="date" required max={today} />
@@ -281,7 +320,8 @@ const Step1Form = ({ onRegistroExitoso, onParticipanteExistente, onComplete  }) 
               </div>
             </div>
           </Form>
-        )}
+          );
+        }}
       </Formik>
     </div>
   );

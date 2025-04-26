@@ -21,8 +21,8 @@ const EventModal = ({ periodo, onClose, onSave }) => {
         <Formik
           initialValues={{
             nombre: "",
-            fechaInicio: `${periodo}-01-01`,
-            fechaFin: `${periodo}-01-02`,
+            fechaInicio: `${periodo}`,
+            fechaFin: `${periodo}`,
             publico: false
 
           }}

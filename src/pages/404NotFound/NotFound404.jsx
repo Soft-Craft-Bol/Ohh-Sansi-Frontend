@@ -23,7 +23,7 @@ export const NotFound404 = () => {
         </p>
 
         <Link
-          to="/home"
+          to="/"
           className="notfound-404__link"
         >
           Regresar a la página de inicio

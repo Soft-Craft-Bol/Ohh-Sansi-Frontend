@@ -7,11 +7,16 @@ import registerTutorValidationSchema from "../../schemas/registerTutorValidate";
 import { Formik, Form } from "formik";
 import Swal from "sweetalert2";
 import SelectInput from "../selected/SelectInput";
+import useDebounce from "../../hooks/WriteInputs/useDebounce";
+import { verificarSerTutor } from "../../hooks/loaderInfo/LoaderInfo";
 
 const Step3Form = () => {
   const [tipoTutores, setTipoTutores] = useState([]);
   const [tutoresLocales, setTutoresLocales] = useState([]);
   const [ciParticipante, setCiParticipante] = useState("");
+  const debouncedCiParticipante = useDebounce(ciParticipante, 1000);
+  const [ciVerificado, setCiVerificado] = useState(false);
+
   const MAX_TUTORES = 3;
   const LIMITE_POR_TIPO = {
     LEGAL: 1,
@@ -33,6 +38,23 @@ const Step3Form = () => {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    if (debouncedCiParticipante && !ciVerificado) {
+      verificarSerTutor(
+        debouncedCiParticipante,
+        (data) => {
+          setCiVerificado(true);
+        },
+        () => {
+          // Si falla, limpia el campo y reset del estado
+          setCiParticipante("");
+          setCiVerificado(false);
+        }
+      );
+    }
+  }, [debouncedCiParticipante]);
+
+  
   const fetchData = async () => {
     try {
       const response = await getAllTipoTutor();
@@ -241,7 +263,7 @@ const Step3Form = () => {
                     placeholder="Documento del tutor"
                     required
                     onlyNumbers 
-                    maxLength={10}
+                    maxLength={9}
                   />
                 </div>
 
