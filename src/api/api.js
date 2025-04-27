@@ -64,6 +64,7 @@ export const getCategories = () => api.get('/category');
 export const getAllTipoTutor = () => api.get('/tipo-tutor/findAllTipoTutor');
 export const registerTutor = (ciParticipante, data) => 
   api.post(`/tutor/${ciParticipante}`, data);
+export const getTutorAsigando = (data) => api.get(`/tutores/getTutoresLegales/${data}`);
 
 //OLIMPIADA
 export const getOlimpiadas = () => api.get('/olimpiada');

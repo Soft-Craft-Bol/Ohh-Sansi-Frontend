@@ -2,30 +2,23 @@ import { useState, useEffect } from "react";
 import "./Step3Form.css";
 import InputText from "../inputs/InputText";
 import { ButtonPrimary } from "../button/ButtonPrimary";
-import { getAllTipoTutor, registerTutor } from "../../api/api";
+import {registerTutor, getTutorAsigando } from "../../api/api";
 import registerTutorValidationSchema from "../../schemas/registerTutorValidate";
 import { Formik, Form } from "formik";
 import Swal from "sweetalert2";
-import SelectInput from "../selected/SelectInput";
 import useDebounce from "../../hooks/WriteInputs/useDebounce";
 import { verificarSerTutor } from "../../hooks/loaderInfo/LoaderInfo";
 
 const Step3Form = () => {
-  const [tipoTutores, setTipoTutores] = useState([]);
   const [tutoresLocales, setTutoresLocales] = useState([]);
   const [ciParticipante, setCiParticipante] = useState("");
   const debouncedCiParticipante = useDebounce(ciParticipante, 1000);
   const [ciVerificado, setCiVerificado] = useState(false);
 
-  const MAX_TUTORES = 3;
-  const LIMITE_POR_TIPO = {
-    LEGAL: 1,
-    ACADEMICO: 2
-  };
-  
+  const MAX_TUTORES = 3; 
 
   const initialValues = {
-    idTipoTutor: "",
+    idTipoTutor: 2, //constant for Legal
     emailTutor: "",
     nombresTutor: "",
     apellidosTutor: "",
@@ -33,10 +26,6 @@ const Step3Form = () => {
     carnetIdentidadTutor: "",
     complementoCiTutor: "",
   };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
 
   useEffect(() => {
     if (debouncedCiParticipante && !ciVerificado) {
@@ -47,7 +36,6 @@ const Step3Form = () => {
         },
         () => {
           // Si falla, limpia el campo y reset del estado
-          setCiParticipante("");
           setCiVerificado(false);
         }
       );
@@ -55,22 +43,6 @@ const Step3Form = () => {
   }, [debouncedCiParticipante]);
 
   
-  const fetchData = async () => {
-    try {
-      const response = await getAllTipoTutor();
-      const tipos = response.data?.tipoTutores || response.data?.data?.tipoTutores || response.data || [];
-      setTipoTutores(Array.isArray(tipos) ? tipos : []);
-    } catch (error) {
-      console.error("Error fetching tutor types:", error);
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: "No se pudo cargar los tipos de tutores",
-        confirmButtonText: "Aceptar",
-      });
-      setTipoTutores([]);
-    }
-  };
 
   const agregarTutor = (values, { resetForm }) => {
     if (tutoresLocales.length >= MAX_TUTORES) {
@@ -89,13 +61,7 @@ const Step3Form = () => {
       return;
     }
 
-    const tipoTutor = tipoTutores.find((t) => t.idTipoTutor === Number(values.idTipoTutor));
-
-    const nuevoTutor = {
-      ...values,
-      idTipoTutor: Number(values.idTipoTutor),
-      tipoTutorNombre: tipoTutor?.nombreTipoTutor || "Sin tipo",
-    };
+    
 
     setTutoresLocales([...tutoresLocales, nuevoTutor]);
     resetForm();
@@ -111,21 +77,6 @@ const Step3Form = () => {
     Swal.fire({icon:'success',
       title:"Éxito",
       text:"Tutor eliminado"});
-  };
-  const getTipoTutorDisponible = () => {
-    const counts = {};
-  
-    tutoresLocales.forEach((t) => {
-      const tipo = t.tipoTutorNombre?.toUpperCase();
-      counts[tipo] = (counts[tipo] || 0) + 1;
-    });
-  
-    return tipoTutores.filter((tipo) => {
-      const tipoNombre = tipo.nombreTipoTutor?.toUpperCase();
-      const limite = LIMITE_POR_TIPO[tipoNombre];
-      const actual = counts[tipoNombre] || 0;
-      return limite ? actual < limite : true;
-    });
   };
 
   const handleRegistrarTutores = async () => {
@@ -162,9 +113,9 @@ const Step3Form = () => {
 
   return (
     <div className="step3-container page-padding">
-      <h2 className="step3-title">Registro de Tutores</h2>
+      <h2 className="step3-title">Registro de Tutores Legales</h2>
       <p className="step3-description">
-        Registre uno o {MAX_TUTORES} tutores para el participante. Máximo {MAX_TUTORES} tutores.
+        Registre un máximo de {MAX_TUTORES} tutores a un participante.
       </p>
 
       <div className="step3-content">
@@ -193,22 +144,27 @@ const Step3Form = () => {
             {(formik) => (
               <Form className="step3-form">
                 <div className="step3-form-group">
-                  <SelectInput
-                    label="Tipo de Tutor"
-                    name="idTipoTutor"
-                    options={getTipoTutorDisponible().map((tipo) => ({
-                      value: tipo.idTipoTutor,
-                      label: tipo.nombreTipoTutor,
-                    }))}
-                    
-                    value={formik.values.idTipoTutor}
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                    className="select"
+                  <InputText
+                    name="carnetIdentidadTutor"
+                    label="N° de documento"
+                    type="text"
+                    placeholder="Documento del tutor"
                     required
+                    onlyNumbers 
+                    maxLength={9}
                   />
                 </div>
 
+                <div className="step3-form-group">
+                  <InputText
+                    name="complementoCiTutor"
+                    label="Complemento CI"
+                    type="text"
+                    placeholder="Complemento del documento"
+                    maxLength={2}  
+                    onlyAlphaNumeric
+                  />
+                </div>
                 <div className="step3-form-group">
                   <InputText
                     name="nombresTutor"
@@ -255,28 +211,7 @@ const Step3Form = () => {
                   />
                 </div>
 
-                <div className="step3-form-group">
-                  <InputText
-                    name="carnetIdentidadTutor"
-                    label="N° de documento"
-                    type="text"
-                    placeholder="Documento del tutor"
-                    required
-                    onlyNumbers 
-                    maxLength={9}
-                  />
-                </div>
-
-                <div className="step3-form-group">
-                  <InputText
-                    name="complementoCiTutor"
-                    label="Complemento CI"
-                    type="text"
-                    placeholder="Complemento del documento"
-                    maxLength={2}  
-                    onlyAlphaNumeric
-                  />
-                </div>
+                
 
                 <div className="step3-button-container">
                   <ButtonPrimary
@@ -302,7 +237,6 @@ const Step3Form = () => {
               {tutoresLocales.map((tutor, index) => (
                 <li key={index} className="tutor-card">
                   <div className="tutor-info">
-                    <h4>{tutor.tipoTutorNombre}</h4>
                     <p><strong>Nombre:</strong> {tutor.nombresTutor} {tutor.apellidosTutor}</p>
                     <p><strong>Email:</strong> {tutor.emailTutor}</p>
                     <p><strong>Teléfono:</strong> {tutor.telefono}</p>
