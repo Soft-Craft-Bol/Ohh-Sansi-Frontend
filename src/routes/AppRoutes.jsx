@@ -4,7 +4,7 @@ import PrivateRoute from "../context/PrivateRoute";
 import Layout from "../Layout/Layout";
 
 // Importaciones Lazy
-const MainContent = lazy(() => import("../components/sidebar/Main"));
+const MainContent = lazy(() => import("../components/sidebar/LandingPage"));
 const OrdenDePago = lazy(() => import("../pages/ordenDePago/OrdenDePago"));
 const MultiStepForm = lazy(() => import("../components/multiStepForm/MultiStepForm"));
 const ManagementPage = lazy(() => import("../pages/admin/Management"));
@@ -31,14 +31,14 @@ const AppRoutes = () => {
       }/>
 
 
-      <Route path="/form" element={
+      <Route path="/inscripcion-individual" element={
         <Layout>
             <MultiStepForm />
         </Layout>
       }/>
 
       <Route
-        path="/register-excel"
+        path="/inscripcion-masiva"
         element={
           <Layout>
               <InscripcionExcel/>
@@ -46,7 +46,7 @@ const AppRoutes = () => {
         }
       />
 
-      <Route path="/management" element={
+      <Route path="/admin" element={
         <PrivateRoute>
           <Layout>
               <ManagementPage />
@@ -54,11 +54,6 @@ const AppRoutes = () => {
         </PrivateRoute>
       }/>
 
-      <Route path="/registro-materias" element={
-        <Layout>
-            <FormArea />
-        </Layout>
-      }/>
 
       <Route path="/orden-de-pago" element={
         <Layout>
@@ -71,8 +66,6 @@ const AppRoutes = () => {
             <EstadoDeInscripcion />
         </Layout>
       }/>
-
-      {/* Ruta de administración */}
 
     </Routes>
   );

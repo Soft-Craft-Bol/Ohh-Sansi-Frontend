@@ -1,25 +1,30 @@
 import React, { useState } from "react";
 import "./Tabs.css";
 
-const Tabs = ({ tabs, onTabChange, renderTabContent }) => {
+const Tabs = ({ tabs, onTabChange, renderTabContent, variant = "default" }) => {
   const [activeTab, setActiveTab] = useState(tabs[0].id);
 
   const handleTabClick = (tabId) => {
     setActiveTab(tabId);
-    onTabChange && onTabChange(tabId); // Notify parent component
+    onTabChange && onTabChange(tabId);
   };
 
   return (
-    <div className="tabs-container">
+    <div className={`tabs-container ${variant}`}>
       <div className="tabs-header">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             className={`tab-button ${activeTab === tab.id ? "active" : ""}`}
             onClick={() => handleTabClick(tab.id)}
+            aria-label={tab.label}
           >
             {tab.icon && <span className="tab-icon">{tab.icon}</span>}
-            {tab.label}
+            <span className="tab-label">{tab.label}</span>
+            {tab.description && (
+              <span className="tab-description">{tab.description}</span>
+            )}
+            <span className="tab-indicator"></span>
           </button>
         ))}
       </div>
