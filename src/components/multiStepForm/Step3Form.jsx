@@ -12,7 +12,7 @@ import { verificarSerTutor } from "../../hooks/loaderInfo/LoaderInfo";
 const Step3Form = () => {
   const [tutoresLocales, setTutoresLocales] = useState([]);
   const [ciParticipante, setCiParticipante] = useState("");
-  const debouncedCiParticipante = useDebounce(ciParticipante, 1000);
+  let debouncedCiParticipante = useDebounce(ciParticipante, 1000);
   const [ciVerificado, setCiVerificado] = useState(false);
 
   const MAX_TUTORES = 3; 
@@ -28,21 +28,20 @@ const Step3Form = () => {
   };
 
   useEffect(() => {
-    if (debouncedCiParticipante && !ciVerificado) {
+    if (debouncedCiParticipante.length >= 5 && !ciVerificado) {
       verificarSerTutor(
         debouncedCiParticipante,
         (data) => {
           setCiVerificado(true);
+          cargarTutoresExistentes(debouncedCiParticipante);
         },
         () => {
-          // Si falla, limpia el campo y reset del estado
           setCiVerificado(false);
+          setTutoresLocales([]);
         }
       );
     }
   }, [debouncedCiParticipante]);
-
-  
 
   const agregarTutor = (values, { resetForm }) => {
     if (tutoresLocales.length >= MAX_TUTORES) {
@@ -60,9 +59,6 @@ const Step3Form = () => {
         text:"Ya existe un tutor con este número de documento"});
       return;
     }
-
-    
-
     setTutoresLocales([...tutoresLocales, nuevoTutor]);
     resetForm();
     Swal.fire({icon:'success',
@@ -111,6 +107,31 @@ const Step3Form = () => {
     }
   };
 
+  const cargarTutoresExistentes = async (ci) => {
+    try {
+      const response = await getTutorAsigando(ci);
+      if (response.data?.tutoresLegales?.length > 0) {
+        // Mapeado a los datos locales
+        const tutoresExistentes = response.data.tutoresLegales.map((tutor) => ({
+          emailTutor: tutor.correoTut,
+          nombresTutor: tutor.nombreTut,
+          apellidosTutor: tutor.apellidoTut,
+          telefono: tutor.telf.toString(),
+          carnetIdentidadTutor: tutor.ciTut.toString(),
+          complementoCiTutor: tutor.complemento || ""
+        }));
+  
+        setTutoresLocales(tutoresExistentes);
+      } else {
+        setTutoresLocales([]);
+      }
+    } catch (error) {
+      console.error("Error al cargar tutores existentes:", error);
+      Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudieron cargar los tutores anteriores.' });
+    }
+  };
+  
+
   return (
     <div className="step3-container page-padding">
       <h2 className="step3-title">Registro de Tutores Legales</h2>
@@ -128,7 +149,10 @@ const Step3Form = () => {
               type="text"
               placeholder="Ingrese el CI del participante"
               value={ciParticipante}
-              onChange={(e) => setCiParticipante(e.target.value)}
+              onChange={(e) => {
+                setCiParticipante(e.target.value);
+                setCiVerificado(false);
+              }}
               required
               className="step3-input"
               maxLength={10}
