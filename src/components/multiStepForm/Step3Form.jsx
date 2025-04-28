@@ -7,7 +7,7 @@ import registerTutorValidationSchema from "../../schemas/registerTutorValidate";
 import { Formik, Form } from "formik";
 import Swal from "sweetalert2";
 import useDebounce from "../../hooks/WriteInputs/useDebounce";
-import { verificarSerTutor, verificarTutor } from "../../hooks/loaderInfo/LoaderInfo";
+import { verificarSerTutor, verificarTutor, verificarParticipante } from "../../hooks/loaderInfo/LoaderInfo";
 
 const Step3Form = () => {
   const [tutoresLocales, setTutoresLocales] = useState([]);
@@ -213,6 +213,8 @@ const Step3Form = () => {
 
               useEffect(() => {
                 if (debouncedCI && debouncedCI !== "completed") {
+                  // Primero intenta buscar como Tutor
+                  let yaEncontrado;
                   verificarTutor(debouncedCI, (data) => {
                     setFieldValue("nombresTutor", data.nombresTutor || "");
                     setFieldValue("apellidosTutor", data.apellidosTutor || "");
@@ -220,10 +222,30 @@ const Step3Form = () => {
                     setFieldValue("telefono", data.telefono?.toString() || "");
                     setFieldValue("carnetIdentidadTutor", data.carnetIdentidadTutor?.toString() || "");
                     setFieldValue("complementoCiTutor", data.complementoCiTutor || "");
-
-                    debouncedCI = "completed"; // Intento de protección (te voy a dar mejor idea abajo)
-                  }, (msg) => {
-                    console.error("Error:", msg);
+              
+                    debouncedCI = "completed";
+                    yaEncontrado = true;
+                  }, async (errorMsg) => {
+                    console.warn("No se encontró como tutor, intentando como participante...");
+              
+                    // recien busca en los Participantes
+                    if(!yaEncontrado) {
+                      verificarParticipante(debouncedCI, (data) => {
+                        setFieldValue("nombresTutor", data.nombreParticipante || "");
+                        setFieldValue(
+                          "apellidosTutor",
+                          `${data.apellidoPaterno || ""} ${data.apellidoMaterno || ""}`.trim()
+                        );
+                        setFieldValue("emailTutor", data.emailParticipante || "");
+                        setFieldValue("telefono", data.telefonoParticipante?.toString() || "");
+                        setFieldValue("carnetIdentidadTutor", data.carnetIdentidadParticipante?.toString() || "");
+                        setFieldValue("complementoCiTutor", data.complementoCiParticipante || "");
+              
+                        debouncedCI = "completed";
+                      }, (msg) => {
+                        console.error("Error como participante:", msg);
+                      });
+                    }
                   });
                 }
               }, [debouncedCI, setFieldValue]);
