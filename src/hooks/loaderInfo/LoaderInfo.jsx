@@ -1,5 +1,5 @@
 import Swal from "sweetalert2";
-import { getEstudianteByCarnet, verifyEstudiante } from "../../api/api";
+import { getEstudianteByCarnet, verifyEstudiante, getTutorByCi, verifyTutor } from "../../api/api";
 
 export const verificarParticipante = async (ci, onComplete, onError) => {
   if (!ci) return;
@@ -121,5 +121,44 @@ export const verificarSerTutor = async (ci, onSuccess, onError) => {
     });
 
     onError?.();
+  }
+};
+
+export const verificarTutor = async (ci, onComplete, onError) => {
+  if (!ci) return;
+
+  try {
+    const res = await getTutorByCi(ci);
+
+    if (res.data.idTutor) { // Verificamos si existe algún tutor retornado
+      const { value: valuePermit } = await Swal.fire({
+        title: "Tutor encontrado",
+        text: "Por favor, ingresa tu correo electrónico para verificar tu identidad y autocompletar tu información",
+        input: "email",
+        inputPlaceholder: "correo@ejemplo.com",
+        confirmButtonText: "Verificar",
+        showCancelButton: true,
+        cancelButtonText: "Cancelar",
+        inputValidator: (value) => {
+          if (!value) return "Debes ingresar un correo";
+        },
+      });
+
+      if (!valuePermit) {
+        console.log("Verificación cancelada o correo vacío");
+        return;
+      }
+
+      const result = await verifyTutor({ ci, valuePermit });
+      console.log("Resultado de la verificación del tutor:", result);
+
+      onComplete?.(result.data);
+    } else {
+      console.log("CI de tutor no encontrado");
+      onError?.("No se encontró un tutor con el CI proporcionado.");
+    }
+  } catch (error) {
+    console.error("Error al encontrar tutor por CI:", error);
+    onError?.("No se pudo verificar la información del tutor.");
   }
 };

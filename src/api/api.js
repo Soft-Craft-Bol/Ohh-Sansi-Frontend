@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { CodeSquare } from 'lucide-react';
 
 //const baseURL = "https://ohh-sansi.onrender.com/api/v1";
 const baseURL = "http://localhost:9999/api/v1";
@@ -65,6 +66,8 @@ export const getAllTipoTutor = () => api.get('/tipo-tutor/findAllTipoTutor');
 export const registerTutor = (ciParticipante, data) => 
   api.post(`/tutor/${ciParticipante}`, data);
 export const getTutorAsigando = (data) => api.get(`/tutores/getTutoresLegales/${data}`);
+export const getTutorByCi = (data) => api.get(`/tutor/byCi/${data}`);
+export const verifyTutor = (data) => api.post('/tutor/verify', data);
 
 //OLIMPIADA
 export const getOlimpiadas = () => api.get('/olimpiada');

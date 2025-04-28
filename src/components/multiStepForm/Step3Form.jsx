@@ -7,7 +7,7 @@ import registerTutorValidationSchema from "../../schemas/registerTutorValidate";
 import { Formik, Form } from "formik";
 import Swal from "sweetalert2";
 import useDebounce from "../../hooks/WriteInputs/useDebounce";
-import { verificarSerTutor } from "../../hooks/loaderInfo/LoaderInfo";
+import { verificarSerTutor, verificarTutor } from "../../hooks/loaderInfo/LoaderInfo";
 
 const Step3Form = () => {
   const [tutoresLocales, setTutoresLocales] = useState([]);
@@ -80,7 +80,6 @@ const Step3Form = () => {
     });
   };
   
-
   const eliminarTutor = (index) => {
     const nuevosTutores = [...tutoresLocales];
     nuevosTutores.splice(index, 1);
@@ -106,7 +105,7 @@ const Step3Form = () => {
       return;
     }
 
-    // 🔥 FILTRAMOS solo los tutores NUEVOS
+    //Filtro solo tutores nuevos
   const nuevosTutores = tutoresLocales.filter(tutor => tutor.fromBackend === false);
   if (nuevosTutores.length === 0) {
     Swal.fire({
@@ -209,87 +208,109 @@ const Step3Form = () => {
             onSubmit={agregarTutor}
             enableReinitialize
           >
-            {(formik) => (
-              <Form className="step3-form">
-                <div className="step3-form-group">
-                  <InputText
-                    name="carnetIdentidadTutor"
-                    label="N° de documento"
-                    type="text"
-                    placeholder="Documento del tutor"
-                    required
-                    onlyNumbers 
-                    maxLength={9}
-                  />
-                </div>
+            {({ values, setFieldValue, isValid, isSubmitting }) => {
+              let debouncedCI = useDebounce(values.carnetIdentidadTutor, 1000); // Aquí haces debounce al documento
 
-                <div className="step3-form-group">
-                  <InputText
-                    name="complementoCiTutor"
-                    label="Complemento CI"
-                    type="text"
-                    placeholder="Complemento del documento"
-                    maxLength={2}  
-                    onlyAlphaNumeric
-                  />
-                </div>
-                <div className="step3-form-group">
-                  <InputText
-                    name="nombresTutor"
-                    label="Nombres"
-                    type="text"
-                    placeholder="Nombres del tutor"
-                    required
-                    onlyLetters={true} 
-                    maxLength={50}
-                  />
-                </div>
+              useEffect(() => {
+                if (debouncedCI && debouncedCI !== "completed") {
+                  verificarTutor(debouncedCI, (data) => {
+                    setFieldValue("nombresTutor", data.nombresTutor || "");
+                    setFieldValue("apellidosTutor", data.apellidosTutor || "");
+                    setFieldValue("emailTutor", data.emailTutor || "");
+                    setFieldValue("telefono", data.telefono?.toString() || "");
+                    setFieldValue("carnetIdentidadTutor", data.carnetIdentidadTutor?.toString() || "");
+                    setFieldValue("complementoCiTutor", data.complementoCiTutor || "");
 
-                <div className="step3-form-group">
-                  <InputText
-                    name="apellidosTutor"
-                    label="Apellidos"
-                    type="text"
-                    placeholder="Apellidos del tutor"
-                    required
-                    onlyLetters={true} 
-                    maxLength={50}
-                  />
-                </div>
+                    debouncedCI = "completed"; // Intento de protección (te voy a dar mejor idea abajo)
+                  }, (msg) => {
+                    console.error("Error:", msg);
+                  });
+                }
+              }, [debouncedCI, setFieldValue]);
 
-                <div className="step3-form-group">
-                  <InputText
-                    name="emailTutor"
-                    label="Correo electrónico"
-                    type="email"
-                    placeholder="Correo del tutor"
-                    required
-                  />
-                </div>
+              return (
+                <Form className="step3-form">
+                  <div className="step3-form-group">
+                    <InputText
+                      name="carnetIdentidadTutor"
+                      label="N° de documento"
+                      type="text"
+                      placeholder="Documento del tutor"
+                      required
+                      onlyNumbers
+                      maxLength={9}
+                    />
+                  </div>
 
-                <div className="step3-form-group">
-                  <InputText
-                    name="telefono"
-                    label="Teléfono"
-                    type="text"
-                    placeholder="Teléfono del tutor"
-                    required
-                    onlyNumbers 
-                    maxLength={8}
-                  />
-                </div>
+                  <div className="step3-form-group">
+                    <InputText
+                      name="complementoCiTutor"
+                      label="Complemento CI"
+                      type="text"
+                      placeholder="Complemento del documento"
+                      maxLength={2}
+                      onlyAlphaNumeric
+                    />
+                  </div>
 
-                <div className="step3-button-container">
-                  <ButtonPrimary
-                    type="submit"
-                    buttonStyle="primary"
-                    disabled={!formik.isValid || tutoresLocales.length >= MAX_TUTORES}
-                  >
-                    {tutoresLocales.length >= MAX_TUTORES ? "Límite alcanzado" : "Agregar Tutor"}
-                  </ButtonPrimary>
-                </div>
-              </Form>
-            )}
+                  <div className="step3-form-group">
+                    <InputText
+                      name="nombresTutor"
+                      label="Nombres"
+                      type="text"
+                      placeholder="Nombres del tutor"
+                      required
+                      onlyLetters={true}
+                      maxLength={50}
+                    />
+                  </div>
+
+                  <div className="step3-form-group">
+                    <InputText
+                      name="apellidosTutor"
+                      label="Apellidos"
+                      type="text"
+                      placeholder="Apellidos del tutor"
+                      required
+                      onlyLetters={true}
+                      maxLength={50}
+                    />
+                  </div>
+
+                  <div className="step3-form-group">
+                    <InputText
+                      name="emailTutor"
+                      label="Correo electrónico"
+                      type="email"
+                      placeholder="Correo del tutor"
+                      required
+                    />
+                  </div>
+
+                  <div className="step3-form-group">
+                    <InputText
+                      name="telefono"
+                      label="Teléfono"
+                      type="text"
+                      placeholder="Teléfono del tutor"
+                      required
+                      onlyNumbers
+                      maxLength={8}
+                    />
+                  </div>
+
+                  <div className="step3-button-container">
+                    <ButtonPrimary
+                      type="submit"
+                      buttonStyle="primary"
+                      disabled={!isValid || tutoresLocales.length >= MAX_TUTORES}
+                    >
+                      {tutoresLocales.length >= MAX_TUTORES ? "Límite alcanzado" : "Agregar Tutor"}
+                    </ButtonPrimary>
+                  </div>
+                </Form>
+              );
+            }}
           </Formik>
         </div>
 
