@@ -324,7 +324,9 @@ const AsignarAreasForm = ({ participanteCI, shouldSearch, onSearchComplete, onCo
             ) : (
               <p>Seleccione hasta 2 áreas</p>
             )}
+            
           </div>
+          
 
           <motion.div className="step2-grid" variants={listVariants} initial="hidden" animate="visible">
             {areas.map(renderAreaCard)}
