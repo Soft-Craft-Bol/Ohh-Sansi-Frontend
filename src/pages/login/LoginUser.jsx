@@ -40,7 +40,7 @@ const LoginUser = () => {
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate('/home');
+      navigate('/admin');
     }
   }, [isAuthenticated, navigate]);
 
@@ -65,7 +65,7 @@ const LoginUser = () => {
           photo: result.data.photo,
         });
 
-        navigate('/form');
+        navigate('/admin');
         window.location.reload();
       } else {
         setLoginError('Usuario o contraseña incorrectos.');

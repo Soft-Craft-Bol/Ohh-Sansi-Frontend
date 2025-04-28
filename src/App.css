@@ -21,6 +21,13 @@ li {
 	--light: #F9F9F9;
 	--lighter: #ffffff;
 	--blue: #033771;
+	--blue-dark: #022858;
+	--blue-light: #CFE8FF;
+	--science-blue: #00b4d8;
+	--science-purple: #5e60ce;
+	--science-red: #ef476f;
+	--science-yellow: #ffd166;
+	--science-green: #06d6a0;
 	--light-blue: #CFE8FF;
 	--light-blue2: #F4F9FF;
 	--dark-grey: #E2E2E2;
@@ -52,13 +59,14 @@ body {
 /* main{
 	padding: 0 0 0 0;
 } */
-.top-container{
-  margin-top: 3vh;
-  margin-right: 8vh;
-  margin-left: 8vh;
+.top-container {
+	margin-top: 3vh;
+	margin-right: 8vh;
+	margin-left: 8vh;
 }
-.page-padding{
-  margin-top: 3vh;
-  margin-right: 8vh;
-  margin-left: 8vh;
+
+.page-padding {
+	margin-top: 3vh;
+	margin-right: 8vh;
+	margin-left: 8vh;
 }

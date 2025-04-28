@@ -1,38 +1,164 @@
+/* CatalogCard.css */
 .catalog-card {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border: 1px solid #ddd;
-    padding: 1rem;
-    border-radius: 8px;
-    margin-bottom: 1rem;
-    background-color: #fff;
-    flex-wrap: wrap;
+  position: relative;
+  padding: 1.5rem;
+  margin: 1rem 0;
+  background: linear-gradient(145deg, rgba(var(--blue-color), 0.1), rgba(255, 255, 255, 0.1));
+  border-radius: 16px;
+  border: 1px solid rgba(var(--blue-color), 0.2);
+  transform-style: preserve-3d;
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+  cursor: pointer;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  animation: cardEntrance 0.6s ease-out;
+}
+
+@keyframes cardEntrance {
+  from {
+    opacity: 0;
+    transform: translateY(20px) rotateX(15deg);
   }
-  
-  .catalog-info {
-    flex: 1;
+  to {
+    opacity: 1;
+    transform: translateY(0) rotateX(0);
+  }
+}
+
+.catalog-card:hover {
+  transform: translateY(-5px) rotateX(3deg) rotateY(2deg);
+  box-shadow: 0 15px 45px rgba(var(--blue-color), 0.2),
+              0 0 0 1px rgba(var(--blue-color), 0.1);
+}
+
+.catalog-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(45deg, 
+    rgba(var(--blue-color), 0.05) 0%,
+    rgba(var(--science-blue), 0.02) 100%
+  );
+  z-index: -1;
+}
+
+.catalog-card::after {
+  content: '';
+  position: absolute;
+  bottom: -30%;
+  right: -30%;
+  width: 60%;
+  height: 60%;
+  background: radial-gradient(circle, 
+    rgba(var(--blue-color), 0.08) 0%, 
+    transparent 70%);
+  transform: rotate(45deg);
+  transition: all 0.4s ease;
+}
+
+.catalog-card:hover::after {
+  bottom: -20%;
+  right: -20%;
+}
+
+.catalog-info {
+  position: relative;
+  z-index: 2;
+}
+
+.catalog-area {
+  font-weight: 700;
+  font-size: 1.4rem;
+  color: var(--text-color);
+  margin-bottom: 1rem;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.catalog-area::before {
+  content: '⚡';
+  font-size: 1.2em;
+  filter: drop-shadow(0 0 2px rgba(var(--blue-color), 0.3));
+}
+
+.catalog-categories {
+  color: var(--muted-text);
+  font-size: 0.95rem;
+  margin-bottom: 1rem;
+  padding: 0.8rem;
+  background: rgba(var(--blue-color), 0.05);
+  border-radius: 8px;
+  border-left: 3px solid var(--blue-color);
+}
+
+.grades-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.grade-badge {
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  background: rgba(var(--blue-color), 0.1);
+  color: var(--text-color);
+  font-size: 0.85rem;
+  border: 1px solid rgba(var(--blue-color), 0.2);
+  transition: all 0.3s ease;
+}
+
+.grade-badge:hover {
+  transform: scale(1.05);
+  background: rgba(var(--blue-color), 0.2);
+  box-shadow: 0 2px 8px rgba(var(--blue-color), 0.1);
+}
+
+/* Efecto modo oscuro */
+body.dark .catalog-card {
+  background: linear-gradient(145deg, 
+    rgba(var(--blue-color), 0.15),
+    rgba(30, 41, 59, 0.3)
+  );
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+body.dark .catalog-card:hover {
+  box-shadow: 0 15px 45px rgba(var(--blue-color), 0.3),
+              0 0 0 1px rgba(var(--blue-color), 0.2);
+}
+
+/* Animación de borde flotante */
+@keyframes borderFlow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.catalog-card:hover {
+  background-image: linear-gradient(
+    45deg,
+    rgba(var(--blue-color), 0.1),
+    rgba(var(--science-blue), 0.1),
+    rgba(var(--blue-color), 0.1)
+  );
+  background-size: 200% 200%;
+  animation: borderFlow 4s linear infinite;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .catalog-card {
+    padding: 1rem;
   }
   
   .catalog-area {
-    font-weight: bold;
-    margin-bottom: 4px;
-  }
-  
-  .catalog-categories {
-    color: #666;
-    font-size: 0.9rem;
-  }
-
-  .catalog-grades {
-    color: #666;
-    font-size: 0.9rem;
-  }
-  
-  .delete-button {
-    background: none;
-    border: none;
-    cursor: pointer;
     font-size: 1.2rem;
   }
-  
+}

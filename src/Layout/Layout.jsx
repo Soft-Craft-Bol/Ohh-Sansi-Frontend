@@ -1,13 +1,11 @@
 import React from 'react';
-import Sidebar from '../components/sidebar/Sidebar';
 import Navbar from '../components/sidebar/Navbar';
 
 const Layout = ({ children }) => {
   return (
-    <div className="App">
-      <Sidebar />
-      <section id="content">
-        <Navbar />
+    <div>
+      <Navbar />
+      <section id="content" style={{ paddingTop: '60px' }}>
         {children}
       </section>
     </div>

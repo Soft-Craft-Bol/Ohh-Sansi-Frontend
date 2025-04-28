@@ -1,113 +1,178 @@
-.costs-container-wrapper {
+.costs-management-container {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
+  flex-direction: column;
   gap: 2rem;
-  padding: 2rem 1rem;
-  box-sizing: border-box;
-}
-
-.costs-form {
-  flex: 1 1 320px;
-  max-width: 450px;
   padding: 1.5rem;
-  font-family: var(--poppins);
-  background: white;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  border-radius: 12px;
-  transition: all 0.3s ease;
-  box-sizing: border-box;
-}
-
-.costs-container-wrapper .costs-form h2{
-  text-align: center;
-  color: var(--blue-color);
-  font-size: 25px;
-}
-
-.costs-list {
-  flex: 1 1 320px;
-  max-width: 100%;
-  padding: 1rem;
-  box-sizing: border-box;
-}
-
-.costs-form h2 {
-  text-align: center;
-  color: var(--blue-color);
-  font-family: var(--poppins);
-}
-
-.costs-form p {
-  text-align: center;
-}
-
-.btn-submit-azul {
-  background: var(--blue-color);
-  color: white;
-  padding: 10px;
-  border: none;
-  font-size: 16px;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: 0.3s;
-}
-
-.costs-list h3 {
-  text-align: center;
-  color: var(--blue-color);
-  font-family: var(--poppins);
-}
-
-.costs-card-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1.5rem;
-  margin-top: 1rem;
   width: 100%;
-  box-sizing: border-box;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
-.cost-card:hover {
-  border-color: #bbb;
+/* Form Container */
+.costs-form-container {
+  background: var(--light);
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  width: 100%;
 }
 
-.cost-header {
+.form-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.header-icon {
+  font-size: 2rem;
+  color: var(--blue-color);
+  margin-bottom: 0.5rem;
+}
+
+.form-header h2 {
+  color: var(--blue-color);
+  margin-bottom: 0.5rem;
+  font-size: 1.5rem;
+}
+
+.form-header p {
+  color: var(--dark);
+  opacity: 0.8;
+  font-size: 0.95rem;
+}
+
+/* Form Styles */
+.cost-form {
   display: flex;
-  justify-content: space-between;
-  font-size: 16px;
-  font-weight: bold;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
-.cost-amount {
-  color: #0e28cb;
+.form-group {
+  position: relative;
 }
 
-.cost-id {
-  font-size: 14px;
-  color: #666;
-  margin-top: 5px;
+.input-icon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--blue-color);
+  font-size: 1.2rem;
 }
 
-@media (max-width: 1024px) {
-  .costs-container-wrapper {
-    flex-direction: column;
-    align-items: center;
+/* List Container */
+.costs-list-container {
+  background: var(--light);
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  width: 100%;
+}
+
+.list-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.list-header h3 {
+  color: var(--blue-color);
+  margin-bottom: 0.5rem;
+  font-size: 1.3rem;
+}
+
+.list-header p {
+  color: var(--dark);
+  opacity: 0.8;
+  font-size: 0.9rem;
+}
+
+/* Costs Grid */
+.costs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+/* Loading State */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  gap: 1rem;
+}
+
+.loading-spinner {
+  font-size: 2rem;
+  color: var(--blue-color);
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Empty State */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  gap: 1rem;
+  text-align: center;
+}
+
+.empty-icon {
+  font-size: 2rem;
+  color: var(--blue-color);
+  opacity: 0.5;
+}
+
+/* Responsive Design */
+@media (min-width: 768px) {
+  .costs-management-container {
+    flex-direction: row;
+    align-items: flex-start;
   }
-
-  .costs-form,
-  .costs-list {
-    max-width: 100%;
+  
+  .costs-form-container {
+    flex: 1;
+    min-width: 350px;
+    max-width: 450px;
+  }
+  
+  .costs-list-container {
+    flex: 2;
   }
 }
 
 @media (max-width: 480px) {
-  .btn-submit-azul {
-    font-size: 14px;
-    padding: 8px;
+  .costs-management-container {
+    padding: 1rem;
   }
-
-  .costs-card-list {
+  
+  .costs-form-container,
+  .costs-list-container {
+    padding: 1.2rem;
+  }
+  
+  .form-header h2 {
+    font-size: 1.3rem;
+  }
+  
+  .list-header h3 {
+    font-size: 1.2rem;
+  }
+  
+  .costs-grid {
     grid-template-columns: 1fr;
+  }
+  
+  .input-icon {
+    font-size: 1rem;
+    left: 0.8rem;
   }
 }

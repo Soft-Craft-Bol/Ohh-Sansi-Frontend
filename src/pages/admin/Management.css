@@ -4,51 +4,184 @@
   display: flex;
   flex-direction: column;
   background: var(--grey);
-  transition: background-color 0.3s ease;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow-x: hidden;
 }
 
+body.dark .management-page {
+  background: #1a202c;
+  color: #f8f9fa;
+}
+
+/* Background with Science Theme */
+.management-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  z-index: 0;
+  background: linear-gradient(135deg, var(--blue-light) 0%, var(--grey) 100%);
+  opacity: 0.7;
+}
+
+body.dark .management-background {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  opacity: 0.9;
+}
+
+.science-particles {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.science-particles::before {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><circle cx="50" cy="50" r="1" fill="%231e90ff" opacity="0.2"/></svg>');
+  background-size: 20px 20px;
+  opacity: 0.3;
+}
+
+body.dark .science-particles::before {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><circle cx="50" cy="50" r="1" fill="%2300b4d8" opacity="0.3"/></svg>');
+}
+
+/* Header Styles */
 .management-header {
-  padding: 1.5rem 1rem;
+  padding: 2rem 1.5rem;
   background: var(--blue);
   color: var(--light);
   text-align: center;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  font-family: var(--poppins);
+  box-shadow: 0 4px 20px rgba(30, 144, 255, 0.3);
+  font-family: 'Poppins', sans-serif;
+  position: relative;
+  z-index: 2;
+  transition: all 0.3s ease;
+}
+
+body.dark .management-header {
+  background: var(--blue-dark);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
 }
 
 .management-header h1 {
   margin: 0;
-  font-size: 1.5rem;
-  font-weight: 600;
+  font-size: 1.8rem;
+  font-weight: 700;
   line-height: 1.3;
+  position: relative;
+  display: inline-block;
+}
+
+.management-header h1::after {
+  content: "";
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 3px;
+  background: var(--light);
+  border-radius: 3px;
 }
 
 .management-header p {
-  margin-top: 0.5rem;
-  font-size: 0.9rem;
+  margin-top: 1rem;
+  font-size: 1rem;
   opacity: 0.9;
-  font-family: var(--lato);
+  font-family: 'Lato', sans-serif;
   max-width: 800px;
   margin-left: auto;
   margin-right: auto;
+  line-height: 1.6;
 }
 
-.tabs-container-wrapper {
+/* Content Area */
+.management-content {
   flex-grow: 1;
   display: flex;
   flex-direction: column;
-  padding: 1rem;
+  padding: 2rem 1.5rem;
+  position: relative;
+  z-index: 1;
 }
 
-.management-page {
-  transition: background-color 0.3s ease;
-}
-.management-header {
-  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+.tabs-container-wrapper {
+  background: var(--light);
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: all 0.3s ease;
 }
 
-/* Estilos responsivos */
+body.dark .tabs-container-wrapper {
+  background: #2d3748;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+/* Tab Styles */
+.tab-icon {
+  font-size: 1.2rem;
+  margin-right: 8px;
+  color: var(--blue);
+}
+
+body.dark .tab-icon {
+  color: var(--science-blue);
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+  .management-header {
+    padding: 1.8rem 1.2rem;
+  }
+  
+  .management-header h1 {
+    font-size: 1.6rem;
+  }
+  
+  .management-header p {
+    font-size: 0.95rem;
+  }
+  
+  .management-content {
+    padding: 1.5rem;
+  }
+}
+
 @media (max-width: 768px) {
+  .management-header {
+    padding: 1.5rem 1rem;
+  }
+  
+  .management-header h1 {
+    font-size: 1.4rem;
+  }
+  
+  .management-header p {
+    font-size: 0.9rem;
+    margin-top: 0.8rem;
+  }
+  
+  .management-content {
+    padding: 1rem;
+  }
+  
+  .tabs-container-wrapper {
+    border-radius: 12px;
+  }
+}
+
+@media (max-width: 576px) {
   .management-header {
     padding: 1.2rem 0.8rem;
   }
@@ -62,8 +195,13 @@
     padding: 0 0.5rem;
   }
   
-  .tabs-container-wrapper {
+  .management-content {
     padding: 0.8rem;
+  }
+  
+  .tab-icon {
+    font-size: 1rem;
+    margin-right: 6px;
   }
 }
 
@@ -78,11 +216,14 @@
   
   .management-header p {
     font-size: 0.8rem;
-    margin-top: 0.3rem;
+    margin-top: 0.6rem;
+  }
+  
+  .management-content {
+    padding: 0.5rem;
   }
   
   .tabs-container-wrapper {
-    padding: 0.5rem;
+    border-radius: 8px;
   }
 }
-
