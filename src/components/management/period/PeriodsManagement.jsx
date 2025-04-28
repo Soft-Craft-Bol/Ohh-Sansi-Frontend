@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import PeriodPanel from './PeriodPanel';
 import EventModal from '../../modals/EventModal';
-import {
-    getOlimpiadasConEventos,
-    saveFechaConOlimpiada,
-    saveFechaOlimpiada
-} from '../../../api/api';
+import { getOlimpiadasConEventos, saveFechaConOlimpiada, saveFechaOlimpiada } from '../../../api/api';
 import { Switch } from '@headlessui/react';
 import Swal from 'sweetalert2';
+import { EVENT_ORDER } from '../../../schemas/EventValidationSchema';
+import getEventValidationSchema from '../../../schemas/EventValidationSchema';
 import './PeriodsManagement.css';
 
 const PeriodosManagement = () => {
@@ -17,6 +15,8 @@ const PeriodosManagement = () => {
     const [periodos, setPeriodos] = useState([]);
     const [showModal, setShowModal] = useState(false);
     const [idOlimpiadaActual, setIdOlimpiadaActual] = useState(null);
+    const [eventosExistentes, setEventosExistentes] = useState([]);
+    const [yearExists, setYearExists] = useState(null);
 
     const fetchPeriodos = async () => {
         try {
@@ -36,10 +36,40 @@ const PeriodosManagement = () => {
         fetchPeriodos();
     }, []);
 
-    const resetForm = () => {
-        setEventosTemp([]);
-        setPeriodoActual('');
-        setIsActivo(false);
+    const handleYearChange = (e) => {
+        const year = parseInt(e.target.value, 10);
+        const currentYear = new Date().getFullYear();
+
+        if (year >= 2020 && year <= currentYear) {
+            setPeriodoActual(year);
+
+            const found = periodos.find(p => p.nombreOlimpiada.includes(year));
+            if (found) {
+                setIdOlimpiadaActual(found.idOlimpiada);
+                setEventosExistentes(found.eventos || []);
+                setEventosTemp([]);
+                setYearExists(true);
+            } else {
+                setIdOlimpiadaActual(null);
+                setEventosExistentes([]);
+                setEventosTemp([]);
+                setYearExists(false);
+            }
+        } else {
+            setPeriodoActual('');
+            setYearExists(null);
+        }
+    };
+
+    const getNextExpectedEvent = () => {
+        const registrados = eventosTemp
+            .filter(e => !e.esPersonalizado)
+            .map(e => e.titulo)
+            .sort((a, b) => EVENT_ORDER[a] - EVENT_ORDER[b]);
+
+        const siguienteOrden = registrados.length ? EVENT_ORDER[registrados[registrados.length - 1]] + 1 : 1;
+
+        return Object.keys(EVENT_ORDER).find(k => EVENT_ORDER[k] === siguienteOrden) || null;
     };
 
     const registrarPeriodo = async () => {
@@ -56,7 +86,6 @@ const PeriodosManagement = () => {
             }))
         };
 
-
         try {
             const res = await saveFechaConOlimpiada(payload);
             if (res.data?.success) {
@@ -68,10 +97,11 @@ const PeriodosManagement = () => {
                     showConfirmButton: false
                 });
                 setIdOlimpiadaActual(res.data.idOlimpiada);
+                setEventosExistentes([...eventosTemp]);
+                setEventosTemp([]);
                 fetchPeriodos();
-                resetForm();
             } else {
-                throw new Error(res.data.message || 'Error al registrar el periodo');
+                throw new Error(res.data.message || 'Error al registrar periodo');
             }
         } catch (error) {
             console.error("Error al registrar periodo:", error);
@@ -84,16 +114,6 @@ const PeriodosManagement = () => {
     };
 
     const agregarEventoTemp = async (evento) => {
-        const yaExiste = periodos.some(p => p.nombreOlimpiada.includes(periodoActual));
-        if (yaExiste) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Periodo duplicado',
-                text: `Ya existe un periodo registrado para el año ${periodoActual}`
-            });
-            return;
-        }
-
         if (!periodoActual) {
             Swal.fire({
                 icon: 'warning',
@@ -103,44 +123,61 @@ const PeriodosManagement = () => {
             return;
         }
 
-        if (idOlimpiadaActual) {
-            try {
-                const payload = {
-                    idOlimpiada: idOlimpiadaActual,
-                    nombreEvento: evento.nombre,
-                    fechaInicio: evento.fechaInicio,
-                    fechaFin: evento.fechaFin || null,
-                    esPublica: evento.publico
-                };
+        const listaEventos = idOlimpiadaActual ? eventosExistentes : eventosTemp;
 
-                const res = await saveFechaOlimpiada(payload);
-                if (res.data?.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: '¡Evento guardado!',
-                        text: res.data.message || 'Evento guardado correctamente',
-                        timer: 2000,
-                        showConfirmButton: false
-                    });
-                    fetchPeriodos();
-                } else {
-                    throw new Error(res.data.message);
-                }
-            } catch (err) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error al guardar evento',
-                    text: err.message || 'No se pudo guardar el evento'
-                });
-            }
-        } else {
-            // Guardado temporal hasta que se registre el periodo
-            const eventoValido = evento?.nombre && evento?.fechaInicio;
-            if (!eventoValido) {
+        const nextExpected = (() => {
+            const registrados = listaEventos
+                .filter(e => !e.esPersonalizado)
+                .map(e => e.titulo || e.nombreEvento)
+                .sort((a, b) => EVENT_ORDER[a] - EVENT_ORDER[b]);
+
+            const siguienteOrden = registrados.length
+                ? EVENT_ORDER[registrados[registrados.length - 1]] + 1
+                : 1;
+
+            return Object.keys(EVENT_ORDER).find(k => EVENT_ORDER[k] === siguienteOrden) || null;
+        })();
+
+        if (evento.nombre !== nextExpected && !evento.esPersonalizado) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Evento fuera de orden',
+                text: `Debes agregar primero el evento: "${nextExpected}".`
+            });
+            return;
+        }
+
+        const lastEvent = listaEventos
+            .filter(e => !e.esPersonalizado)
+            .sort((a, b) => EVENT_ORDER[a.titulo || a.nombreEvento] - EVENT_ORDER[b.titulo || b.nombreEvento])
+            .pop();
+
+        if (lastEvent) {
+            const lastEndDate = new Date(lastEvent.fechaFin);
+            const newStartDate = new Date(evento.fechaInicio);
+
+            if (newStartDate <= lastEndDate) {
                 Swal.fire({
                     icon: 'warning',
-                    title: 'Evento no válido',
-                    text: 'Complete correctamente el evento antes de guardarlo.'
+                    title: 'Fecha inválida',
+                    text: `La fecha de inicio debe ser posterior a la fecha de fin del evento anterior (${lastEvent.titulo || lastEvent.nombreEvento}: ${lastEvent.fechaFin}).`
+                });
+                return;
+            }
+        }
+
+        const schema = getEventValidationSchema(listaEventos, periodoActual);
+
+        try {
+            await schema.validate(evento, { abortEarly: false });
+
+            const yaExiste = listaEventos.some(e => (e.titulo || e.nombreEvento) === evento.nombre);
+
+            if (yaExiste) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Evento duplicado',
+                    text: `Ya has registrado el evento "${evento.nombre}".`
                 });
                 return;
             }
@@ -149,17 +186,53 @@ const PeriodosManagement = () => {
                 titulo: evento.nombre,
                 fechaInicio: evento.fechaInicio,
                 fechaFin: evento.fechaFin,
-                publico: evento.publico
+                publico: evento.publico,
+                esPersonalizado: evento.esPersonalizado || false
             };
 
-            setEventosTemp(prev => [...prev, eventoFormat]);
-            Swal.fire({
-                icon: 'success',
-                title: 'Evento agregado',
-                text: 'El evento fue agregado al periodo temporalmente',
-                timer: 1500,
-                showConfirmButton: false
-            });
+            if (idOlimpiadaActual) {
+                const payload = {
+                    idOlimpiada: idOlimpiadaActual,
+                    nombreEvento: evento.nombre,
+                    fechaInicio: evento.fechaInicio,
+                    fechaFin: evento.fechaFin,
+                    esPublica: evento.publico
+                };
+
+                const res = await saveFechaOlimpiada(payload);
+
+                if (res.data?.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Evento agregado',
+                        text: res.data.message || 'Evento agregado correctamente',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                    fetchPeriodos();
+                }
+            } else {
+                setEventosTemp(prev => [...prev, eventoFormat]);
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Evento agregado',
+                    text: 'Evento agregado al periodo temporalmente.',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            }
+
+        } catch (err) {
+            if (err.inner) {
+                const messages = err.inner.map(e => e.message).join('\n');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error en validación',
+                    text: messages
+                });
+            } else {
+                console.error(err);
+            }
         }
     };
 
@@ -173,18 +246,11 @@ const PeriodosManagement = () => {
                     <input
                         type="number"
                         value={periodoActual}
-                        onChange={e => {
-                            const year = parseInt(e.target.value, 10);
-                            const currentYear = new Date().getFullYear();
-                            if (year >= 2020 && year <= currentYear) {
-                                setPeriodoActual(year);
-                            } else {
-                                setPeriodoActual('');
-                            }
-                        }}
+                        onChange={handleYearChange}
                         placeholder={`Ej: ${new Date().getFullYear()}`}
                         min="2020"
                         max={new Date().getFullYear()}
+                        className={yearExists === null ? '' : yearExists ? 'input-success' : 'input-error'}
                     />
                 </div>
 
@@ -201,17 +267,17 @@ const PeriodosManagement = () => {
 
                 <div className="form-group">
                     <label>Eventos del periodo</label>
-                    {eventosTemp.length === 0 ? (
+                    {((eventosTemp.length > 0) || (eventosExistentes.length > 0)) ? (
+                        <ul className="event-preview-list">
+                            {(idOlimpiadaActual ? eventosExistentes : eventosTemp).map((e, i) => (
+                                <li key={i}>{e.titulo || e.nombreEvento}: {e.fechaInicio} - {e.fechaFin}</li>
+                            ))}
+                        </ul>
+                    ) : (
                         <div className="empty-event-box">
                             <p>No hay eventos registrados</p>
                             <small>Agrega al menos un evento para este periodo</small>
                         </div>
-                    ) : (
-                        <ul className="event-preview-list">
-                            {eventosTemp.map((e, i) => (
-                                <li key={i}>{e.titulo}: {e.fechaInicio} - {e.fechaFin}</li>
-                            ))}
-                        </ul>
                     )}
 
                     <button
@@ -221,7 +287,7 @@ const PeriodosManagement = () => {
                                 Swal.fire({
                                     icon: 'warning',
                                     title: 'Año no válido',
-                                    text: 'Por favor, ingrese un año antes de agregar eventos.',
+                                    text: 'Por favor, ingrese un año válido.',
                                 });
                                 return;
                             }
@@ -230,16 +296,17 @@ const PeriodosManagement = () => {
                     >
                         + Agregar evento
                     </button>
-
                 </div>
 
-                <button
-                    className="register-btn"
-                    onClick={registrarPeriodo}
-                    disabled={!periodoActual || eventosTemp.length === 0}
-                >
-                    Registrar Periodo
-                </button>
+                {!idOlimpiadaActual && (
+                    <button
+                        className="register-btn"
+                        onClick={registrarPeriodo}
+                        disabled={!periodoActual || eventosTemp.length === 0}
+                    >
+                        Registrar Periodo
+                    </button>
+                )}
             </div>
 
             <div className="periodos-list">
@@ -247,7 +314,7 @@ const PeriodosManagement = () => {
                 {periodos.length === 0 ? (
                     <p>No hay periodos registrados.</p>
                 ) : (
-                    periodos.map((p, idx) => (
+                    periodos.map((p) => (
                         <PeriodPanel
                             key={p.idOlimpiada}
                             idOlimpiada={p.idOlimpiada}
@@ -265,6 +332,7 @@ const PeriodosManagement = () => {
                     periodo={periodoActual}
                     onClose={() => setShowModal(false)}
                     onSave={agregarEventoTemp}
+                    eventosExistentes={idOlimpiadaActual ? eventosExistentes : eventosTemp}
                 />
             )}
         </div>

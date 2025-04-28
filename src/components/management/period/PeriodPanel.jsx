@@ -5,6 +5,7 @@ import EventCard from '../../cards/EventCard';
 import { saveFechaOlimpiada } from '../../../api/api';
 import Swal from 'sweetalert2';
 import './PeriodPanel.css';
+import { EVENT_ORDER } from '../../../schemas/EventValidationSchema';
 
 const PeriodPanel = ({ idOlimpiada, nombreOlimpiada, estadoOlimpiada, eventos, refetchEventos }) => {
   const [expanded, setExpanded] = useState(false);
@@ -21,13 +22,46 @@ const PeriodPanel = ({ idOlimpiada, nombreOlimpiada, estadoOlimpiada, eventos, r
   };
 
   const guardarEvento = async (evento) => {
-    const payload = {
-      idOlimpiada,
-      nombreEvento: evento.nombre,
-      fechaInicio: evento.fechaInicio,
-      fechaFin: evento.fechaFin,
-      esPublica: evento.publico
-    };
+    const nextExpected = (() => {
+      const registrados = eventList
+        .filter(e => !e.esPersonalizado)
+        .map(e => e.nombreEvento)
+        .sort((a, b) => EVENT_ORDER[a] - EVENT_ORDER[b]);
+
+      const siguienteOrden = registrados.length
+        ? EVENT_ORDER[registrados[registrados.length - 1]] + 1
+        : 1;
+
+      return Object.keys(EVENT_ORDER).find(k => EVENT_ORDER[k] === siguienteOrden) || null;
+    })();
+
+    if (evento.nombre !== nextExpected && !evento.esPersonalizado) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Evento fuera de orden',
+        text: `Debes agregar primero el evento: "${nextExpected}".`
+      });
+      return;
+    }
+
+    const lastEvent = eventList
+      .filter(e => !e.esPersonalizado)
+      .sort((a, b) => EVENT_ORDER[a.titulo || a.nombreEvento] - EVENT_ORDER[b.titulo || b.nombreEvento])
+      .pop();
+
+    if (lastEvent) {
+      const lastEndDate = new Date(lastEvent.fechaFin);
+      const newStartDate = new Date(evento.fechaInicio);
+
+      if (newStartDate <= lastEndDate) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Fecha inválida',
+          text: `La fecha de inicio debe ser posterior a la fecha de fin del evento anterior (${lastEvent.titulo || lastEvent.nombreEvento}: ${lastEvent.fechaFin}).`
+        });
+        return;
+      }
+    }
 
     const eventoYaExiste = eventList.some(
       (ev) => ev.nombreEvento.toLowerCase() === evento.nombre.toLowerCase()
@@ -41,6 +75,14 @@ const PeriodPanel = ({ idOlimpiada, nombreOlimpiada, estadoOlimpiada, eventos, r
       });
       return;
     }
+
+    const payload = {
+      idOlimpiada,
+      nombreEvento: evento.nombre,
+      fechaInicio: evento.fechaInicio,
+      fechaFin: evento.fechaFin,
+      esPublica: evento.publico
+    };
 
     try {
       const res = await saveFechaOlimpiada(payload);
@@ -62,7 +104,6 @@ const PeriodPanel = ({ idOlimpiada, nombreOlimpiada, estadoOlimpiada, eventos, r
     } catch (err) {
       console.error('Error al guardar evento:', err);
 
-      // Extraemos solo el mensaje útil de error si contiene "ERROR:"
       const rawMessage = err?.message || '';
       const userFriendlyMessage = rawMessage.includes('ERROR:')
         ? rawMessage.split('ERROR:')[1].split('Where:')[0].trim()
@@ -75,6 +116,7 @@ const PeriodPanel = ({ idOlimpiada, nombreOlimpiada, estadoOlimpiada, eventos, r
       });
     }
   };
+
   return (
     <div className="period-card">
       <div className="period-header">
@@ -122,6 +164,7 @@ const PeriodPanel = ({ idOlimpiada, nombreOlimpiada, estadoOlimpiada, eventos, r
           periodo={extractYearFromName(nombreOlimpiada)}
           onClose={() => setShowModal(false)}
           onSave={guardarEvento}
+          eventosExistentes={eventList}
         />
       )}
     </div>

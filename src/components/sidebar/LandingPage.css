@@ -1,8 +1,8 @@
-/* Base Styles */
   .landing-container {
 	position: relative;
 	min-height: 100vh;
 	overflow-x: hidden;
+	overflow-y: hidden;
 	color: #2d3748;
 	padding-top: 70px;
 	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;

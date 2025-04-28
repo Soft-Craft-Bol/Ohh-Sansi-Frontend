@@ -42,7 +42,7 @@ export const NotFound404 = () => {
             className="notfound-404__image notfound-404__image--light"
           />
           <img
-            src="/images/error/404-dark.svg"
+            src="/src/assets/img/404.svg"
             alt="404 illustration"
             className="notfound-404__image notfound-404__image--dark"
           />
