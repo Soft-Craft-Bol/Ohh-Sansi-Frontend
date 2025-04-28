@@ -24,7 +24,7 @@
   
   .upload-left p,
   .upload-right p {
-    color: var(--secondary-color);
+    color: var(--blue);
     font-size: 14px;
     margin-bottom: 16px;
   }
@@ -89,7 +89,7 @@
     align-items: center;
     gap: 6px;
     font-size: 14px;
-    color: #1d4ed8;
+    color:var(--blue);
     font-weight: 500;
     text-decoration: none;
   }

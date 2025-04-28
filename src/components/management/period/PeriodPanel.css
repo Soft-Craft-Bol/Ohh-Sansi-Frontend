@@ -1,116 +1,115 @@
 .period-card {
-    background: #fff;
-    border: 1px solid #ddd;
-    border-radius: 12px;
-    margin-bottom: 20px;
-    padding: 16px;
-  }
-  
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  padding: 16px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.period-card:hover {
+  box-shadow: 0px 6px 15px rgba(0,0,0,0.08);
+}
+
+.period-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.period-header .left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.status-badge {
+  font-size: 13px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.status-badge.active {
+  background-color: #e6f4ea;
+  color: #2e7d32;
+}
+
+.status-badge.inactive {
+  background-color: #fbeaea;
+  color: #c62828;
+}
+
+.view-events-toggle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  background: var(--blue-light);
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-top: 12px;
+}
+
+
+.view-label {
+  font-weight: 500;
+  font-size: 14px;
+  color: #333;
+}
+
+.dropdown-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  color: #333;
+  font-size: 18px;
+}
+
+
+.event-body {
+  margin-top: 10px;
+}
+
+.event-card {
+  border: 1px solid #ccc;
+  padding: 10px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+@media (max-width: 768px) {
   .period-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  
-  .period-header .left {
-    display: flex;
-    align-items: center;
+    flex-direction: column;
+    align-items: flex-start;
     gap: 10px;
   }
-  
-  .status-badge {
-    font-size: 13px;
-    padding: 4px 10px;
-    border-radius: 999px;
-    font-weight: 600;
-    text-transform: uppercase;
-  }
-  
-  .status-badge.active {
-    background-color: #e6f4ea;
-    color: #2e7d32;
-  }
-  
-  .status-badge.inactive {
-    background-color: #fbeaea;
-    color: #c62828;
-  }
-  
+
   .view-events-toggle {
-    display: flex;
-    align-items: center;
+    flex-direction: row;
     justify-content: space-between;
-    padding: 10px 12px;
-    cursor: pointer;
-    background-color: #f6f7fb;
-    border-radius: 8px;
-    margin-top: 8px;
-    transition: background-color 0.2s ease;
+    width: 100%;
   }
-  
-  .view-events-toggle:hover {
-    background-color: #e9ebf0;
-  }
-  
-  .view-label {
-    font-weight: 500;
-    font-size: 14px;
-    color: #333;
-  }
-  
-  .dropdown-toggle {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    color: #333;
-    font-size: 18px;
-  }
-  
-  
-  .event-body {
-    margin-top: 10px;
-  }
-  
-  .event-card {
-    background-color: #f9fafb;
-    border: 1px solid #ccc;
-    padding: 10px;
-    border-radius: 6px;
-    margin-bottom: 8px;
-  }
-  
-  @media (max-width: 768px) {
-    .period-header {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 10px;
+
+  @media (max-width: 480px) {
+    .period-card {
+      padding: 12px;
     }
-  
-    .view-events-toggle {
-      flex-direction: row;
-      justify-content: space-between;
-      width: 100%;
+
+    .period-header .left h3 {
+      font-size: 16px;
     }
-    @media (max-width: 480px) {
-  .period-card {
-    padding: 12px;
-  }
 
-  .period-header .left h3 {
-    font-size: 16px;
-  }
+    .status-badge {
+      font-size: 12px;
+      padding: 3px 8px;
+    }
 
-  .status-badge {
-    font-size: 12px;
-    padding: 3px 8px;
-  }
-
-  .dropdown-toggle {
-    font-size: 16px;
+    .dropdown-toggle {
+      font-size: 16px;
+    }
   }
 }
-  }
-  

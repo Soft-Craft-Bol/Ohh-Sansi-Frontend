@@ -8,6 +8,7 @@ import costsValidationSchema from "../../../schemas/costValidate";
 import { getOlimpiadas, savePrecioOlimpiada } from "../../../api/api";
 import "./CostsManagement.css";
 import ManagementCard from "../../cards/ManagementCard";
+import { FaCoins, FaSpinner, FaCalendarAlt } from "react-icons/fa";
 
 const CostsManagement = () => {
   const [periods, setPeriods] = useState([]);
@@ -34,8 +35,9 @@ const CostsManagement = () => {
         icon: 'error',
         title: 'Error',
         text: 'Error al cargar los períodos olímpicos',
+        background: 'var(--light)',
+        color: 'var(--dark)'
       });
-      
       setPeriods([]);
     } finally {
       setIsLoading(false);
@@ -48,32 +50,32 @@ const CostsManagement = () => {
       const success = response?.data?.success;
       const message = response?.data?.message || "Costo registrado exitosamente!";
   
-      if (!success) {
-        throw new Error(message); 
-      }
+      if (!success) throw new Error(message); 
   
-      Swal.fire({
+      await Swal.fire({
         icon: 'success',
         title: '¡Precio actualizado!',
         text: message,
         timer: 3000,
-        showConfirmButton: false
+        showConfirmButton: false,
+        background: 'var(--light)',
+        color: 'var(--dark)'
       });
   
       await fetchData();
       resetForm();
     } catch (error) {
       console.error(error);
-      const backendMsg =
-        error?.response?.data?.message ||
-        error?.message ||
+      const backendMsg = error?.response?.data?.message || error?.message || 
         "Error al guardar el costo de la olimpiada. Intenta nuevamente.";
   
-      Swal.fire({
+      await Swal.fire({
         icon: 'error',
         title: 'Ups... algo salió mal',
         text: backendMsg,
         showCloseButton: true,
+        background: 'var(--light)',
+        color: 'var(--dark)',
         showClass: {
           popup: 'animate__animated animate__fadeInDown',
         },
@@ -83,13 +85,15 @@ const CostsManagement = () => {
       });
     }
   };
-  
 
   return (
-    <div className="costs-container-wrapper page-padding">
-      <div className="costs-form">
-        <h2>Gestión de Períodos Olímpicos</h2>
-        <p>Define los períodos de las olimpiadas y sus precios.</p>
+    <div className="costs-management-container">
+      <div className="costs-form-container">
+        <div className="form-header">
+          <FaCoins className="header-icon" />
+          <h2>Gestión de Costos Olímpicos</h2>
+          <p>Define los precios para cada período de las olimpiadas científicas</p>
+        </div>
 
         <Formik
           initialValues={initialValues}
@@ -97,71 +101,84 @@ const CostsManagement = () => {
           onSubmit={handleSubmit}
         >
           {({ handleChange, values, errors, touched }) => (
-            <Form className="form">
-              <SelectInput
-                label="Período Olímpico"
-                name="idOlimpiada"
-                options={periods.map((period) => ({
-                  value: period.idOlimpiada,
-                  label: period.nombreOlimpiada,
-                }))}
-                value={values.idOlimpiada}
-                onChange={handleChange}
-                error={touched.idOlimpiada && errors.idOlimpiada}
-              />
+            <Form className="cost-form">
+              <div className="form-group">
+                <SelectInput
+                  label="Período Olímpico"
+                  name="idOlimpiada"
+                  options={periods.map((period) => ({
+                    value: period.idOlimpiada,
+                    label: period.nombreOlimpiada,
+                  }))}
+                  value={values.idOlimpiada}
+                  onChange={handleChange}
+                  error={touched.idOlimpiada && errors.idOlimpiada}
+                />
+              </div>
 
-              <InputText
-                label="Costo en BOB"
-                name="precioOlimpiada"
-                type="number"
-                value={values.precioOlimpiada}
-                onChange={handleChange}
-                placeholder="Ingrese el costo"
-                error={touched.precioOlimpiada && errors.precioOlimpiada}
-              />
+              <div className="form-group">
+                <FaCoins className="input-icon" />
+                <InputText
+                  label="Costo en BOB"
+                  name="precioOlimpiada"
+                  type="number"
+                  value={values.precioOlimpiada}
+                  onChange={handleChange}
+                  placeholder="Ej: 150.00"
+                  error={touched.precioOlimpiada && errors.precioOlimpiada}
+                />
+              </div>
 
-              <ButtonPrimary type="submit" className="btn-submit-azul">
+              <ButtonPrimary type="submit" className="submit-button">
                 Registrar Costo
               </ButtonPrimary>
             </Form>
           )}
         </Formik>
       </div>
-      <div className="costs-list">
-        <h3>Costos registrados</h3>
+
+      <div className="costs-list-container">
+        <div className="list-header">
+          <h3>Costos Registrados</h3>
+          <p>Lista de períodos con sus precios actuales</p>
+        </div>
+
         {isLoading ? (
-          <p>Cargando períodos...</p>
+          <div className="loading-state">
+            <FaSpinner className="loading-spinner" />
+            <p>Cargando períodos...</p>
+          </div>
         ) : periods.length === 0 ? (
-          <p>No hay períodos registrados aún.</p>
+          <div className="empty-state">
+            <FaCoins className="empty-icon" />
+            <p>No hay períodos registrados aún</p>
+          </div>
         ) : (
-          <div className="costs-card-list">
+          <div className="costs-grid">
             {periods
-              .sort((a, b) =>
-                a.nombreOlimpiada?.localeCompare(b.nombreOlimpiada)
-              )
+              .sort((a, b) => a.nombreOlimpiada?.localeCompare(b.nombreOlimpiada))
               .map((periodo) => (
                 <ManagementCard
                   key={periodo.idOlimpiada}
                   title={periodo.nombreOlimpiada}
+                  status={periodo.estadoOlimpiada}
                   info={[
                     {
-                      label: "Estado",
-                      value: periodo.estadoOlimpiada ? "Activo" : "Inactivo",
+                      label: "Costo",
+                      value: periodo.precioOlimpiada != null ? 
+                        `${periodo.precioOlimpiada} BOB` : "No definido",
+                      highlight: true
                     },
                     {
-                      label: "Costo (BOB)",
-                      value:
-                        periodo.precioOlimpiada != null
-                          ? `${periodo.precioOlimpiada} BOB`
-                          : "—",
-                    },
+                      label: "Estado",
+                      value: periodo.estadoOlimpiada ? "Activo" : "Inactivo"
+                    }
                   ]}
                 />
               ))}
           </div>
         )}
       </div>
-
     </div>
   );
 };
