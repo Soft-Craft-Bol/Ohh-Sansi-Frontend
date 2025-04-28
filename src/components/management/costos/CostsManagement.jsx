@@ -49,9 +49,9 @@ const CostsManagement = () => {
       const response = await savePrecioOlimpiada(values);
       const success = response?.data?.success;
       const message = response?.data?.message || "Costo registrado exitosamente!";
-  
-      if (!success) throw new Error(message); 
-  
+
+      if (!success) throw new Error(message);
+
       await Swal.fire({
         icon: 'success',
         title: '¡Precio actualizado!',
@@ -61,14 +61,14 @@ const CostsManagement = () => {
         background: 'var(--light)',
         color: 'var(--dark)'
       });
-  
+
       await fetchData();
       resetForm();
     } catch (error) {
       console.error(error);
-      const backendMsg = error?.response?.data?.message || error?.message || 
+      const backendMsg = error?.response?.data?.message || error?.message ||
         "Error al guardar el costo de la olimpiada. Intenta nuevamente.";
-  
+
       await Swal.fire({
         icon: 'error',
         title: 'Ups... algo salió mal',
@@ -117,19 +117,21 @@ const CostsManagement = () => {
               </div>
 
               <div className="form-group">
-                <FaCoins className="input-icon" />
                 <InputText
                   label="Costo en BOB"
                   name="precioOlimpiada"
-                  type="number"
+                  decimal={true}
+                  decimalPlaces={2}
+                  step="0.01"
                   value={values.precioOlimpiada}
                   onChange={handleChange}
-                  placeholder="Ej: 150.00"
+                  placeholder="Ej: 15.00"
                   error={touched.precioOlimpiada && errors.precioOlimpiada}
+                  icon={FaCoins}
                 />
               </div>
 
-              <ButtonPrimary type="submit" className="submit-button">
+              <ButtonPrimary type="submit" className="cf-submit-btn">
                 Registrar Costo
               </ButtonPrimary>
             </Form>
@@ -165,7 +167,7 @@ const CostsManagement = () => {
                   info={[
                     {
                       label: "Costo",
-                      value: periodo.precioOlimpiada != null ? 
+                      value: periodo.precioOlimpiada != null ?
                         `${periodo.precioOlimpiada} BOB` : "No definido",
                       highlight: true
                     },

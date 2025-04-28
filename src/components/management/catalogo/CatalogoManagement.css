@@ -85,8 +85,11 @@ body.dark .period-btn {
 
 .configured-list {
   margin-top: 3rem;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
   padding: 2rem;
-  background: var(--card-bg);
+  background: var(--light);
   border-radius: 12px;
   border: 1px solid var(--border-color);
 }
@@ -100,7 +103,7 @@ body.dark .period-btn {
 }
 
 .configured-list p {
-  color: var(--muted-text);
+  color: var(--science-blue);
   text-align: center;
   padding: 1rem;
 }

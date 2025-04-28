@@ -14,19 +14,23 @@ const CatalogCard = ({ area, categories, grades = '', onDelete }) => {
 
   return (
     <div className="catalog-card">
-      <div className="catalog-info">
-        <p className="catalog-area">{area}</p>
-        <div className="catalog-categories">
-          <span>{categories}</span>
+            <div className="card-header">
+                <h3 className="area-title">{area}</h3>
+                <div className="category-badge">{categories}</div>
+            </div>
+            <div className="card-content">
+                <div className="grades-section">
+                    <h4 className="grades-title">Grados:</h4>
+                    <div className="grades-list">
+                        {gradosOrdenados.map((grado, index) => (
+                            <span key={index} className="grade-item">{grado}</span>
+                        ))}
+                    </div>
+                </div>
+            </div>
         </div>
-        <div className="grades-container">
-          {gradosOrdenados.map((grado, index) => (
-            <span key={index} className="grade-badge">{grado}</span>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
+    );
 };
+
 
 export default CatalogCard;

@@ -242,7 +242,8 @@ const PeriodosManagement = () => {
                 <h2>Crear nuevo periodo</h2>
 
                 <div className="form-group">
-                    <label>Año del periodo</label>
+                    <label>Año del periodo <label> * </label></label>
+                    <p>Defina un año para comenzar</p>
                     <input
                         type="number"
                         value={periodoActual}
@@ -254,7 +255,7 @@ const PeriodosManagement = () => {
                     />
                 </div>
 
-                <div className="switch-group">
+                {/* <div className="switch-group">
                     <label>Periodo activo</label>
                     <Switch
                         checked={isActivo}
@@ -263,7 +264,7 @@ const PeriodosManagement = () => {
                     >
                         <span className={`custom-slider ${isActivo ? 'on' : ''}`} />
                     </Switch>
-                </div>
+                </div> */}
 
                 <div className="form-group">
                     <label>Eventos del periodo</label>
