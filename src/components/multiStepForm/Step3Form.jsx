@@ -8,6 +8,7 @@ import { Formik, Form } from "formik";
 import Swal from "sweetalert2";
 import useDebounce from "../../hooks/WriteInputs/useDebounce";
 import { verificarSerTutor } from "../../hooks/loaderInfo/LoaderInfo";
+import { time } from "framer-motion";
 
 const Step3Form = () => {
   const [tutoresLocales, setTutoresLocales] = useState([]);
@@ -45,26 +46,41 @@ const Step3Form = () => {
 
   const agregarTutor = (values, { resetForm }) => {
     if (tutoresLocales.length >= MAX_TUTORES) {
-      Swal.fire({icon:'error',
-        title: "error",
-        text:`Solo puede registrar un máximo de ${MAX_TUTORES} tutores`});
+      Swal.fire({
+        icon: 'error',
+        title: "Error",
+        text: `Solo puede registrar un máximo de ${MAX_TUTORES} tutores`
+      });
       return;
     }
-
+  
     const existe = tutoresLocales.some((t) => t.carnetIdentidadTutor === values.carnetIdentidadTutor);
-
+  
     if (existe) {
-      Swal.fire({icon:'error',
-        title:"Error",
-        text:"Ya existe un tutor con este número de documento"});
+      Swal.fire({
+        icon: 'error',
+        title: "Error",
+        text: "Ya existe un tutor con este número de documento"
+      });
       return;
     }
+  
+    const nuevoTutor = {
+      ...values,
+      fromBackend: false //es uno nuevo local
+    };
+  
     setTutoresLocales([...tutoresLocales, nuevoTutor]);
     resetForm();
-    Swal.fire({icon:'success',
-      title:"Éxito",
-      text:"Tutor agregado correctamente"});
+  
+    Swal.fire({
+      icon: 'success',
+      title: "Éxito",
+      text: "Tutor agregado correctamente",
+      timer:2000
+    });
   };
+  
 
   const eliminarTutor = (index) => {
     const nuevosTutores = [...tutoresLocales];
@@ -72,7 +88,8 @@ const Step3Form = () => {
     setTutoresLocales(nuevosTutores);
     Swal.fire({icon:'success',
       title:"Éxito",
-      text:"Tutor eliminado"});
+      text:"Tutor eliminado",
+      timer:2000})
   };
 
   const handleRegistrarTutores = async () => {
@@ -118,7 +135,8 @@ const Step3Form = () => {
           apellidosTutor: tutor.apellidoTut,
           telefono: tutor.telf.toString(),
           carnetIdentidadTutor: tutor.ciTut.toString(),
-          complementoCiTutor: tutor.complemento || ""
+          complementoCiTutor: tutor.complemento || "",
+          fromBackend: true
         }));
   
         setTutoresLocales(tutoresExistentes);
@@ -235,8 +253,6 @@ const Step3Form = () => {
                   />
                 </div>
 
-                
-
                 <div className="step3-button-container">
                   <ButtonPrimary
                     type="submit"
@@ -267,13 +283,15 @@ const Step3Form = () => {
                     <p><strong>Documento:</strong> {tutor.carnetIdentidadTutor}</p>
                     <p><strong>Complemento CI:</strong> {tutor.complementoCiTutor || "N/A"}</p>
                   </div>
-                  <button
+                  {!tutor.fromBackend && (
+                    <button
                     type="button"
                     className="remove-tutor-btn"
                     onClick={() => eliminarTutor(index)}
                   >
                     × Eliminar
                   </button>
+                  )}
                 </li>
               ))}
             </ul>
