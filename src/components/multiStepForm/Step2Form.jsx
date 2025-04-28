@@ -13,6 +13,7 @@ const AsignarAreasForm = ({ participanteCI, shouldSearch, onSearchComplete, onCo
   const [seleccionadas, setSeleccionadas] = useState([]);
   const [loading, setLoading] = useState(false);
   const [codigoIntroducido, setCodigoIntroducido] = useState("");
+  const [areasAsignadas, setAreasAsignadas] = useState([]);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -81,6 +82,7 @@ const AsignarAreasForm = ({ participanteCI, shouldSearch, onSearchComplete, onCo
     }
   };
 
+  
   const buscarEstudiante = async (carnet) => {
     if (!carnet || carnet.trim() === "") {
       Swal.fire({
@@ -96,16 +98,16 @@ const AsignarAreasForm = ({ participanteCI, shouldSearch, onSearchComplete, onCo
       Swal.fire({
         icon: 'error',
         title: 'Error',
-        text: 'El carnet debe ser un número válido dentro del rango permitido (-2,147,483,648 a 2,147,483,647)'
+        text: 'El carnet debe ser un número válido'
       });
       return;
     }
   
     setLoading(true);
     try {
+      // Obtener áreas disponibles y estado de asignación
       const resCatalogo = await getCatalogoAreasCategorias(carnetNumerico);
-      console.log("Catálogo de áreas:", resCatalogo.data);
-  
+      
       if (resCatalogo.data.length === 0) {
         setEstudiante({ carnetIdentidadParticipante: carnetNumerico });
         setAreas([]);
@@ -116,6 +118,16 @@ const AsignarAreasForm = ({ participanteCI, shouldSearch, onSearchComplete, onCo
         });
         return;
       }
+
+      // Procesar áreas asignadas
+      const asignadas = resCatalogo.data
+        .filter(item => item.asignada)
+        .map(item => item.id_area);
+      
+      setAreasAsignadas(asignadas);
+      setSeleccionadas(asignadas); // Marcamos como seleccionadas las áreas ya asignadas
+
+      // Preparar datos para mostrar
       const combined = resCatalogo.data.map((item) => ({
         idArea: item.id_area,
         nombreArea: item.nombre_area,
@@ -128,43 +140,46 @@ const AsignarAreasForm = ({ participanteCI, shouldSearch, onSearchComplete, onCo
         },
         idOlimpiada: item.id_olimpiada,
         idCatalogo: item.id_catalogo,
+        yaAsignada: item.asignada // Nuevo campo para saber si ya está asignada
       }));
-  
+
       setEstudiante({ carnetIdentidadParticipante: carnetNumerico });
       setAreas(combined);
-    } catch (err) {
-      console.error("Error buscando catálogo de áreas:", err);
-  
-      if (err.message === "Network Error") {
+
+      // Mostrar mensaje si ya tiene áreas asignadas
+      if (asignadas.length > 0) {
         Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'Error en la red, intenta más tarde'
-        });
-      } else {
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: err.response?.data?.message || "No se encontró el estudiante o las áreas"
+          icon: 'info',
+          title: 'Áreas ya asignadas',
+          text: `Este participante ya tiene ${asignadas.length} área(s) asignada(s)`,
+          timer: 2000
         });
       }
-  
+    } catch (err) {
+      console.error("Error buscando áreas:", err);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: err.response?.data?.message || "Error al buscar áreas"
+      });
       setEstudiante(null);
       setAreas([]);
-      setError(err.message || "No se encontró el estudiante o las áreas");
     } finally {
       setLoading(false);
     }
   };
 
   const toggleSeleccion = (id) => {
+    // No permitir deseleccionar áreas ya asignadas
+    if (areasAsignadas.includes(id)) return;
+    
     setSeleccionadas((prev) => {
       if (prev.includes(id)) return prev.filter((a) => a !== id);
       if (prev.length >= 2) {
         Swal.fire({
           icon: 'error',
-          title: 'Error',
-          text: 'Máximo 2 áreas permitidas'
+          title: 'Límite',
+          text: 'Solo puedes seleccionar hasta 2 áreas'
         });
         return prev;
       }
@@ -224,6 +239,42 @@ const AsignarAreasForm = ({ participanteCI, shouldSearch, onSearchComplete, onCo
     return value?.toFixed ? value.toFixed(2) : "0.00";
   };
 
+
+  const renderAreaCard = (area) => {
+    const estaSeleccionada = seleccionadas.includes(area.idArea);
+    const yaAsignada = areasAsignadas.includes(area.idArea);
+
+    return (
+      <motion.div
+        key={area.idArea}
+        className={`step2-card ${estaSeleccionada ? "selected" : ""} ${yaAsignada ? "asignada" : ""}`}
+        onClick={() => !yaAsignada && toggleSeleccion(area.idArea)}
+        variants={itemVariants}
+        whileHover={{ scale: yaAsignada ? 1 : 1.02 }}
+        whileTap={{ scale: yaAsignada ? 1 : 0.98 }}
+      >
+        <div className="area-header">
+          <input 
+            type="checkbox" 
+            checked={estaSeleccionada}
+            readOnly
+            className="area-checkbox"
+          />
+          <h3 className="area-title">
+            {area.nombreArea}
+            {yaAsignada && <span className="badge-asignada">Asignada</span>}
+          </h3>
+          <span className="categoria-tag">{area.categoria.nombre}</span>
+        </div>
+        <p className="area-descripcion">{area.descripcionArea}</p>
+        <p className="costo">Bs {formatCurrency(area.precioArea)}</p>
+      </motion.div>
+    );
+  };
+
+
+  
+
   return (
     <motion.div 
       className="step2-container"
@@ -264,37 +315,19 @@ const AsignarAreasForm = ({ participanteCI, shouldSearch, onSearchComplete, onCo
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <span>Seleccione hasta 2 áreas:</span>
+          <div className="step2-instructions">
+            {areasAsignadas.length > 0 ? (
+              <p>
+                <strong>Áreas asignadas:</strong> {areasAsignadas.length}/2. 
+                {areasAsignadas.length < 2 ? ' Puede agregar otra área.' : ' Límite alcanzado.'}
+              </p>
+            ) : (
+              <p>Seleccione hasta 2 áreas</p>
+            )}
+          </div>
 
-          <motion.div 
-            className="step2-grid"
-            variants={listVariants}
-            initial="hidden"
-            animate="visible"
-          >
-            {areas.map((area) => (
-              <motion.div
-                key={area.idArea}
-                className={`step2-card ${seleccionadas.includes(area.idArea) ? "selected" : ""}`}
-                onClick={() => toggleSeleccion(area.idArea)}
-                variants={itemVariants}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                <div className="area-header">
-                  <input 
-                    type="checkbox" 
-                    checked={seleccionadas.includes(area.idArea)}
-                    onChange={() => {}}
-                    className="area-checkbox"
-                  />
-                  <h3 className="area-title">{area.nombreArea}</h3>
-                  <span className="categoria-tag">(Categoría: {area.categoria.nombre})</span>
-                </div>
-                <p>{area.descripcionArea}</p>
-                <p className="costo">Bs {formatCurrency(area.precioArea)}</p>
-              </motion.div>
-            ))}
+          <motion.div className="step2-grid" variants={listVariants} initial="hidden" animate="visible">
+            {areas.map(renderAreaCard)}
           </motion.div>
 
           {seleccionadas.length > 0 && (

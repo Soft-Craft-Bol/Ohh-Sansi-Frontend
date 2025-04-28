@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Formik, Form } from "formik";
 import InputText from "../inputs/InputText";
+import {verificarParticipante} from "../../hooks/loaderInfo/LoaderInfo";
 import SelectInput from "../selected/SelectInput";
 import useFetchGrados from "../../hooks/NivelEscolar/useFetchGrados";
 import useFetchDepartamentos from "../../hooks/departamento/useFetchDepartamentos";
@@ -13,7 +14,7 @@ import "./Step1Form.css";
 import DisabledButton from "../button/DisabledButton";
 import useDebounce from "../../hooks/WriteInputs/useDebounce";
 
-const Step1Form = ({ onRegistroExitoso, onParticipanteExistente, onComplete  }) => {
+const Step1Form = () => {
   const today = new Date().toISOString().split("T")[0];
   const { grados, loading: loadingGrados } = useFetchGrados();
   const { departamentos, loading: loadingDepartamentos } = useFetchDepartamentos();

@@ -30,6 +30,7 @@ export const getUser = () => api.get('/auth/user')
 export const addUser = (data) => api.post('/auth/register', data);
 export const updateUser = (data) => api.put('/auth/user', data);
 export const deletYser = (id) => api.delete(`/auth/user/${id}`);
+//participantes
 export const getInscripciones = () => api.get('/inscripciones');
 export const addInscripcion = (data) => api.post('/inscripciones', data);
 export const updateInscripcion = (data) => api.put('/inscripciones', data);
@@ -37,6 +38,7 @@ export const deleteInscripcion = (id) => api.delete(`/inscripciones/${id}`);
 export const inscripcionEstudiante = (data) => api.post(`/inscripcion/v1/register`, data);
 export const registerParticipante = (data) => api.post('/participante/register-participant', data);
 export const register = (data) => api.post('/register', data)
+export const getParticipantesWithAreas = (ci) => api.get(`/participante/${ci}/areas`);
 //DEPARTAMENTOS Y MUNICIPIOS
 export const getDepartamentos = () => api.get('/departamento');
 export const getDepartamentoById = (id) => api.get(`/departamento/${id}`);
@@ -94,6 +96,7 @@ export const getEstadoInscripcion = (ciParticipante) => api.get(`/estado-inscrip
 export const getCatalogoAreasCategorias = (ciParticipante) => api.get(`/catalogo/ci-participante/${ciParticipante}`);
 export const setCatalogoAreasParticipante = (ciParticipante, data) => 
   api.post(`/participante/register-participant-catalogo/${ciParticipante}`, data);
+
 
 
 //areaTutor participante
