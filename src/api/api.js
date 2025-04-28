@@ -71,6 +71,7 @@ export const saveOlimpiada = (data) => api.post('/olimpiada/register', data);
 export const savePrecioOlimpiada = (data) => api.put('/olimpiada/update-precio', data);
 
 //CatalogoOlimpiada
+export const saveCatalogoOlimpiada = (data) => api.post('/catalogo-olimpiada/save', data);
 export const getCatalogoOlimpiada = () => api.get('/catalogo-olimpiada');
 
 //FechaOlimpiada

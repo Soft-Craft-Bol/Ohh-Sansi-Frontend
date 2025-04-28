@@ -55,19 +55,23 @@ const PeriodPanel = ({ idOlimpiada, nombreOlimpiada, estadoOlimpiada, eventos, r
         });
 
         setShowModal(false);
-        await refetchEventos(); 
+        await refetchEventos();
       } else {
         throw new Error(res?.data?.message || 'Respuesta inesperada del servidor');
       }
     } catch (err) {
       console.error('Error al guardar evento:', err);
+
+      // Extraemos solo el mensaje útil de error si contiene "ERROR:"
+      const rawMessage = err?.message || '';
+      const userFriendlyMessage = rawMessage.includes('ERROR:')
+        ? rawMessage.split('ERROR:')[1].split('Where:')[0].trim()
+        : 'Ocurrió un error al guardar el evento.';
+
       Swal.fire({
         icon: 'error',
         title: 'Error al guardar',
-        text:
-          err?.response?.data?.message ||
-          err.message ||
-          'Ocurrió un error al guardar el evento.',
+        text: userFriendlyMessage,
       });
     }
   };
@@ -100,9 +104,9 @@ const PeriodPanel = ({ idOlimpiada, nombreOlimpiada, estadoOlimpiada, eventos, r
             <div className="event-list">
               {eventList.map((e, i) => (
                 <EventCard
-                key={e.idFechaOlimpiada || `${e.nombreEvento}-${e.fechaInicio}-${i}`}
-                evento={e}
-              />
+                  key={e.idFechaOlimpiada || `${e.nombreEvento}-${e.fechaInicio}-${i}`}
+                  evento={e}
+                />
               ))}
             </div>
           )}
