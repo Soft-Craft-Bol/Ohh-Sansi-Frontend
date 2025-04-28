@@ -27,49 +27,57 @@ const CatalogForm = ({ areas = [], categories = [], activeOlimpiadaId, onAdd }) 
     const categoriasFormateadas = useCategoriaFormat(categories, grados);
 
     return (
-        <form className="catalog-form" onSubmit={formik.handleSubmit}>
-            <div className="form-group">
-                <label>Área</label>
-                <select
-                    name="area"
-                    value={formik.values.area}
-                    onChange={formik.handleChange}
-                    className={formik.touched.area && formik.errors.area ? 'error' : ''}
-                >
-                    <option value="">Seleccionar área</option>
-                    {areas.map(area => (
-                        <option key={area.idArea} value={area.idArea}>
-                            {area.nombreArea}
-                        </option>
-                    ))}
-                </select>
-                {formik.touched.area && formik.errors.area && (
-                    <p className="error-msg">{formik.errors.area}</p>
-                )}
-            </div>
-
-            <div className="form-group">
-                <label>Categoría</label>
-                <select
-                    name="category"
-                    value={formik.values.category}
-                    onChange={formik.handleChange}
-                    className={formik.touched.category && formik.errors.category ? 'error' : ''}
-                >
-                    <option value="">Seleccionar categoría</option>
-                    {categoriasFormateadas.map(cat => (
-                        <option key={cat.value} value={cat.value}>
-                            {cat.label}
-                        </option>
-                    ))}
-                </select>
-                {formik.touched.category && formik.errors.category && (
-                    <p className="error-msg">{formik.errors.category}</p>
-                )}
-            </div>
-
-            <button type="submit" className="submit-button">+ Añadir al Catálogo</button>
-        </form>
+        <div className="cf-container">
+            <form className="cf-form-grid" onSubmit={formik.handleSubmit}>
+                <div className="cf-form-group">
+                    <label className="cf-form-label">Área</label>
+                    <div className="cf-select-wrapper">
+                        <select
+                            name="area"
+                            value={formik.values.area}
+                            onChange={formik.handleChange}
+                            className="cf-select"
+                        >
+                            <option value="">Seleccionar área</option>
+                            {areas.map(area => (
+                                <option key={area.idArea} value={area.idArea}>
+                                    {area.nombreArea}
+                                </option>
+                            ))}
+                        </select>
+                        <span className="cf-select-arrow">▼</span>
+                    </div>
+                    {formik.touched.area && formik.errors.area && (
+                        <p className="cf-error-message">{formik.errors.area}</p>
+                    )}
+                </div>
+                <div className="cf-form-group">
+                    <label className="cf-form-label">Categoría</label>
+                    <div className="cf-select-wrapper">
+                        <select
+                            name="category"
+                            value={formik.values.category}
+                            onChange={formik.handleChange}
+                            className="cf-select"
+                        >
+                            <option value="">Seleccionar categoría</option>
+                            {categoriasFormateadas.map(cat => (
+                                <option key={cat.value} value={cat.value}>
+                                    {cat.label}
+                                </option>
+                            ))}
+                        </select>
+                        <span className="cf-select-arrow">▼</span>
+                    </div>
+                    {formik.touched.category && formik.errors.category && (
+                        <p className="cf-error-message">{formik.errors.category}</p>
+                    )}
+                </div>
+                <button type="submit" className="cf-submit-btn">
+                    + Añadir al Catálogo
+                </button>
+            </form>
+        </div>
     );
 };
 

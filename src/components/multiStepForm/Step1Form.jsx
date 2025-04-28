@@ -192,7 +192,7 @@ const Step1Form = () => {
         validateOnChange={true}
       >
         {({ values, setFieldValue, isValid, isSubmitting }) => {
-          const debouncedCI = useDebounce(values.documento, 1000);
+          let debouncedCI = useDebounce(values.documento, 1000);
 
           useEffect(() => {
             if (debouncedCI && debouncedCI !== "completed" ) {

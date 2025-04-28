@@ -16,10 +16,14 @@ const CatalogCard = ({ area, categories, grades = '', onDelete }) => {
     <div className="catalog-card">
       <div className="catalog-info">
         <p className="catalog-area">{area}</p>
-        <p className="catalog-categories">
-          Categorías: {categories}
-          <p className="catalog-grades">Grados: {rangoGrados}</p>
-        </p>
+        <div className="catalog-categories">
+          <span>{categories}</span>
+        </div>
+        <div className="grades-container">
+          {gradosOrdenados.map((grado, index) => (
+            <span key={index} className="grade-badge">{grado}</span>
+          ))}
+        </div>
       </div>
     </div>
   );

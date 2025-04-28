@@ -1,65 +1,123 @@
 import React, { useState, useEffect } from 'react';
-import { FaBars, FaSearch, FaTimes, FaBell, FaMoon, FaSun } from 'react-icons/fa';
+import { FaMoon, FaSignOutAlt, FaSun, FaUserCircle } from 'react-icons/fa';
+import { Link, useNavigate } from 'react-router-dom';
+import { FaHome, FaUserEdit, FaUsers, FaClipboardCheck, FaFileInvoiceDollar, FaUpload, FaMoneyCheckAlt } from 'react-icons/fa';
+import { getUser, removeToken, signOut, getToken } from '../../utils/authFuntions';
 import './Navbar.css';
-import userCircle from '../../assets/img/user-circle.svg';
+import logo from '../../assets/img/logo.png';
+import ScrollReveal from 'scrollreveal';
 
 const Navbar = () => {
-  const [isSearchVisible, setIsSearchVisible] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [isSidebarVisible, setIsSidebarVisible] = useState(true); // Sidebar abierto por defecto
-
-  const toggleSearch = () => {
-    if (window.innerWidth < 576) {
-      setIsSearchVisible(!isSearchVisible);
-    }
-  };
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const navigate = useNavigate();
 
   const toggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode);
-    document.body.classList.toggle('dark', !isDarkMode);
-  };
-
-  const toggleSidebar = () => {
-    setIsSidebarVisible(!isSidebarVisible);
-    const sidebar = document.getElementById('sidebar');
-    if (sidebar) {
-      sidebar.classList.toggle('hide', !isSidebarVisible);
-    }
+    const newMode = !isDarkMode;
+    setIsDarkMode(newMode);
+    document.body.classList.toggle('dark', newMode);
+    localStorage.setItem('darkMode', newMode);
   };
 
   useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth > 576) {
-        setIsSearchVisible(false);
+    const savedMode = localStorage.getItem('darkMode');
+    if (savedMode) {
+      setIsDarkMode(JSON.parse(savedMode));
+      if (savedMode === 'true') {
+        document.body.classList.add('dark');
       }
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    }
   }, []);
 
+  useEffect(() => {
+    const userData = getUser();
+    const token = getToken();
+
+    if (token) {
+      setIsAuthenticated(true);
+      setIsAdmin(true);
+    } else {
+      setIsAuthenticated(false);
+      setIsAdmin(false);
+    }
+
+    ScrollReveal().reveal('nav', {
+      duration: 1000,
+      origin: 'top',
+      distance: '60px',
+      easing: 'ease-in-out',
+      reset: false
+    });
+  }, []);
+
+  const handleLogout = () => {
+    signOut();
+    navigate('/');
+  };
+
   return (
-    <nav>
-      <i className='bx bx-menu' onClick={toggleSidebar}>
-        <FaBars />
-      </i>
-      <input
-        type="checkbox"
-        id="switch-mode"
-        hidden
-        checked={isDarkMode}
-        onChange={toggleDarkMode}
-      />
-      <label htmlFor="switch-mode" className="switch-mode">
-        {isDarkMode ? <FaSun /> : <FaMoon />} 
-      </label>
-      {/* <a href="#" className="notification">
-        <FaBell />
-        <span className="num">8</span>
-      </a> */}
-      <a href="#" className="profile">
-        <img src={userCircle} alt="Profile" />
-      </a>
+    <nav className="navbar">
+      <div className="nav-left">
+        <Link to="/" className="logo-container">
+          <img src={logo} alt="Logo Olimpiadas" className="logo-nav" />
+          <span className="logo-text">Olimpiadas ohSansi</span>
+        </Link>
+      </div>
+
+      <div className="nav-center">
+        <ul className="nav-links">
+          <li>
+            <Link to="/" className="nav-item">
+              <FaHome className="nav-icon" /> Inicio
+            </Link>
+          </li>
+
+          <li className="dropdown">
+            <span className="dropdown-toggle">
+              <FaClipboardCheck className="nav-icon" />
+              Inscripciones
+            </span>
+            <ul className="dropdown-menu">
+              <li><Link to="/inscripcion-individual" className="nav-item"><FaUserEdit className="nav-icon" /> Individual</Link></li>
+              <li><Link to="/inscripcion-masiva" className="nav-item"><FaUsers className="nav-icon" /> Masiva</Link></li>
+              <li><Link to="/estado-de-inscripcion" className="nav-item"><FaClipboardCheck className="nav-icon" /> Estado</Link></li>
+              <li><Link to="/orden-de-pago" className="nav-item"><FaFileInvoiceDollar className="nav-icon" /> Orden de Pago</Link></li>
+              <li><Link to="/subir-boleta" className="nav-item"><FaUpload className="nav-icon" /> Subir Boleta</Link></li>
+              <li><Link to="/metodo-pago" className="nav-item"><FaMoneyCheckAlt className="nav-icon" /> Método de Pago</Link></li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+
+      <div className="nav-right">
+        <label htmlFor="switch-mode" className="switch-mode">
+          <input
+            type="checkbox"
+            id="switch-mode"
+            hidden
+            checked={isDarkMode}
+            onChange={toggleDarkMode}
+          />
+          {isDarkMode ? <FaSun /> : <FaMoon />}
+        </label>
+
+        {isAuthenticated && isAdmin && (
+          <div className="admin-dropdown">
+            <FaUserCircle className="admin-icon" />
+            <div className="admin-dropdown-menu">
+              <Link to="/admin" className="nav-item"><FaClipboardCheck className="nav-icon" /> Panel Admin</Link>
+              <button onClick={handleLogout} className="nav-item"><FaSignOutAlt className="nav-icon" /> Cerrar Sesión</button>
+            </div>
+          </div>
+        )}
+
+        {!isAuthenticated && (
+          <Link to="/login" className="login-link">
+            Iniciar sesión
+          </Link>
+        )}
+      </div>
     </nav>
   );
 };

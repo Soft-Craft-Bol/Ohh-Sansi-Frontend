@@ -33,10 +33,6 @@
   box-shadow: 0 0 0 2px rgba(3, 55, 113, 0.1);
 }
 
-.step3-input::placeholder {
-  color: var(--secondary-color);
-}
-
 .step3-content {
   display: flex;
   gap: 2rem;
@@ -75,12 +71,6 @@
   font-family: var(--lato);
   background: var(--light);
   color: var(--dark);
-
-}
-
-.step3-form-group input::placeholder,
-.step3-form-group select {
-  color: var(--secondary-color);
 }
 
 .step3-button-container {

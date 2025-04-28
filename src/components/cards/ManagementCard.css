@@ -1,61 +1,200 @@
 .management-card {
-    background-color: #fff;
-    border: 1px solid #e0e0e0;
-    border-radius: 10px;
-    padding: 1.25rem 1.5rem;
-    margin-bottom: 1rem;
-    max-width: 100%;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
-    transition: box-shadow 0.2s ease;
-  }
-  
-  .management-card:hover {
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+  position: relative;
+  background-color: var(--light);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  overflow: hidden;
+  border: 1px solid rgba(30, 144, 255, 0.1);
+}
+
+body.dark .management-card {
+  background-color: #2d3748;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  border-color: rgba(0, 180, 216, 0.2);
+}
+
+.management-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(30, 144, 255, 0.15);
+}
+
+body.dark .management-card:hover {
+  box-shadow: 0 8px 20px rgba(0, 180, 216, 0.25);
+}
+
+/* Card Decoration */
+.card-decoration {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 5px;
+  height: 100%;
+  background: linear-gradient(to bottom, var(--blue-color), var(--science-blue));
+}
+
+body.dark .card-decoration {
+  background: linear-gradient(to bottom, var(--science-blue), var(--science-purple));
+}
+
+/* Card Body */
+.management-card-body {
+  position: relative;
+  z-index: 1;
+}
+
+/* Card Header */
+.management-card-header {
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.management-card-title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--blue-color);
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+}
+
+body.dark .management-card-title {
+  color: var(--science-blue);
+}
+
+/* Status Indicator */
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  padding: 0.2rem 0.5rem;
+  border-radius: 20px;
+  background: rgba(40, 167, 69, 0.1);
+}
+
+.status-indicator.active {
+  color: var(--success);
+}
+
+.status-indicator.inactive {
+  background: rgba(220, 53, 69, 0.1);
+  color: var(--danger);
+}
+
+.status-icon {
+  font-size: 0.5rem;
+}
+
+/* Info List */
+.management-info-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.management-info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.95rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px dashed rgba(30, 144, 255, 0.2);
+}
+
+body.dark .management-info-item {
+  border-bottom-color: rgba(0, 180, 216, 0.3);
+}
+
+.management-info-item.highlight {
+  padding: 0.7rem;
+  background: rgba(30, 144, 255, 0.05);
+  border-radius: 8px;
+  border-bottom: none;
+}
+
+body.dark .management-info-item.highlight {
+  background: rgba(0, 180, 216, 0.1);
+}
+
+.management-label {
+  font-weight: 500;
+  color: var(--dark);
+  opacity: 0.8;
+}
+
+body.dark .management-label {
+  color: #e2e8f0;
+}
+
+.management-value {
+  font-weight: 600;
+  color: var(--blue-color);
+  text-align: right;
+}
+
+body.dark .management-value {
+  color: var(--science-blue);
+}
+
+.management-info-item.highlight .management-value {
+  color: var(--blue-dark);
+  font-size: 1.1rem;
+}
+
+body.dark .management-info-item.highlight .management-value {
+  color: var(--science-blue);
+}
+
+/* Extra Content */
+.management-extra {
+  margin-top: 0.5rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .management-card {
+    padding: 1.2rem;
   }
   
   .management-card-title {
-    margin-bottom: 0.85rem;
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #2d3748;
-    border-bottom: 1px dashed #ccc;
-    padding-bottom: 0.5rem;
-  }
-  
-  .management-info-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
+    font-size: 1rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
   }
   
   .management-info-item {
-    display: flex;
-    justify-content: space-between;
-    margin: 0.4rem 0;
-    font-size: 0.95rem;
-    color: #333;
-  }
-  
-  .management-label {
-    font-weight: 500;
-    color: #555;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.3rem;
   }
   
   .management-value {
-    color: #222;
-    text-align: right;
+    text-align: left;
+  }
+}
+
+@media (max-width: 480px) {
+  .management-card {
+    padding: 1rem;
   }
   
-  /* 📱 Responsive */
-  @media (max-width: 600px) {
-    .management-info-item {
-      flex-direction: column;
-      align-items: flex-start;
-    }
-  
-    .management-value {
-      margin-top: 0.25rem;
-      text-align: left;
-    }
+  .management-info-item {
+    font-size: 0.9rem;
   }
   
+  .management-info-item.highlight .management-value {
+    font-size: 1rem;
+  }
+}
