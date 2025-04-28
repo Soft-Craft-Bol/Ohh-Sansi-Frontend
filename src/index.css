@@ -88,8 +88,8 @@
     border: 2px solid var(--red-color) !important;
 }
 
-.valid-input{
-    border: 2px solid #77dd77 !important;
+.error-message{
+  color: var(--red-color);
 }
 
 .icon:hover{
