@@ -1,14 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { Formik, Form } from "formik";
-import { toast } from "sonner";
-import { FaEdit, FaTrash } from "react-icons/fa";
+import Swal from "sweetalert2";
 import InputText from "../../inputs/InputText";
 import { ButtonPrimary } from "../../button/ButtonPrimary";
-import {
-  addArea,
-  getAreas,
-  updateArea,
-} from "../../../api/api";
+import { addArea, getAreas } from "../../../api/api";
 import { areaValidationSchema } from "../../../schemas/areaValidation";
 import "./FormArea.css";
 import InputTextarea from "../../inputs/InputTextArea";
@@ -16,9 +11,8 @@ import ManagementCard from "../../cards/ManagementCard";
 
 const FormArea = () => {
   const [areas, setAreas] = useState([]);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [editingId, setEditingId] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     fetchAreas();
@@ -30,116 +24,109 @@ const FormArea = () => {
       const response = await getAreas();
       setAreas(response.data?.areas || []);
     } catch (error) {
-      console.error("Error fetching areas:", error);
-      toast.error("Error al cargar las áreas existentes");
+      console.error("Error al obtener áreas:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "No se pudieron cargar las áreas",
+      });
       setAreas([]);
     } finally {
       setIsLoading(false);
     }
   };
 
+  const normalizarTexto = (texto) => {
+    return texto
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .trim()
+      .replace(/\s+/g, " "); 
+  };
+
   const generateShortName = (nombreArea) => {
-    if (!nombreArea) return '';
-
-    const words = nombreArea.split(' ').filter(word => word.length > 0);
-    let shortName = '';
-
+    if (!nombreArea) return "";
+    const words = nombreArea.trim().split(/\s+/);
     if (words.length >= 2) {
-      shortName = words[0].charAt(0) + words[1].charAt(0);
-    } else if (words[0].length >= 2) {
-      shortName = words[0].substring(0, 2);
-    } else {
-      shortName = words[0];
+      return (words[0][0] + words[1][0]).toUpperCase();
     }
-
-    return shortName.toUpperCase();
+    return words[0].substring(0, 2).toUpperCase();
   };
 
   const handleSubmit = async (values, { resetForm }) => {
     setIsSubmitting(true);
     try {
-      // Eliminar espacios innecesarios y poner en formato adecuado
-      const nombreLimpio = values.name.trim().replace(/\s+/g, ' ');
+      const nombreLimpio = values.name.trim().replace(/\s+/g, " ");
       const nombreCapitalizado = nombreLimpio.charAt(0).toUpperCase() + nombreLimpio.slice(1).toLowerCase();
-      
-      const areaData = {
+      const nombreNormalizado = normalizarTexto(nombreCapitalizado);
+
+      const existeSimilar = areas.some((area) => {
+        const areaNormalizada = normalizarTexto(area.nombreArea);
+        return areaNormalizada === nombreNormalizado;
+      });
+
+      if (existeSimilar) {
+        Swal.fire({
+          icon: "error",
+          title: "Nombre duplicado",
+          text: "Ya existe un área con un nombre similar. Intenta con otro nombre.",
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
+      const nuevaArea = {
         nombreArea: nombreCapitalizado,
-        precioArea: parseFloat(values.precioArea),
         nombreCortoArea: generateShortName(nombreCapitalizado),
         descripcionArea: values.description.trim(),
-        areaStatus: values.isActive
       };
-  
-      if (editingId) {
-        const response = await updateArea(editingId, areaData);
-        setAreas(areas.map(area =>
-          area.idArea === editingId ? response.data : area
-        ));
-        toast.success("Área actualizada con éxito");
+
+      const response = await addArea(nuevaArea);
+      setAreas(prev => [...prev, response.data]);
+        Swal.fire({
+          icon: 'success',
+          title: '¡Éxito!',
+          text: 'Área registrada correctamente',
+          timer: 2000,
+          showConfirmButton: false
+        });
         fetchAreas();
-      } else {
-        const response = await addArea(areaData);
-        setAreas(prev => [...prev, response.data]);
-        toast.success("Área registrada con éxito");
-        fetchAreas();
-      }
       resetForm();
-      setEditingId(null);
     } catch (error) {
       console.error("Error submitting form:", error);
       const errorMessage = error.response?.data?.message ||
-        error.message ||
-        (editingId ? "Error al actualizar el área" : "Error al registrar el área");
+        error.message || "Error al registrar el área";
 
-      toast.error(errorMessage);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: errorMessage,
+        });
     } finally {
       setIsSubmitting(false);
-    }
-  };
-  
-
-  const handleEditArea = (id) => {
-    const areaToEdit = areas.find(area => area.idArea === id);
-    if (areaToEdit) {
-      setEditingId(id);
-      document.querySelector('.form-container')?.scrollIntoView({ behavior: 'smooth' });
     }
   };
 
   const initialValues = {
     name: "",
     description: "",
-    precioArea: "",
-    isActive: true
   };
 
-  if (editingId) {
-    const areaToEdit = areas.find(area => area.idArea === editingId);
-    if (areaToEdit) {
-      initialValues.name = areaToEdit.nombreArea;
-      initialValues.description = areaToEdit.descripcionArea;
-      initialValues.precioArea = areaToEdit.precioArea;
-      initialValues.isActive = areaToEdit.areaStatus;
-    }
-  }
-
   return (
-    <div className="form-container">
-      <div className="tabs">
-        <h2 className="gestion-title"> Áreas de Competencia</h2>
-        <p className="gestion-subtitle">
-          Añada áreas de competencia
-        </p>
-      </div>
-      <Formik
-        initialValues={initialValues}
-        validationSchema={areaValidationSchema}
-        onSubmit={handleSubmit}
-        enableReinitialize
-      >
-        {(formik) => (
-          <Form className="form">
-            <div>
+    <div className="form-area-wrapper page-padding">
+      <div className="form-container-area">
+        <div className="tabs">
+          <h2>Áreas de Competencia</h2>
+          <p>Añada nuevas áreas de competencia</p>
+        </div>
+        <Formik
+          initialValues={initialValues}
+          validationSchema={areaValidationSchema}
+          onSubmit={handleSubmit}
+        >
+          {(formik) => (
+            <Form>
               <InputText
                 label="Nombre del área"
                 name="name"
@@ -147,11 +134,8 @@ const FormArea = () => {
                 required
                 placeholder="Ej: Matemáticas"
                 maxLength={30}
+                showCounter={true}
               />
-              <p className="char-count">{formik.values.name.length}/30</p>
-
-            </div>
-            <div>
               <InputTextarea
                 label="Descripción del área"
                 name="description"
@@ -164,22 +148,17 @@ const FormArea = () => {
                 error={formik.errors.description}
                 required
               />
-            </div>
-
-
-            <div>
               <ButtonPrimary
                 type="submit"
                 className="btn-submit-azul"
                 disabled={!formik.isValid || isSubmitting}
               >
-                {editingId ? 'Actualizar área' : 'Añadir área'}
+                Añadir área
               </ButtonPrimary>
-
-            </div>
-          </Form>
-        )}
-      </Formik>
+            </Form>
+          )}
+        </Formik>
+      </div>
 
       <div className="area-list">
         <h3>Áreas registradas</h3>
@@ -189,20 +168,22 @@ const FormArea = () => {
           <p>No hay áreas registradas aún.</p>
         ) : (
           <div className="card-list">
-            {areas
-              .sort((a, b) => a.nombreArea?.localeCompare(b.nombreArea))
-              .map((area) => (
-                <ManagementCard key={area.idArea}
-                  title={area.nombreArea}
-                  info={[
-                    { label: "Descripción", value: area.descripcionArea || "—" },
-                    {
-                      label: "Código",
-                      value: area.nombreCortoArea || "—",
-                    },
-                  ]}
-                />
-              ))}
+            {areas.map((area) => (
+              <ManagementCard
+                key={area.idArea}
+                title={area.nombreArea}
+                info={[
+                  {
+                    label: "Descripción",
+                    value: area.descripcionArea || "—",
+                  },
+                  {
+                    label: "Código",
+                    value: area.nombreCortoArea || "—",
+                  },
+                ]}
+              />
+            ))}
           </div>
         )}
       </div>

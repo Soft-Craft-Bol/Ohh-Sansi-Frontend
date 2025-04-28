@@ -1,0 +1,56 @@
+@import '../../App.css';
+.buscador-codigo {
+  color: #002c5f;
+  margin-top: 20px;
+}
+
+.input-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 0;
+  background-color: var(--lighter);
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--grey);
+  max-width: 300px;
+}
+
+.input-container input {
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 14px;
+  height: 1.5rem;
+  flex: 1;
+}
+
+.search-icon {
+  color: var(--blue);
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.cont-cod-int {
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+}
+
+.code-text {
+  font-size: 1.3rem;
+  margin-right: 0.5rem;
+}
+
+.codigo-introducido {
+  font-size: 1.4rem;
+  font-style: italic;
+  font-weight: bolder;
+  color: var(--blue);
+}
+
+.error-message {
+  color: red;
+  font-size: 0.9rem;
+  margin-top: 5px;
+}

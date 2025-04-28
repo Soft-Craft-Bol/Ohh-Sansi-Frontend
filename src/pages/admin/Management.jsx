@@ -1,39 +1,71 @@
 import React from "react";
 import Tabs from "../../components/tabs/Tabs";
-import GestionPeriod from "../../components/management/gestion/GestionPeriod";
 import FormArea from "../../components/management/formArea/FormArea";
-import GradosManagement from "../../components/management/grados/GradosManagement";
 import CategoriesManagement from "../../components/management/categories/CategoriesManagement";
 import CostsManagement from "../../components/management/costos/CostsManagement";
+import PeriodosManagement from "../../components/management/period/PeriodsManagement";
 import Header from "../../components/header/Header";
 import "./Management.css";
-import { Trophy, Calendar, ListChecks,CoinsIcon, Banknote } from 'lucide-react';
-
+import { 
+  CalendarCheck,
+  Trophy,
+  Layers3,
+  DollarSign,
+  BookOpen,
+  FlaskConical,
+  Atom,
+  TestTube2,
+  School,
+  Calculator
+} from 'lucide-react';
+import CatalogoMangament from "../../components/management/catalogo/CatalogoManagement";
 
 const ManagementPage = () => {
   const tabs = [
-    { id: "periods", icon:<Calendar/>,label: " Periodos" },        
-    { id: "areas",icon:<ListChecks/>, label: " Áreas" },
-    {id: "grados", icon:<ListChecks/>, label: " Grados" }, 
-    {id: "categories", icon: <Trophy />, label: "Categorías" },          
-    { id: "costs", icon:<CoinsIcon/>, label: " Costos" },          
-    { id: "payments", icon:<Banknote/>,label: " Pagos" }        
-];
-
+    { 
+      id: "olimpiadas", 
+      icon: <CalendarCheck className="tab-icon" />, 
+      label: "Periodos",
+      description: "Gestiona fechas y periodos de las olimpiadas"
+    },
+    { 
+      id: "catalogo", 
+      icon: <BookOpen className="tab-icon" />, 
+      label: "Catálogos",
+      description: "Administra los catálogos disponibles"
+    },
+    { 
+      id: "areas", 
+      icon: <FlaskConical className="tab-icon" />, 
+      label: "Áreas",
+      description: "Gestiona las áreas científicas"
+    },
+    { 
+      id: "categories", 
+      icon: <TestTube2 className="tab-icon" />, 
+      label: "Categorías",
+      description: "Administra niveles y categorías"
+    },
+    { 
+      id: "costs", 
+      icon: <Calculator className="tab-icon" />, 
+      label: "Costos",
+      description: "Configura los costos de inscripción"
+    }
+  ];
 
   const renderTabContent = (activeTab) => {
     switch (activeTab) {
       case "areas":
         return <FormArea />;
-      case "grados":
-        return <GradosManagement />;
       case "categories":
         return <CategoriesManagement />;
-      case "periods":
-        return <GestionPeriod />;
-        case "costs":
-          return <CostsManagement />;
-
+      case "olimpiadas":
+        return <PeriodosManagement />;
+      case "costs":
+        return <CostsManagement />;
+      case "catalogo":
+        return <CatalogoMangament />;
       default:
         return null;
     }
@@ -41,11 +73,23 @@ const ManagementPage = () => {
 
   return (
     <div className="management-page">
+      <div className="management-background">
+        <div className="science-particles"></div>
+      </div>
+      
       <Header
-        title="Administración"
-        description="Gestiona las áreas, niveles/categorías, fechas de inscripción y costos de inscripción"
+        title="Panel de Administración"
+        description="Gestiona todos los aspectos de las Olimpiadas Científicas ohSansi"
+        withDecoration={true}
       />
-      <Tabs tabs={tabs} renderTabContent={renderTabContent} />
+      
+      <div className="management-content">
+        <Tabs 
+          tabs={tabs} 
+          renderTabContent={renderTabContent} 
+          variant="science"
+        />
+      </div>
     </div>
   );
 };

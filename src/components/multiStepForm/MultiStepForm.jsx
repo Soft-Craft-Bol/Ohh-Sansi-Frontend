@@ -1,18 +1,12 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import StepIndicator from "./StepIndicator";
+import Tabs from "../../components/tabs/Tabs";  
 import Step1Form from "./Step1Form";
 import Step2Form from "./Step2Form";
 import Step3Form from "./Step3Form";
 import Step4Form from "./Step4Form";
-import { inscripcionEstudiante, sendEmail } from "../../api/api";
-import { ButtonPrimary } from "../button/ButtonPrimary";
-import { toast } from "sonner";
 import "./MultiStepForm.css";
 
 const MultiStepForm = () => {
-  const navigate = useNavigate();
-  const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     participante: {
       idDepartamento: null,
@@ -32,151 +26,89 @@ const MultiStepForm = () => {
     costoTotal: 0
   });
 
-  const setIsStepValid = (isValid) => {
-    
-  }
+  const [activeTab, setActiveTab] = useState("step1");
+  const [participanteCI, setParticipanteCI] = useState(null);
+  const [shouldSearchParticipante, setShouldSearchParticipante] = useState(false);
+  const [autoNavigate, setAutoNavigate] = useState(false);
 
-  const steps = [
-    { label: "Información básica" },
-    { label: "Áreas de competencia" },
-    { label: "Información de tutores" },
-    { label: "Asignación de tutor" },
-    { label: "Pago" },
+  const handleParticipanteRegistrado = (ci) => {
+    setParticipanteCI(ci);
+    setShouldSearchParticipante(true); // Activar la búsqueda automática
+    setActiveTab("step2");
+  };
+
+  const handleParticipanteExistente = (ci) => {
+    setParticipanteCI(ci);
+    setShouldSearchParticipante(true); // Activar la búsqueda automática
+    setActiveTab("step2");
+  };
+
+  const handleAutoNavigate = (nextStep) => {
+    setActiveTab(nextStep);
+    setAutoNavigate(true);
+  };
+
+
+  // Tabs setup
+  const tabs = [
+    { 
+      id: "step1", 
+      label: "Información básica", 
+      component: <Step1Form 
+        formData={formData} 
+        updateFormData={setFormData} 
+        onRegistroExitoso={handleParticipanteRegistrado}
+        onParticipanteExistente={handleParticipanteExistente}
+        onComplete={() => handleAutoNavigate("step2")}
+      /> 
+    },
+    { 
+      id: "step2", 
+      label: "Áreas de competencia", 
+      component: <Step2Form 
+        formData={formData} 
+        updateFormData={setFormData} 
+        participanteCI={participanteCI}
+        shouldSearch={shouldSearchParticipante}
+        onSearchComplete={() => setShouldSearchParticipante(false)}
+        onComplete={() => handleAutoNavigate("step3")}
+        autoNavigate={autoNavigate}
+      /> 
+    },
+    { 
+      id: "step3", 
+      label: "Información de tutores", 
+      component: <Step3Form 
+        formData={formData} 
+        updateFormData={setFormData}
+        onComplete={() => handleAutoNavigate("step4")}
+      /> 
+    },
+    { 
+      id: "step4", 
+      label: "Asignación de tutor", 
+      component: <Step4Form 
+        formData={formData} 
+        updateFormData={setFormData}
+      /> 
+    }
+
   ];
 
-  const updateFormData = (newData) => {
-    setFormData(prev => ({
-      ...prev,
-      ...newData
-    }));
-  };
-
-  const handleNext = () => {
-    if (currentStep < steps.length) {
-      setCurrentStep(prev => prev + 1);
-    }
-  };
-
-  const handlePrev = () => {
-    if (currentStep > 1) {
-      setCurrentStep(prev => prev - 1);
-    }
-  };
-
-  const handleSubmit = async () => {
-    try {
-      const dataToSend = {
-        participante: {
-          ...formData.participante,
-          idDepartamento: Number(formData.participante.idDepartamento),
-          idMunicipio: Number(formData.participante.idMunicipio),
-          idColegio: Number(formData.participante.idColegio),
-          idNivelGradoEscolar: Number(formData.participante.idNivelGradoEscolar)
-        },
-        areasCompetenciaEstudiante: formData.areasCompetenciaEstudiante.map(a => ({
-          idArea: a.idArea,
-          idTutor: formData.asignaciones[a.idArea]?.carnetIdentidadTutor
-        })),
-        tutores: formData.tutores,
-        costoTotal: formData.costoTotal
-      };
-
-      // Validación de áreas seleccionadas
-      if (dataToSend.areasCompetenciaEstudiante.length === 0) {
-        toast.error("Debe seleccionar al menos un área");
-        setCurrentStep(2);
-        return;
-      }
-
-      // Validación de tutores asignados
-      const areasSinTutor = dataToSend.areasCompetenciaEstudiante.filter(a => !a.idTutor);
-      if (areasSinTutor.length > 0) {
-        toast.error("Todas las áreas deben tener un tutor asignado");
-        setCurrentStep(4);
-        return;
-      }
-
-      // Mostrar datos en consola antes de enviar
-      console.log("Datos a enviar:", {
-        ...dataToSend,
-        // Mostrar información más legible
-        participante: {
-          ...dataToSend.participante,
-          nombreCompleto: `${dataToSend.participante.nombreParticipante} ${dataToSend.participante.apellidoPaterno} ${dataToSend.participante.apellidoMaterno}`
-        },
-        areasConNombres: formData.areasCompetenciaEstudiante.map(a => {
-          const areaInfo = formData.areasInfo?.find(ai => ai.idArea === a.idArea);
-          const tutorAsignado = formData.asignaciones[a.idArea];
-          return {
-            nombreArea: areaInfo?.nombreArea,
-            precio: areaInfo?.precioArea,
-            tutor: tutorAsignado ? `${tutorAsignado.nombresTutor} ${tutorAsignado.apellidosTutor}` : null
-          };
-        }),
-        tutoresDetallados: formData.tutores.map(t => ({
-          nombreCompleto: `${t.nombresTutor} ${t.apellidosTutor}`,
-          tipo: t.tipoTutorNombre,
-          documento: t.carnetIdentidadTutor
-        }))
-      });
-
-      const response = await inscripcionEstudiante(dataToSend);
-      console.log("Registro exitoso:", response);
-      toast.success("Inscripción completada con éxito");
-
-      const emailsTutores = formData.tutores
-        .filter(t => dataToSend.areasCompetenciaEstudiante.some(a => a.idTutor === t.carnetIdentidadTutor))
-        .map(t => t.emailTutor); // Asegúrate de que el campo sea correcto
-
-      console.log("Correos a enviar:", emailsTutores);
-
-      // Enviar email a cada tutor
-      for (const email of emailsTutores) {
-        if (email) {
-          await sendEmail({ to: email });
-          console.log(`Correo enviado a: ${email}`);
-        }
-      }
-
-      navigate("/home");
-
-    } catch (error) {
-      console.error("Error en el registro:", error);
-      toast.error("Error al completar la inscripción");
-    }
-  };
-
-  const getStepComponent = (step) => {
-    const commonProps = {
-      formData,
-      updateFormData,
-      onNext: handleNext,
-      onPrev: handlePrev
-    };
-
-    switch (step) {
-      case 1:
-        return <Step1Form {...commonProps} />;
-      case 2:
-        return <Step2Form {...commonProps} />;
-      case 3:
-        return <Step3Form {...commonProps} />;
-      case 4:
-        return <Step4Form {...commonProps} />;
-      case 5:
-        return (
-          <>d</> 
-        );
-      default:
-        return null;
-    }
+  const renderTabContent = (activeTab) => {
+    const tab = tabs.find((tab) => tab.id === activeTab);
+    return tab ? tab.component : null;
   };
 
   return (
     <div className="multi-step-container">
       <h1>Nueva inscripción</h1>
-      <StepIndicator steps={steps} currentStep={currentStep} />
-      {getStepComponent(currentStep)}
+      <Tabs 
+        tabs={tabs} 
+        renderTabContent={renderTabContent} 
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+      />
     </div>
   );
 };

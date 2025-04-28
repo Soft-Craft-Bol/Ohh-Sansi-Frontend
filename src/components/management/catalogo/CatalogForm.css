@@ -1,0 +1,209 @@
+/* CatalogForm.css */
+.cf-container {
+  position: relative;
+  padding: 2rem;
+  margin: 2rem 0;
+  background: linear-gradient(145deg, 
+    rgba(var(--blue-color), 0.05),
+    rgba(255, 255, 255, 0.1)
+  );
+  border-radius: 16px;
+  border: 1px solid rgba(var(--blue-color), 0.15);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  transform-style: preserve-3d;
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+  overflow: hidden;
+}
+
+.cf-container:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 40px rgba(var(--blue-color), 0.15);
+}
+
+.cf-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  position: relative;
+  z-index: 2;
+}
+
+.cf-form-group {
+  position: relative;
+  margin-bottom: 1.2rem;
+}
+
+.cf-form-label {
+  display: block;
+  font-weight: 600;
+  color: var(--text-color);
+  margin-bottom: 0.8rem;
+  font-size: 0.95rem;
+  padding-left: 0.5rem;
+  position: relative;
+}
+
+.cf-form-label::before {
+  content: '▹';
+  position: absolute;
+  left: -0.8rem;
+  color: var(--blue-color);
+  font-size: 1.2em;
+  transform: rotate(45deg);
+}
+
+.cf-select-wrapper {
+  position: relative;
+  border-radius: 10px;
+  background: var(--background);
+  transition: all 0.3s ease;
+  border: 2px solid var(--science-blue);
+}
+
+.cf-select-wrapper:hover {
+  border-color: var(--blue-color);
+}
+
+.cf-select-wrapper :focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(var(--blue-color), 0.5);
+  border-color: var(--blue-color);
+}
+
+.cf-select {
+  width: 100%;
+  padding: 1rem;
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: var(--text-color);
+  font-size: 0.85rem;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.cf-select-arrow {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: var(--text-color);
+  transition: transform 0.3s ease;
+}
+
+.cf-select-wrapper:hover .cf-select-arrow {
+  transform: translateY(-50%) rotate(90deg);
+}
+
+.cf-error-message {
+  color: #ef4444;
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+  padding-left: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  animation: errorShake 0.4s ease;
+}
+
+@keyframes errorShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(5px); }
+  75% { transform: translateX(-5px); }
+}
+
+.cf-submit-btn {
+  position: relative;
+  background: linear-gradient(135deg, 
+    var(--blue-color),
+    var(--science-blue)
+  );
+  color: white;
+  padding: 1rem 2rem;
+  border: none;
+  border-radius: 20px;
+  width: 80%;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.4s ease;
+  overflow: hidden;
+  grid-column: 1 / -1;
+  justify-self: center;
+}
+
+.cf-submit-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: 0.5s;
+}
+
+.cf-submit-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(var(--blue-color), 0.3);
+}
+
+.cf-submit-btn:hover::before {
+  left: 100%;
+}
+
+/* Efectos de fondo dinámicos */
+.cf-container::after {
+  content: '';
+  position: absolute;
+  bottom: -30%;
+  right: -30%;
+  width: 60%;
+  height: 60%;
+  background: radial-gradient(circle, 
+    rgba(var(--blue-color), 0.08) 0%, 
+    transparent 70%);
+  transform: rotate(45deg);
+  transition: all 0.4s ease;
+}
+
+.cf-container:hover::after {
+  bottom: -20%;
+  right: -20%;
+}
+
+/* Modo oscuro */
+body.dark .cf-container {
+  background: linear-gradient(145deg, 
+    rgba(var(--blue-color), 0.1),
+    rgba(30, 41, 59, 0.3)
+  );
+  border-color: rgba(var(--blue-color), 0.3);
+}
+
+body.dark .cf-select-wrapper {
+  background: rgba(30, 41, 59, 0.5);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .cf-container {
+    padding: 1.5rem;
+  }
+  
+  .cf-form-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .cf-submit-btn {
+    width: 100%;
+    justify-self: center;
+    text-align: center;
+  }
+}

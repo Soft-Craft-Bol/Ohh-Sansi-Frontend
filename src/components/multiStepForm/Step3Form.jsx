@@ -2,210 +2,343 @@ import { useState, useEffect } from "react";
 import "./Step3Form.css";
 import InputText from "../inputs/InputText";
 import { ButtonPrimary } from "../button/ButtonPrimary";
-import { getAllTutor } from "../../api/api"; 
+import {registerTutor, getTutorAsigando } from "../../api/api";
 import registerTutorValidationSchema from "../../schemas/registerTutorValidate";
 import { Formik, Form } from "formik";
-import { toast } from "sonner";
-import SelectInput from "../selected/SelectInput";
 import Swal from "sweetalert2";
+import useDebounce from "../../hooks/WriteInputs/useDebounce";
+import { verificarSerTutor, verificarTutor, verificarParticipante } from "../../hooks/loaderInfo/LoaderInfo";
 
-const Step3Form = ({ onNext, onPrev, formData = {}, updateFormData }) => {
-  const [tipoTutores, setTipoTutores] = useState([]);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [tutoresLocales, setTutoresLocales] = useState(formData.tutores || []);
-  const MAX_TUTORES = 2;
-  
-  useEffect(() => {
-    fetchData();
-  }, []);
+const Step3Form = () => {
+  const [tutoresLocales, setTutoresLocales] = useState([]);
+  const [ciParticipante, setCiParticipante] = useState("");
+  let debouncedCiParticipante = useDebounce(ciParticipante, 1000);
+  const [ciVerificado, setCiVerificado] = useState(false);
+
+  const MAX_TUTORES = 3; 
 
   const initialValues = {
-    idTipoTutor: "",
-    emailTutor: "", 
+    idTipoTutor: 2, //constant for Legal
+    emailTutor: "",
     nombresTutor: "",
     apellidosTutor: "",
     telefono: "",
     carnetIdentidadTutor: "",
+    complementoCiTutor: "",
   };
 
-  const fetchData = async () => {
-    try {
-      const response = await getAllTutor();
-      const tipos = response.data?.tipoTutores || 
-              response.data?.data?.tipoTutores || 
-              response.data || 
-              [];
-      setTipoTutores(Array.isArray(tipos) ? tipos : []);
-    } catch (error) {
-      console.error("Error fetching tutor types:", error);
-      toast.error("Error al cargar tipos de tutor");
-      setTipoTutores([]);
+  useEffect(() => {
+    if (debouncedCiParticipante.length >= 5 && !ciVerificado) {
+      verificarSerTutor(
+        debouncedCiParticipante,
+        (data) => {
+          setCiVerificado(true);
+          cargarTutoresExistentes(debouncedCiParticipante);
+        },
+        () => {
+          setCiVerificado(false);
+          setTutoresLocales([]);
+        }
+      );
     }
-  };
+  }, [debouncedCiParticipante]);
 
-  const agregarTutor = (tutor, { resetForm }) => {
+  const agregarTutor = (values, { resetForm }) => {
     if (tutoresLocales.length >= MAX_TUTORES) {
-      toast.error(`Solo puede registrar un máximo de ${MAX_TUTORES} tutores`);
+      Swal.fire({
+        icon: 'error',
+        title: "Error",
+        text: `Solo puede registrar un máximo de ${MAX_TUTORES} tutores`
+      });
       return;
     }
-
-    // Verificar si ya existe un tutor con el mismo CI
-    const existe = tutoresLocales.some(t => 
-      t.carnetIdentidadTutor === tutor.carnetIdentidadTutor
-    );
-    
+  
+    const existe = tutoresLocales.some((t) => t.carnetIdentidadTutor === values.carnetIdentidadTutor);
+  
     if (existe) {
-      toast.error("Ya existe un tutor con este número de documento");
+      Swal.fire({
+        icon: 'error',
+        title: "Error",
+        text: "Ya existe un tutor con este número de documento"
+      });
       return;
     }
-
-    // Buscar el nombre del tipo de tutor
-    const tipoTutor = tipoTutores.find(t => t.idTipoTutor === Number(tutor.idTipoTutor));
-    
+  
     const nuevoTutor = {
-      ...tutor,
-      idTipoTutor: Number(tutor.idTipoTutor),
-      tipoTutorNombre: tipoTutor?.nombreTipoTutor || "Sin tipo"
+      ...values,
+      fromBackend: false //es uno nuevo local
     };
-
+  
     setTutoresLocales([...tutoresLocales, nuevoTutor]);
     resetForm();
-    toast.success("Tutor agregado localmente");
-    
-    // Mostrar mensaje si se alcanza el límite
-    if (tutoresLocales.length + 1 >= MAX_TUTORES) {
-      toast.info(`Ha alcanzado el límite máximo de ${MAX_TUTORES} tutores`);
-    }
+  
+    Swal.fire({
+      icon: 'success',
+      title: "Éxito",
+      text: "Tutor agregado correctamente",
+      timer:2000
+    });
   };
-
+  
   const eliminarTutor = (index) => {
     const nuevosTutores = [...tutoresLocales];
     nuevosTutores.splice(index, 1);
     setTutoresLocales(nuevosTutores);
-    toast.success("Tutor eliminado");
+    Swal.fire({icon:'success',
+      title:"Éxito",
+      text:"Tutor eliminado",
+      timer:2000})
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    updateFormData({ tutores: tutoresLocales });
-    onNext();
+  const handleRegistrarTutores = async () => {
+    if (!ciParticipante) {
+      Swal.fire({icon:'error',
+        title:"Error",
+        text:"Debe ingresar el CI del participante antes de registrar tutores"});
+      return;
+    }
+
+    if (tutoresLocales.length === 0) {
+      Swal.fire({icon:'error',
+        title:'Error',
+        text:"Debe agregar al menos un tutor antes de registrar"});
+      return;
+    }
+
+    //Filtro solo tutores nuevos
+  const nuevosTutores = tutoresLocales.filter(tutor => tutor.fromBackend === false);
+  if (nuevosTutores.length === 0) {
+    Swal.fire({
+      icon: 'info',
+      title: "Sin cambios",
+      text: "No hay nuevos tutores para registrar.",
+      timer: 2500
+    });
+    return;
+  }
+
+    try {
+      await registerTutor(ciParticipante, nuevosTutores);
+      Swal.fire({icon:'success',title:"Éxito",text:"Tutores registrados correctamente"});
+      setTutoresLocales([]);
+      setCiParticipante("");
+    } catch (error) {
+      console.error("Error al registrar los tutores:", error);
+      const errorMessage = error?.response?.data?.message || "Error al registrar los tutores";
+
+    Swal.fire({
+      icon: "error",
+      title: "Error",
+      text: errorMessage
+    });
+    }
   };
+
+  const cargarTutoresExistentes = async (ci) => {
+    try {
+      const response = await getTutorAsigando(ci);
+      if (response.data?.tutoresLegales?.length > 0) {
+        // Mapeado a los datos locales
+        const tutoresExistentes = response.data.tutoresLegales.map((tutor) => ({
+          emailTutor: tutor.correoTut,
+          nombresTutor: tutor.nombreTut,
+          apellidosTutor: tutor.apellidoTut,
+          telefono: tutor.telf.toString(),
+          carnetIdentidadTutor: tutor.ciTut.toString(),
+          complementoCiTutor: tutor.complemento || "",
+          fromBackend: true
+        }));
+        
+        setTutoresLocales(tutoresExistentes);
+        const Toast = Swal.mixin({
+        toast: true,
+        position: "top-end",
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        didOpen: (toast) => {
+          toast.onmouseenter = Swal.stopTimer;
+          toast.onmouseleave = Swal.resumeTimer;
+        }
+        });
+        Toast.fire({
+          icon: "success",
+          title: "Se han cargado sus tutores ya asignados"
+        });
+      } else {
+        setTutoresLocales([]);
+      }
+    } catch (error) {
+      console.error("Error al cargar tutores existentes:", error);
+      Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudieron cargar los tutores anteriores.' });
+    }
+  };
+  
 
   return (
-    <div className="step3-container">
-      <h2 className="step3-title">Registro de Tutores</h2>
+    <div className="step3-container page-padding">
+      <h2 className="step3-title">Registro de Tutores Legales</h2>
       <p className="step3-description">
-        Agregue los tutores del participante (Paso 3 de 5) - Máximo {MAX_TUTORES}
+        Registre un máximo de {MAX_TUTORES} tutores a un participante.
       </p>
-      
+
       <div className="step3-content">
-        {/* Formulario para agregar nuevos tutores */}
         <div className="step3-form-container">
+          <div className="step3-form-group">
+            <label className="ci-participante" htmlFor="ciParticipante">CI del Participante</label>
+            <input
+              id="ciParticipante"
+              name="ciParticipante"
+              type="text"
+              placeholder="Ingrese el CI del participante"
+              value={ciParticipante}
+              onChange={(e) => {
+                setCiParticipante(e.target.value);
+                setCiVerificado(false);
+              }}
+              required
+              className="step3-input"
+              maxLength={10}
+            />
+          </div>
+
           <Formik
             initialValues={initialValues}
             validationSchema={registerTutorValidationSchema}
             onSubmit={agregarTutor}
             enableReinitialize
           >
-            {(formik) => (
-              <Form className="step3-form">
-                <div className="step3-form-group">
-                  <SelectInput
-                    label="Tipo de Tutor"
-                    name="idTipoTutor"
-                    options={tipoTutores.map((tipo) => ({
-                      value: tipo.idTipoTutor,
-                      label: tipo.nombreTipoTutor,
-                    }))}
-                    value={formik.values.idTipoTutor}
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                    className="step3-select"
-                    required
-                  />
-                </div>
+            {({ values, setFieldValue, isValid, isSubmitting }) => {
+              let debouncedCI = useDebounce(values.carnetIdentidadTutor, 1000); // Aquí haces debounce al documento
 
-                <div className="step3-form-group">
-                  <InputText
-                    name="nombresTutor"
-                    label="Nombres"
-                    type="text"
-                    placeholder="Nombres del tutor"
-                    required
-                  />
-                </div>
+              useEffect(() => {
+                if (debouncedCI && debouncedCI !== "completed") {
+                  // Primero intenta buscar como Tutor
+                  let yaEncontrado;
+                  verificarTutor(debouncedCI, (data) => {
+                    setFieldValue("nombresTutor", data.nombresTutor || "");
+                    setFieldValue("apellidosTutor", data.apellidosTutor || "");
+                    setFieldValue("emailTutor", data.emailTutor || "");
+                    setFieldValue("telefono", data.telefono?.toString() || "");
+                    setFieldValue("carnetIdentidadTutor", data.carnetIdentidadTutor?.toString() || "");
+                    setFieldValue("complementoCiTutor", data.complementoCiTutor || "");
+              
+                    debouncedCI = "completed";
+                    yaEncontrado = true;
+                  }, async (errorMsg) => {
+                    console.warn("No se encontró como tutor, intentando como participante...");
+              
+                    // recien busca en los Participantes
+                    if(!yaEncontrado) {
+                      verificarParticipante(debouncedCI, (data) => {
+                        setFieldValue("nombresTutor", data.nombreParticipante || "");
+                        setFieldValue(
+                          "apellidosTutor",
+                          `${data.apellidoPaterno || ""} ${data.apellidoMaterno || ""}`.trim()
+                        );
+                        setFieldValue("emailTutor", data.emailParticipante || "");
+                        setFieldValue("telefono", data.telefonoParticipante?.toString() || "");
+                        setFieldValue("carnetIdentidadTutor", data.carnetIdentidadParticipante?.toString() || "");
+                        setFieldValue("complementoCiTutor", data.complementoCiParticipante || "");
+              
+                        debouncedCI = "completed";
+                      }, (msg) => {
+                        console.error("Error como participante:", msg);
+                      });
+                    }
+                  });
+                }
+              }, [debouncedCI, setFieldValue]);
 
-                <div className="step3-form-group">
-                  <InputText
-                    name="apellidosTutor"
-                    label="Apellidos"
-                    type="text"
-                    placeholder="Apellidos del tutor"
-                    required
-                  />
-                </div>
+              return (
+                <Form className="step3-form">
+                  <div className="step3-form-group">
+                    <InputText
+                      name="carnetIdentidadTutor"
+                      label="N° de documento"
+                      type="text"
+                      placeholder="Documento del tutor"
+                      required
+                      onlyNumbers
+                      maxLength={9}
+                    />
+                  </div>
 
-                <div className="step3-form-group">
-                  <InputText
-                    name="emailTutor"
-                    label="Correo electrónico"
-                    type="email"
-                    placeholder="Correo del tutor"
-                    required
-                  />
-                </div>
+                  <div className="step3-form-group">
+                    <InputText
+                      name="complementoCiTutor"
+                      label="Complemento CI"
+                      type="text"
+                      placeholder="Complemento del documento"
+                      maxLength={2}
+                      onlyAlphaNumeric
+                    />
+                  </div>
 
-                <div className="step3-form-group">
-                  <InputText
-                    name="telefono"
-                    label="Teléfono"
-                    type="text"
-                    placeholder="Teléfono del tutor"
-                    required
-                  />
-                </div>
+                  <div className="step3-form-group">
+                    <InputText
+                      name="nombresTutor"
+                      label="Nombres"
+                      type="text"
+                      placeholder="Nombres del tutor"
+                      required
+                      onlyLetters={true}
+                      maxLength={50}
+                    />
+                  </div>
 
-                <div className="step3-form-group">
-                  <InputText
-                    name="carnetIdentidadTutor"
-                    label="N° de documento"
-                    type="text"
-                    placeholder="Documento del tutor"
-                    required
-                  />
-                </div>
+                  <div className="step3-form-group">
+                    <InputText
+                      name="apellidosTutor"
+                      label="Apellidos"
+                      type="text"
+                      placeholder="Apellidos del tutor"
+                      required
+                      onlyLetters={true}
+                      maxLength={50}
+                    />
+                  </div>
 
-                <div className="step3-button-container">
-                  <ButtonPrimary
-                    type="submit"
-                    buttonStyle="primary"
-                    disabled={!formik.isValid || isSubmitting || tutoresLocales.length >= MAX_TUTORES}
-                    onClick={() => {
-                      if (!formik.isValid) {
-                        Swal.fire({
-                          icon: 'error',
-                          title: 'Datos incompletos',
-                          text: 'Por favor, complete todos los campos requeridos',
-                          showConfirmButton: false,
-                          timer: 2000,
-                        });
-                      }
-                    }}
-                  >
-                    {tutoresLocales.length >= MAX_TUTORES ? 
-                      'Límite alcanzado' : 
-                      'Agregar Tutor'}
-                  </ButtonPrimary>
-                </div>
-              </Form>
-            )}
+                  <div className="step3-form-group">
+                    <InputText
+                      name="emailTutor"
+                      label="Correo electrónico"
+                      type="email"
+                      placeholder="Correo del tutor"
+                      required
+                    />
+                  </div>
+
+                  <div className="step3-form-group">
+                    <InputText
+                      name="telefono"
+                      label="Teléfono"
+                      type="text"
+                      placeholder="Teléfono del tutor"
+                      required
+                      onlyNumbers
+                      maxLength={8}
+                    />
+                  </div>
+
+                  <div className="step3-button-container">
+                    <ButtonPrimary
+                      type="submit"
+                      buttonStyle="primary"
+                      disabled={!isValid || tutoresLocales.length >= MAX_TUTORES}
+                    >
+                      {tutoresLocales.length >= MAX_TUTORES ? "Límite alcanzado" : "Agregar Tutor"}
+                    </ButtonPrimary>
+                  </div>
+                </Form>
+              );
+            }}
           </Formik>
         </div>
 
-        {/* Lista de tutores agregados */}
         <div className="step3-tutores-list">
           <h3>Tutores Actuales ({tutoresLocales.length}/{MAX_TUTORES})</h3>
-          
+
           {tutoresLocales.length === 0 ? (
             <p className="no-tutores-message">No hay tutores agregados aún</p>
           ) : (
@@ -213,19 +346,21 @@ const Step3Form = ({ onNext, onPrev, formData = {}, updateFormData }) => {
               {tutoresLocales.map((tutor, index) => (
                 <li key={index} className="tutor-card">
                   <div className="tutor-info">
-                    <h4>{tutor.tipoTutorNombre}</h4>
                     <p><strong>Nombre:</strong> {tutor.nombresTutor} {tutor.apellidosTutor}</p>
                     <p><strong>Email:</strong> {tutor.emailTutor}</p>
                     <p><strong>Teléfono:</strong> {tutor.telefono}</p>
                     <p><strong>Documento:</strong> {tutor.carnetIdentidadTutor}</p>
+                    <p><strong>Complemento CI:</strong> {tutor.complementoCiTutor || "N/A"}</p>
                   </div>
-                  <button
+                  {!tutor.fromBackend && (
+                    <button
                     type="button"
                     className="remove-tutor-btn"
                     onClick={() => eliminarTutor(index)}
                   >
                     × Eliminar
                   </button>
+                  )}
                 </li>
               ))}
             </ul>
@@ -233,22 +368,14 @@ const Step3Form = ({ onNext, onPrev, formData = {}, updateFormData }) => {
         </div>
       </div>
 
-      {/* Botones de navegación */}
       <div className="step3-navigation">
-        <ButtonPrimary 
-          type="button"
-          buttonStyle="secondary"
-          onClick={onPrev}
-        >
-          Anterior
-        </ButtonPrimary>
-        <ButtonPrimary 
+        <ButtonPrimary
           type="button"
           buttonStyle="primary"
-          onClick={handleSubmit}
+          onClick={handleRegistrarTutores}
           disabled={tutoresLocales.length === 0}
         >
-          Siguiente
+          Registrar Tutores
         </ButtonPrimary>
       </div>
     </div>

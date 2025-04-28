@@ -1,0 +1,254 @@
+@import '../../App.css';
+.estado-inscripcion{
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--grey);
+  transition: background-color 0.3s ease;
+  padding: 0px;
+  padding-bottom: 100px;
+}
+.top-container h2 {
+  color: var(--blue);
+  font-family: var(--poppins);
+  font-size: 2.5rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+.detail-info-cont {
+  margin-top: 30px;
+}
+
+.detail-info-cont h2 {
+  color: var(--dark);
+  font-family: var(--poppins);
+  font-size: 1.5rem;
+  margin-bottom: 20px;
+}
+
+.info-card {
+  background-color: var(--lighter);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.info-header {
+  padding: 20px;
+  background-color: #f8ffed;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--dark-grey);
+}
+
+.info-user h3 {
+  font-family: var(--poppins);
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.info-user p {
+  color: var(--dark);
+  font-family: var(--lato);
+  font-size: 0.9rem;
+}
+
+.status-badge {
+  display: flex;
+  align-items: center;
+}
+
+.status-complete {
+  background-color: #8bc34a;
+  color: white;
+  padding: 8px 15px;
+  border-radius: 20px;
+  font-family: var(--poppins);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+.status-pending{
+  background-color: #ff9800;
+  color: white;
+  padding: 8px 15px;
+  border-radius: 20px;
+  font-family: var(--poppins);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.info-table {
+  width: 100%;
+}
+
+.table-header {
+  display: flex;
+  background-color: #f0f8ff;
+  padding: 15px 20px;
+  font-family: var(--poppins);
+  font-weight: 600;
+  color: var(--blue);
+  font-size: 0.9rem;
+}
+
+.table-row {
+  display: flex;
+  padding: 15px 20px;
+  font-family: var(--lato);
+  border-bottom: 1px solid var(--dark-grey);
+  align-items: center;
+}
+
+.table-row:last-child {
+  border-bottom: none;
+}
+
+.col-etapa {
+  width: 25%;
+  font-weight: 500;
+}
+
+.col-estado {
+  width: 15%;
+}
+
+.col-fecha {
+  width: 15%;
+  color: #666;
+}
+
+.col-comentarios {
+  width: 30%;
+  color: #666;
+}
+
+.col-acciones {
+  width: 15%;
+  text-align: right;
+}
+
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 10px;
+  border-radius: 15px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.status-chip.complete {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+.status-chip.generado {
+  background-color: #e3f2fd;
+  color: #1565c0;
+}
+
+.ver-detalles {
+  color: var(--blue);
+  font-weight: 100;
+  text-decoration: underline;
+}
+
+.ver-detalles:hover {
+  text-decoration: underline;
+}
+.status-chip.pending {
+  background-color: #ffedd5; 
+  color: #f97316;
+}
+
+@media screen and (max-width: 1024px) {
+  .table-header,
+  .table-row {
+    flex-wrap: wrap;
+    font-size: 0.85rem;
+  }
+  .page-padding, .top-container{
+    margin-top: 3vh;
+    margin-right: 2vh;
+    margin-left: 2vh;
+  }
+
+  .col-etapa,
+  .col-estado,
+  .col-fecha,
+  .col-comentarios,
+  .col-acciones {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+
+  .col-acciones {
+    text-align: left;
+  }
+
+  .info-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .top-container h2,
+  .detail-info-cont h2 {
+    font-size: 1.8rem;
+  }
+
+  .info-user h3 {
+    font-size: 1rem;
+  }
+
+  .status-complete, .status-pending {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+  }
+  .page-padding, .top-container{
+    margin-top: 3vh;
+    margin-right: 2vh;
+    margin-left: 2vh;
+  }
+
+
+  .table-header,
+  .table-row {
+    padding: 10px 15px;
+  }
+
+  .status-chip {
+    font-size: 0.8rem;
+    padding: 4px 8px;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .top-container h2,
+  .detail-info-cont h2 {
+    font-size: 1.5rem;
+    text-align: start;
+  }
+
+  .info-header {
+    padding: 15px;
+  }
+  .page-padding, .top-container{
+    margin-top: 3vh;
+    margin-right: 2vh;
+    margin-left: 2vh;
+  }
+
+  .info-card {
+    margin: 0 10px;
+  }
+
+  .ver-detalles {
+    font-size: 0.85rem;
+  }
+}

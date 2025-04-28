@@ -1,115 +1,244 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Formik, Form } from "formik";
-import { toast } from "sonner";
 import InputText from "../inputs/InputText";
-import { ButtonPrimary } from "../button/ButtonPrimary";
+import {verificarParticipante} from "../../hooks/loaderInfo/LoaderInfo";
 import SelectInput from "../selected/SelectInput";
-import useFetchNivelesEscolares from "../../hooks/NivelEscolar/useFetchNivelesEscolares";
+import useFetchGrados from "../../hooks/NivelEscolar/useFetchGrados";
 import useFetchDepartamentos from "../../hooks/departamento/useFetchDepartamentos";
 import useFetchMunicipios from "../../hooks/departamento/useFetchMunicipios";
 import useFetchColegio from "../../hooks/Colegio/useFetchColegio";
 import inscripcionSchema from "../../schemas/InscripcionValidate";
-import { useNavigate } from "react-router-dom";
 import { registerParticipante } from "../../api/api";
 import Swal from "sweetalert2";
 import "./Step1Form.css";
+import DisabledButton from "../button/DisabledButton";
+import useDebounce from "../../hooks/WriteInputs/useDebounce";
 
 const Step1Form = () => {
-  const navigate = useNavigate();
-  const { niveles, loading: loadingNiveles } = useFetchNivelesEscolares();
+  const today = new Date().toISOString().split("T")[0];
+  const { grados, loading: loadingGrados } = useFetchGrados();
   const { departamentos, loading: loadingDepartamentos } = useFetchDepartamentos();
   const [selectedDepartamento, setSelectedDepartamento] = useState("");
   const { municipios, loading: loadingMunicipios } = useFetchMunicipios(selectedDepartamento);
   const [selectedMunicipio, setSelectedMunicipio] = useState("");
   const { colegios, loading: loadingColegios } = useFetchColegio(selectedMunicipio);
+  const [loadingOverlay, setLoadingOverlay] = useState(false);
+  const [isSubmittingForm, setIsSubmittingForm] = useState(false);
 
   const loadSavedData = () => {
     const savedData = localStorage.getItem("participanteFormData");
     return savedData
       ? JSON.parse(savedData)
       : {
+        nombre: "",
+        apellido: "",
+        documento: "",
+        complemento: "",
+        fechaNacimiento: "",
+        departamento: "",
+        municipio: "",
+        institucion: "",
+        grado: "",
+        email: "",
+        telefono: "",
+      };
+  };
+
+  const handleSubmit = async (values, resetForm) => {
+    if (isSubmittingForm) return;
+  
+    setIsSubmittingForm(true);
+    setLoadingOverlay(true);
+  
+    Swal.fire({
+      title: 'Registrando participante...',
+      text: 'Por favor, espere...',
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+      showConfirmButton: false,
+      didOpen: () => {
+        Swal.showLoading();
+      },
+    });
+  
+    try {
+      const fechaNacimiento = new Date(values.fechaNacimiento);
+      const hoy = new Date();
+      let edad = hoy.getFullYear() - fechaNacimiento.getFullYear();
+      const mes = hoy.getMonth() - fechaNacimiento.getMonth();
+      if (mes < 0 || (mes === 0 && hoy.getDate() < fechaNacimiento.getDate())) {
+        edad--;
+      }
+      const tutorRequerido = edad < 15;
+  
+      const participanteData = {
+        idDepartamento: parseInt(values.departamento),
+        idMunicipio: parseInt(values.municipio),
+        idColegio: parseInt(values.institucion),
+        idGrado: parseInt(values.grado),
+        participanteHash: "hash1asd23131",
+        nombreParticipante: values.nombre,
+        apellidoPaterno: values.apellido.split(" ")[0] || "",
+        apellidoMaterno: values.apellido.split(" ")[1] || "",
+        fechaNacimiento: values.fechaNacimiento,
+        carnetIdentidadParticipante: parseInt(values.documento),
+        complementoCiParticipante: values.complemento || null,
+        emailParticipante: values.email || null,
+        tutorRequerido,
+      };
+      const response = await registerParticipante(participanteData); 
+
+      if (response?.data?.existe) {
+        Swal.fire({
+          icon: "error",
+          title: "Participante ya registrado",
+          text: "Ya existe un registro con ese documento de identidad.",
+          confirmButtonText: "Aceptar",
+        });
+        onParticipanteExistente(values.documento);
+        onComplete();
+        return;
+        
+      }
+
+      Swal.close();
+      Swal.fire({
+        icon: "success",
+        title: "¡Formulario guardado!",
+        text: "La información fue completada correctamente.",
+        confirmButtonText: "Continuar",
+        
+      }).then(() => {
+        onRegistroExitoso(values.documento);
+        onComplete();
+        resetForm();
+        localStorage.removeItem("participanteFormData");
+        
+      });
+  
+    } catch (error) {
+      console.error("Error al registrar participante:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Error al registrar",
+        text: error.response?.data?.message || "Ocurrió un error inesperado",
+        confirmButtonText: "Cerrar",
+      });
+    } finally {
+      setLoadingOverlay(false);
+      setIsSubmittingForm(false);
+    }
+  };  
+
+  useEffect(() => {
+    const handleKeyPress = (e) => {
+      if (e.key === "Enter" && !isSubmittingForm) {
+        const submitButton = document.querySelector("button[type='submit']");
+        if (submitButton) {
+          submitButton.click();
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyPress);
+    return () => {
+      window.removeEventListener("keydown", handleKeyPress);
+    };
+  }, [isSubmittingForm]);
+
+
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      const form = document.querySelector("form");
+      const inputs = form.querySelectorAll("input, select");
+      let hasData = false;
+
+      inputs.forEach((input) => {
+        if (input.value && input.value.trim() !== "") {
+          hasData = true;
+        }
+      });
+
+      if (hasData) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, []);
+
+  return (
+    <div className="form-container">
+      {loadingOverlay && <div className="overlay"></div>}
+      <h1>Registro de Participante</h1>
+      <span className="form-description">Ingrese los datos del participante</span>
+
+      <Formik
+        //initialValues={loadSavedData()} perdon queria hacer pruebas UnU
+        initialValues={{
           nombre: "",
           apellido: "",
           documento: "",
+          complemento: "",
           fechaNacimiento: "",
           departamento: "",
           municipio: "",
           institucion: "",
           grado: "",
           email: "",
-          telefono: "",
-        };
-  };
-
-  const handleSubmit = async (values) => {
-    try {
-      localStorage.setItem("participanteFormData", JSON.stringify(values));
-
-      const participanteData = {
-        idInscripcion: 60,
-        nombreParticipante: values.nombre,
-        apellidoPaterno: values.apellido.split(" ")[0] || "",
-        apellidoMaterno: values.apellido.split(" ")[1] || "",
-        carnetIdentidadParticipante: values.documento,
-        fechaNacimiento: values.fechaNacimiento,
-        idDepartamento: parseInt(values.departamento),
-        idMunicipio: parseInt(values.municipio),
-        idColegio: parseInt(values.institucion),
-        idNivel: parseInt(values.grado),
-        correoElectronicoParticipante: values.email || null,
-        telefonoParticipante: values.telefono || null,
-      };
-
-      const response = await registerParticipante(participanteData);
-
-      if (response && response.data && response.data.existe) {
-        toast.error("El participante ya está registrado con ese documento.");
-        return;
-      }
-
-      toast.success("Participante registrado exitosamente");
-      Swal.fire({
-        icon: "success",
-        title: "¡Formulario guardado!",
-        text: "La información fue completada correctamente.",
-        confirmButtonText: "Continuar",
-      }).then(() => {
-        navigate("/areas-competencia");
-      });
-    } catch (error) {
-      console.error("Error al registrar participante:", error);
-      toast.error(
-        error.response?.data?.message || "Error al registrar participante"
-      );
-    }
-  };
-
-  return (
-    <div className="form-container">
-      <h1>Registro de Participante</h1>
-      <span className="form-description">Ingrese los datos del participante</span>
-
-      <Formik
-        initialValues={loadSavedData()}
+          telefono: "",}}
         validationSchema={inscripcionSchema}
-        onSubmit={handleSubmit}
-        validateOnBlur={true}
+        onSubmit={(values, { resetForm }) => handleSubmit(values, resetForm)}
+        validateOnBlur={false}
         validateOnChange={true}
       >
-        {({ values, setFieldValue, isValid, isSubmitting }) => (
+        {({ values, setFieldValue, isValid, isSubmitting }) => {
+          let debouncedCI = useDebounce(values.documento, 1000);
+
+          useEffect(() => {
+            if (debouncedCI && debouncedCI !== "completed" ) {
+              verificarParticipante(debouncedCI, (data) => {
+                setFieldValue("nombre", data.nombreParticipante || "");
+                setFieldValue("apellido", `${data.apellidoPaterno || ""} ${data.apellidoMaterno || ""}`.trim());
+                setFieldValue("fechaNacimiento", data.fechaNacimiento ? data.fechaNacimiento.split("T")[0] : ""); // formatear fecha
+                setFieldValue("documento", data.carnetIdentidadParticipante || "");
+                setFieldValue("complemento", data.complementoCiParticipante || "");
+                setFieldValue("email", data.emailParticipante || "");
+                
+                setFieldValue("departamento", data.idDepartamento?.toString() || "");
+                setFieldValue("municipio", data.idMunicipio?.toString() || "");
+                setFieldValue("institucion", data.idColegio?.toString() || "");
+                setFieldValue("grado", data.idGrado?.toString() || "");
+                debouncedCI = "completed";  //para evitar se repita NO FUNCIONA
+              }, (msg) => {
+                console.error("Error:", msg);
+              });
+            }
+          }, [debouncedCI, setFieldValue]);
+
+          return (
           <Form className="step1-grid">
-            {/* Campos */}
             <div className="field-container">
-              <InputText name="nombre" label="Nombre" required onlyLetters maxLength={50} />
+              <InputText name="documento" label="Documento de Identidad" required onlyNumbers maxLength={9} placeholder="Ej: 12354987" />
+            </div>
+
+            <div className="field-container">
+              <InputText name="complemento" label="Complemento" maxLength={2} onlyAlphaNumeric placeholder="Ej: 1T" />
             </div>
             <div className="field-container">
-              <InputText name="apellido" label="Apellido" required onlyLetters maxLength={50} />
+              <InputText name="nombre" label="Nombre" required onlyLetters={true} maxLength={50} placeholder="Ej: Edwin"
+              />
             </div>
             <div className="field-container">
-              <InputText name="documento" label="Documento de Identidad" required onlyNumbers maxLength={10} />
+              <InputText name="apellido" label="Apellido" required onlyLetters maxLength={50} placeholder="Ej: Sánchez Velarde"
+              />
             </div>
             <div className="field-container">
-              <InputText name="fechaNacimiento" label="Fecha de nacimiento" type="date" required />
+              <InputText name="fechaNacimiento" label="Fecha de nacimiento" type="date" required max={today} />
             </div>
             <div className="field-container">
               <SelectInput
@@ -163,13 +292,13 @@ const Step1Form = () => {
             </div>
             <div className="field-container">
               <SelectInput
-                label="Grado/Nivel"
+                label="Grado escolar"
                 name="grado"
-                options={niveles.map(n => ({
-                  value: n.idNivel.toString(),
-                  label: n.nombreNivelEscolar,
+                options={grados.map(n => ({
+                  value: n.idGrado.toString(),
+                  label: n.nombreGrado
                 }))}
-                loading={loadingNiveles}
+                loading={loadingGrados}
                 emptyMessage="No se encontraron niveles"
                 required
               />
@@ -178,34 +307,22 @@ const Step1Form = () => {
               <InputText name="email" label="Correo electrónico" type="email" placeholder="correo@ejemplo.com" required />
             </div>
             <div className="field-container">
-              <InputText name="telefono" label="Teléfono" required onlyNumbers maxLength={8} />
+              <InputText name="telefono" label="Teléfono" required onlyNumbers maxLength={8} placeholder="Ej: 67559758" />
             </div>
-
-            {/* Botón */}
             <div className="field-container full-width">
               <div className="form-actions">
-                <ButtonPrimary
-                  type="submit"
-                  buttonStyle="primary"
-                  disabled={!isValid || isSubmitting}
-                  onClick={() => {
-                    if (!isValid) {
-                      Swal.fire({
-                        icon: "error",
-                        title: "Campos incompletos",
-                        text: "Por favor, complete todos los campos requeridos",
-                        showConfirmButton: false,
-                        timer: 2000,
-                      });
-                    }
-                  }}
+                <DisabledButton
+                  isValid={isValid}
+                  isSubmitting={isSubmitting}
+                  validationMessage="Por favor, complete todos los campos requeridos"
                 >
                   Registrar Participante
-                </ButtonPrimary>
+                </DisabledButton>
               </div>
             </div>
           </Form>
-        )}
+          );
+        }}
       </Formik>
     </div>
   );

@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { CodeSquare } from 'lucide-react';
 
 //const baseURL = "https://ohh-sansi.onrender.com/api/v1";
 const baseURL = "http://localhost:9999/api/v1";
@@ -30,13 +31,15 @@ export const getUser = () => api.get('/auth/user')
 export const addUser = (data) => api.post('/auth/register', data);
 export const updateUser = (data) => api.put('/auth/user', data);
 export const deletYser = (id) => api.delete(`/auth/user/${id}`);
+//participantes
 export const getInscripciones = () => api.get('/inscripciones');
 export const addInscripcion = (data) => api.post('/inscripciones', data);
 export const updateInscripcion = (data) => api.put('/inscripciones', data);
 export const deleteInscripcion = (id) => api.delete(`/inscripciones/${id}`);
 export const inscripcionEstudiante = (data) => api.post(`/inscripcion/v1/register`, data);
-export const registerParticipante = (data) => api.post('/participantes/register-participant', data);
+export const registerParticipante = (data) => api.post('/participante/register-participant', data);
 export const register = (data) => api.post('/register', data)
+export const getParticipantesWithAreas = (ci) => api.get(`/participante/${ci}/areas`);
 //DEPARTAMENTOS Y MUNICIPIOS
 export const getDepartamentos = () => api.get('/departamento');
 export const getDepartamentoById = (id) => api.get(`/departamento/${id}`);
@@ -49,35 +52,58 @@ export const addArea = (data) => api.post('/areas/register-area', data);
 export const updateArea = (id,data) => api.put(`/areas/${id}`, data);
 export const deleteArea = (id) => api.delete(`/areas/${id}`);
 
+//GRADOS;
+export const getGrados = () => api.get('/grados');
+export const getGradosCategorias = () => api.get('/grado-categoria');
+
 export const getEstudianteByCarnet = (carnet) => api.get(`/participante/carnet/${carnet}`);
-//AREA NIVEL ESCOLAR CATEGORIA
+export const verifyEstudiante = (data) => api.post('participante/verify', data);
 export const getAreaByIdGrade = (id) => api.get(`/nivelescolar-categoria-area/areas-categorias/${id}`);
-export const getAreasGrados = () => api.get('/nivelescolar-categoria-area/areas-grados');
-export const getAreasCategorias = () => api.get('/nivelescolar-categoria-area/areas-categorias');
-//Nivel escolar;
-export const getNivelEscolar = () => api.get('/nivelescolar');
 //CATEGORIAS 
-export const createCategory = (data) => api.post('/nivelescolar-categoria-area/register', data);
+export const createCategory = (data) => api.post('/grado-categoria/register', data);
 export const getCategories = () => api.get('/category');
 
-
 //TUTORES 
-export const getAllTutor = () => api.get('/tipo-tutor/findAllTipoTutor');
-export const registerTutor = (data) => api.post('/tutores/register-tutor', data);
+export const getAllTipoTutor = () => api.get('/tipo-tutor/findAllTipoTutor');
+export const registerTutor = (ciParticipante, data) => 
+  api.post(`/tutor/${ciParticipante}`, data);
+export const getTutorAsigando = (data) => api.get(`/tutores/getTutoresLegales/${data}`);
+export const getTutorByCi = (data) => api.get(`/tutor/byCi/${data}`);
+export const verifyTutor = (data) => api.post('/tutor/verify', data);
 
+//OLIMPIADA
+export const getOlimpiadas = () => api.get('/olimpiada');
+export const saveOlimpiada = (data) => api.post('/olimpiada/register', data);
+export const savePrecioOlimpiada = (data) => api.put('/olimpiada/update-precio', data);
 
+//CatalogoOlimpiada
+export const saveCatalogoOlimpiada = (data) => api.post('/catalogo-olimpiada/save', data);
+export const getCatalogoOlimpiada = () => api.get('/catalogo-olimpiada');
 
-//PERIODO DE INSCRIPCION
-export const upsertFechas = (data) => api.post('/plazo-inscripcion/register', data);
-export const getFechas = () => api.get('/plazo-inscripcion');
-export const deleteFechas = (id) => api.delete(`/plazo-inscripcion/${id}`);
-export const getFechasById = (id) => api.get(`/plazo-inscripcion/${id}`);
-export const getLastActiveFechas = () => api.get('/plazo-inscripcion/activo');
-export const insertPrecio = (data) => api.post('/precio/register-precio', data);
-
+//FechaOlimpiada
+export const getOlimpiadasConEventos = () => api.get('/fecha-olimpiada/olimpiadas-con-eventos');
+export const saveFechaOlimpiada = (data) => api.post('/fecha-olimpiada/register', data);
+export const saveFechaConOlimpiada = (data) => api.post('/fecha-olimpiada/full-register', data);
 //EMAILS
 export const sendEmail = (data) => api.post('/email/send', data);
 
 //OrdenPAGO
 export const getOrdenPagoDetailInfo = (codigoUnico) => api.get(`/inscripcion/details/${codigoUnico}`);
 export const createOrdenPago = (data) => api.post('/orden-pago', data);
+
+
+//estado de inscripcoin
+export const getEstadoInscripcion = (ciParticipante) => api.get(`/estado-inscripcion/${ciParticipante}`);
+
+
+//catalogo
+export const getCatalogoAreasCategorias = (ciParticipante) => api.get(`/catalogo/ci-participante/${ciParticipante}`);
+export const setCatalogoAreasParticipante = (ciParticipante, data) => 
+  api.post(`/participante/register-participant-catalogo/${ciParticipante}`, data);
+
+
+
+//areaTutor participante
+
+export const getTutorAreaParticipanteInfo = (ciParticipante) => api.get(`/tutor-area-participante/${ciParticipante}`);
+export const setTutorAreaParticipante = (data) => api.post('/tutor-area-participante/save', data);
