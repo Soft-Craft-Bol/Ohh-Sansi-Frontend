@@ -8,7 +8,6 @@ import { Formik, Form } from "formik";
 import Swal from "sweetalert2";
 import useDebounce from "../../hooks/WriteInputs/useDebounce";
 import { verificarSerTutor } from "../../hooks/loaderInfo/LoaderInfo";
-import { time } from "framer-motion";
 
 const Step3Form = () => {
   const [tutoresLocales, setTutoresLocales] = useState([]);
@@ -107,8 +106,20 @@ const Step3Form = () => {
       return;
     }
 
+    // 🔥 FILTRAMOS solo los tutores NUEVOS
+  const nuevosTutores = tutoresLocales.filter(tutor => tutor.fromBackend === false);
+  if (nuevosTutores.length === 0) {
+    Swal.fire({
+      icon: 'info',
+      title: "Sin cambios",
+      text: "No hay nuevos tutores para registrar.",
+      timer: 2500
+    });
+    return;
+  }
+
     try {
-      await registerTutor(ciParticipante, tutoresLocales);
+      await registerTutor(ciParticipante, nuevosTutores);
       Swal.fire({icon:'success',title:"Éxito",text:"Tutores registrados correctamente"});
       setTutoresLocales([]);
       setCiParticipante("");
@@ -138,8 +149,23 @@ const Step3Form = () => {
           complementoCiTutor: tutor.complemento || "",
           fromBackend: true
         }));
-  
+        
         setTutoresLocales(tutoresExistentes);
+        const Toast = Swal.mixin({
+        toast: true,
+        position: "top-end",
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        didOpen: (toast) => {
+          toast.onmouseenter = Swal.stopTimer;
+          toast.onmouseleave = Swal.resumeTimer;
+        }
+        });
+        Toast.fire({
+          icon: "success",
+          title: "Se han cargado sus tutores ya asignados"
+        });
       } else {
         setTutoresLocales([]);
       }
