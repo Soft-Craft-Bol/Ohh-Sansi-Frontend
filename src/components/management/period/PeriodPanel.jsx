@@ -153,9 +153,9 @@ const PeriodPanel = ({ idOlimpiada, nombreOlimpiada, estadoOlimpiada, eventos, r
             </div>
           )}
 
-          <button className="add-btn" onClick={() => setShowModal(true)}>
+         {/*  <button className="add-btn" onClick={() => setShowModal(true)}>
             + Agregar evento
-          </button>
+          </button> */}
         </div>
       )}
 
