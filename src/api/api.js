@@ -39,7 +39,7 @@ export const deleteInscripcion = (id) => api.delete(`/inscripciones/${id}`);
 export const inscripcionEstudiante = (data) => api.post(`/inscripcion/v1/register`, data);
 export const registerParticipante = (data) => api.post('/participante/register-participant', data);
 export const register = (data) => api.post('/register', data)
-export const getParticipantesWithAreas = (ci) => api.get(`/participante/${ci}/areas`);
+export const getParticipantesWithAreas = (ci) => api.get(`/participante/carnet/${ci}/areas-tutores`);
 //DEPARTAMENTOS Y MUNICIPIOS
 export const getDepartamentos = () => api.get('/departamento');
 export const getDepartamentoById = (id) => api.get(`/departamento/${id}`);
@@ -67,6 +67,7 @@ export const getCategories = () => api.get('/category');
 export const getAllTipoTutor = () => api.get('/tipo-tutor/findAllTipoTutor');
 export const registerTutor = (ciParticipante, data) => 
   api.post(`/tutor/${ciParticipante}`, data);
+export const registerTutorAcademico = (ciParticipante, idArea, data) =>api.post(`/tutor/academico/${ciParticipante}/${idArea}`, data);
 export const getTutorAsigando = (data) => api.get(`/tutores/getTutoresLegales/${data}`);
 export const getTutorByCi = (data) => api.get(`/tutor/byCi/${data}`);
 export const verifyTutor = (data) => api.post('/tutor/verify', data);
