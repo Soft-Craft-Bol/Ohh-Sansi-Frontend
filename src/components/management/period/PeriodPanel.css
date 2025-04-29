@@ -45,10 +45,11 @@
   justify-content: space-between;
   align-items: center;
   cursor: pointer;
-  background: var(--blue-light);
+  border: 2px  var(--science-blue) solid;
+  padding: 12px;
+  margin-top: 10px;
   border-radius: 8px;
-  padding: 10px 14px;
-  margin-top: 12px;
+  animation: pulseBox 2s infinite;
 }
 
 

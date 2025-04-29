@@ -8,6 +8,7 @@ import "./CategoriesManagement.css";
 import CategoriesValidate from "../../../schemas/CategoriesValidation";
 import ManagementCard from "../../cards/ManagementCard";
 import { GRADO_ORDEN } from "../../../utils/GradesOrder";
+import { FaLayerGroup, FaSchool, FaChevronRight, FaSpinner, FaGraduationCap } from "react-icons/fa";
 
 const CategoriesManagement = () => {
   const [grados, setGrados] = useState([]);
@@ -57,10 +58,14 @@ const CategoriesManagement = () => {
   };
 
   return (
-    <div className="category-container-wrapper page-padding">
-      <div className="category-form">
-        <h2>Crear Categoría</h2>
-        <p>Cree categorías con sus grados escolares</p>
+    <div className="form-management-container">
+      <div className="form-container">
+        <div className="form-header">
+          <FaLayerGroup className="header-icon" />
+          <h2>Crear Categoría</h2>
+          <p>Cree categorías con sus grados escolares</p>
+        </div>
+
         {!isLoading && (
           <Formik
             initialValues={{
@@ -113,11 +118,12 @@ const CategoriesManagement = () => {
             }}
           >
             {({ values, setFieldValue, errors, touched }) => (
-              <Form>
+              <Form className="category-form">
                 <InputText
                   label="Nombre de la Categoría"
                   name="nombreCategoria"
                   placeholder="Ej: GUACAMAYO"
+                  icon={FaLayerGroup}
                   error={touched.nombreCategoria && errors.nombreCategoria}
                   maxLength={30}
                   required
@@ -125,44 +131,60 @@ const CategoriesManagement = () => {
                   onlyLettersCapital={true}
                 />
 
-                <div className="selection-container">
-                  <label>Grado Desde:</label>
-                  <select
-                    onChange={(e) => setFieldValue("gradoDesde", e.target.value)}
-                    value={values.gradoDesde}
-                  >
-                    <option value="">Seleccione un grado</option>
-                    {GRADO_ORDEN.map((grado, index) => (
-                      <option key={index} value={grado}>
-                        {grado}
-                      </option>
-                    ))}
-                  </select>
-                  {touched.gradoDesde && errors.gradoDesde && (
-                    <div className="error-message">{errors.gradoDesde}</div>
-                  )}
+                <div className="form-group">
+                  <label className="form-label">
+                    <FaGraduationCap className="label-icon" />
+                    Rango de Grados
+                  </label>
+                  <div className="grade-range-selector">
+                    <div className="selection-container">
+                      <select
+                        className="grade-select"
+                        onChange={(e) => setFieldValue("gradoDesde", e.target.value)}
+                        value={values.gradoDesde}
+                      >
+                        <option value="">Desde</option>
+                        {GRADO_ORDEN.map((grado, index) => (
+                          <option key={`desde-${index}`} value={grado}>
+                            {grado}
+                          </option>
+                        ))}
+                      </select>
+                      {touched.gradoDesde && errors.gradoDesde && (
+                        <div className="error-message">{errors.gradoDesde}</div>
+                      )}
+                    </div>
+
+                    <FaChevronRight className="range-arrow" />
+
+                    <div className="selection-container">
+                      <select
+                        className="grade-select"
+                        onChange={(e) => setFieldValue("gradoHasta", e.target.value)}
+                        value={values.gradoHasta}
+                      >
+                        <option value="">Hasta</option>
+                        {GRADO_ORDEN.map((grado, index) => (
+                          <option key={`hasta-${index}`} value={grado}>
+                            {grado}
+                          </option>
+                        ))}
+                      </select>
+                      {touched.gradoHasta && errors.gradoHasta && (
+                        <div className="error-message">{errors.gradoHasta}</div>
+                      )}
+                    </div>
+                  </div>
                 </div>
 
-                <div className="selection-container">
-                  <label>Grado Hasta:</label>
-                  <select
-                    onChange={(e) => setFieldValue("gradoHasta", e.target.value)}
-                    value={values.gradoHasta}
-                  >
-                    <option value="">Seleccione un grado</option>
-                    {GRADO_ORDEN.map((grado, index) => (
-                      <option key={index} value={grado}>
-                        {grado}
-                      </option>
-                    ))}
-                  </select>
-                  {touched.gradoHasta && errors.gradoHasta && (
-                    <div className="error-message">{errors.gradoHasta}</div>
+                <ButtonPrimary className="cf-submit-btn" type="submit" disabled={isLoading}>
+                  {isLoading ? (
+                    <>
+                      <FaSpinner className="spin-icon" /> Procesando...
+                    </>
+                  ) : (
+                    "Crear Categoría"
                   )}
-                </div>
-
-                <ButtonPrimary type="submit" disabled={isLoading}>
-                  Crear Categoría
                 </ButtonPrimary>
               </Form>
             )}
@@ -171,17 +193,33 @@ const CategoriesManagement = () => {
         )}
       </div>
 
-      <div className="category-list">
-        <h3>Categorías registradas</h3>
-        {gradosCategorias.length > 0 ? (
-          <div className="categories-card">
+      <div className="list-container">
+        <div className="list-header">
+          <h3>Categorías Registradas</h3>
+          <p>Lista completa de categorías</p>
+        </div>
+
+        {isLoading ? (
+          <div className="loading-state">
+            <FaSpinner className="loading-spinner" />
+            <p>Cargando categorías...</p>
+          </div>
+        ) : gradosCategorias.length === 0 ? (
+          <div className="empty-state">
+            <FaLayerGroup className="empty-icon" />
+            <p>No hay categorías registradas aún</p>
+          </div>
+        ) : (
+          <div className="card-list">
             {gradosCategorias.map((item, index) => (
               <ManagementCard
                 key={index}
                 title={`${item.nombreCategoria}`}
+
                 info={[
                   {
                     label: "Grados escolares",
+
                     value:
                       item.grados && item.grados.length > 0
                         ? (() => {
@@ -195,13 +233,12 @@ const CategoriesManagement = () => {
                           return `${nombres[0]} - ${nombres[nombres.length - 1]}`;
                         })()
                         : "—",
+                    highlight: true
                   },
                 ]}
               />
             ))}
           </div>
-        ) : (
-          <p>No hay categorías registradas.</p>
         )}
       </div>
     </div>

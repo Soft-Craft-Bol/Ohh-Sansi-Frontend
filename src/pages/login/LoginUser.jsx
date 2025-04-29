@@ -3,13 +3,14 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Formik, Form } from 'formik';
 import './LoginUser.css';
 import { loginUser } from '../../api/api';
-import loadImage from '../../assets/ImagesApp';
 import { validationSchema } from '../../schemas/LoginValidate';
 import { saveToken, saveUser } from '../../utils/authFuntions';
 import { parseJwt } from '../../utils/authJson';
 import InputText from '../../components/inputs/InputText';
 import { ButtonPrimary } from '../../components/button/ButtonPrimary';
 import { useAuth } from '../../context/AuthProvider';
+import { FaEnvelope, FaLock } from "react-icons/fa";
+import loadImage from '../../assets/ImagesApp';
 
 const initialValues = {
   correoUsuario: '',
@@ -26,18 +27,12 @@ const useImageLoader = (imageName) => {
   return image;
 };
 
-const MemoizedInputText = memo(({ name, placeholder, label, type = "text" }) => (
-  <InputText name={name} placeholder={placeholder} label={label} type={type} />
-));
 
 const LoginUser = () => {
   const [loginError, setLoginError] = useState('');
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
-
   const ohSansi = useImageLoader("ohSansi");
-  const logoFcyt = useImageLoader("logoFcyt");
-
   useEffect(() => {
     if (isAuthenticated) {
       navigate('/admin');
@@ -51,8 +46,6 @@ const LoginUser = () => {
         correoUsuario: values.correoUsuario.trim(),
         password: values.password,
       });
-      console.log('result:', result);
-
       if (result?.data?.token) {
         const token = result.data.token;
         const decodedToken = parseJwt(token);
@@ -83,10 +76,9 @@ const LoginUser = () => {
 
   return (
     <div className="login-container">
-      {ohSansi && <img className="logo-fesa" src={ohSansi} alt="ohSansi" height="200px"/>}
-      <div className="login-form">
-        <h1>Inicia sesión</h1>
-        {logoFcyt && <img className="logo-fesa" src={logoFcyt} alt="logoFcyt" height="80px"/>}
+      <div className="glassy-card animate__animated animate__fadeInDown">
+        <h1 className="title">Olimpiadas Científicas UMSS</h1>
+        {ohSansi && <img className="logo-fesa" src={ohSansi} alt="ohSansi" height="200px"/>}
 
         <Formik
           initialValues={initialValues}
@@ -94,13 +86,24 @@ const LoginUser = () => {
           onSubmit={handleSubmit}
         >
           {({ isSubmitting }) => (
-            <Form style={{ flexDirection: "column" }}>
-              <MemoizedInputText name="correoUsuario" placeholder="Introduzca su correo electrónico" label="Correo electrónico" />
-              <MemoizedInputText name="password" type="password" placeholder="Introduzca su contraseña" label="Contraseña" />
+            <Form className="login-form">
+              <InputText
+                name="correoUsuario"
+                placeholder="Introduzca su correo electrónico"
+                label="Correo electrónico"
+                icon={FaEnvelope}
+              />
+              <InputText
+                name="password"
+                type="password"
+                placeholder="Introduzca su contraseña"
+                label="Contraseña"
+                icon={FaLock}
+              />
 
-              <div style={{display:"flex", flexDirection:"column"}}>
+              <div className="actions">
                 {loginError && <span className="error-message">{loginError}</span>}
-                <ButtonPrimary type="submit" disabled={isSubmitting} className="btn-general" >
+                <ButtonPrimary type="submit" disabled={isSubmitting} className="btn-general">
                   {isSubmitting ? 'Ingresando...' : 'Ingresar'}
                 </ButtonPrimary>
                 <Link to="/reset">¿Olvidaste la contraseña?</Link>
