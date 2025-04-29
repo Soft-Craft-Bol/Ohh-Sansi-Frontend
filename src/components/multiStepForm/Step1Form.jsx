@@ -95,7 +95,10 @@ const Step1Form = () => {
           text: "Ya existe un registro con ese documento de identidad.",
           confirmButtonText: "Aceptar",
         });
+        onParticipanteExistente(values.documento);
+        onComplete();
         return;
+        
       }
 
       Swal.close();
@@ -106,9 +109,11 @@ const Step1Form = () => {
         confirmButtonText: "Continuar",
         
       }).then(() => {
+        onRegistroExitoso(values.documento);
+        onComplete();
         resetForm();
         localStorage.removeItem("participanteFormData");
-        onRegistroExitoso(values.documento);
+        
       });
   
     } catch (error) {

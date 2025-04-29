@@ -186,3 +186,30 @@
     padding: 3px 6px;
   }
 }
+
+
+
+.tutor-asignado {
+  background-color: #f0f8ff;
+  border-left: 4px solid #4682b4;
+}
+
+.tutor-asignado .area-asignada {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.badge-asignado {
+  background-color: #4682b4;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.8em;
+}
+
+.area-seleccionada {
+  margin-top: 5px;
+  color: #4682b4;
+  font-weight: bold;
+}

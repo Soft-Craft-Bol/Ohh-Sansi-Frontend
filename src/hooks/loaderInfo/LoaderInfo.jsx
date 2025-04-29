@@ -7,6 +7,7 @@ export const verificarParticipante = async (ci, onComplete, onError) => {
   try {
 
     const res = await getEstudianteByCarnet(ci);
+    console.log("Respuesta de getEstudianteByCarnet:", res.data); // Verifica la respuesta del API
 
     if (res.data.fechaNacimiento) { //if exists
       const { value: valuePermit } = await Swal.fire({
