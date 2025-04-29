@@ -88,7 +88,7 @@ const CostsManagement = () => {
 
   return (
     <div className="costs-management-container">
-      <div className="costs-form-container">
+      <div className="form-container">
         <div className="form-header">
           <FaCoins className="header-icon" />
           <h2>Gestión de Costos Olímpicos</h2>

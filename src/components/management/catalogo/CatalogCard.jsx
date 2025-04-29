@@ -13,24 +13,12 @@ const CatalogCard = ({ area, categories, grades = '', onDelete }) => {
       : `${gradosOrdenados[0]} - ${gradosOrdenados[gradosOrdenados.length - 1]}`;
 
   return (
-    <div className="catalog-card">
-            <div className="card-header">
-                <h3 className="area-title">{area}</h3>
-                <div className="category-badge">{categories}</div>
-            </div>
-            <div className="card-content">
-                <div className="grades-section">
-                    <h4 className="grades-title">Grados:</h4>
-                    <div className="grades-list">
-                        {gradosOrdenados.map((grado, index) => (
-                            <span key={index} className="grade-item">{grado}</span>
-                        ))}
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
+    <div className="catalog-card-grid">
+      <div className="grid-item area">{area}</div>
+      <div className="grid-item category">{categories}</div>
+      <div className="grid-item grades">{rangoGrados}</div>
+    </div>
+  );
 };
-
 
 export default CatalogCard;

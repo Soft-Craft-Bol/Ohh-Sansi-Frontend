@@ -1,20 +1,24 @@
 .form-management-container {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
   gap: 2rem;
-  padding: 1.5rem;
-  width: 100%;
-  max-width: 1400px;
-  margin: 0 auto;
+  padding: 2rem 1rem;
+  box-sizing: border-box;
 }
 
 .form-container {
-  background: var(--card-bg);
-  border-radius: 16px;
+  flex: 1 1 350px;
+  min-width: 300px;
+  max-width: 450px;
   padding: 1.5rem;
+  font-family: var(--poppins);
+  background: white;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  width: 100%;
-  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
 }
 
 .form-header {
@@ -48,7 +52,6 @@
 .area-form {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
 }
 
 .form-group {

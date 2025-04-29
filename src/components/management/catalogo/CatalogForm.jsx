@@ -45,7 +45,6 @@ const CatalogForm = ({ areas = [], categories = [], activeOlimpiadaId, onAdd }) 
                                 </option>
                             ))}
                         </select>
-                        <span className="cf-select-arrow">▼</span>
                     </div>
                     {formik.touched.area && formik.errors.area && (
                         <p className="cf-error-message">{formik.errors.area}</p>
@@ -67,7 +66,6 @@ const CatalogForm = ({ areas = [], categories = [], activeOlimpiadaId, onAdd }) 
                                 </option>
                             ))}
                         </select>
-                        <span className="cf-select-arrow">▼</span>
                     </div>
                     {formik.touched.category && formik.errors.category && (
                         <p className="cf-error-message">{formik.errors.category}</p>
