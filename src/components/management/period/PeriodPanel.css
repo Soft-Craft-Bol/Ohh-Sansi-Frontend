@@ -59,7 +59,7 @@
   color: #333;
 }
 
-.dropdown-toggle {
+.dropdown-toggle-period {
   background: none;
   border: none;
   cursor: pointer;
@@ -109,7 +109,7 @@
       padding: 3px 8px;
     }
 
-    .dropdown-toggle {
+    .dropdown-toggle-period {
       font-size: 16px;
     }
   }
