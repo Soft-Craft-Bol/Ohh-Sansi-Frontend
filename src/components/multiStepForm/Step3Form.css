@@ -213,3 +213,14 @@
   color: #4682b4;
   font-weight: bold;
 }
+
+
+.step3-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+}
+
+.step3-finish{
+  justify-content: center;
+}

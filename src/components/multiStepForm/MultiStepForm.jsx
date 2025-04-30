@@ -5,6 +5,7 @@ import Step2Form from "./Step2Form";
 import Step3Form from "./Step3Form";
 import Step4Form from "./Step4Form";
 import "./MultiStepForm.css";
+import Step3Only from "./Step3Only";
 
 const MultiStepForm = () => {
   const [formData, setFormData] = useState({
@@ -76,9 +77,16 @@ const MultiStepForm = () => {
       /> 
     },
     { 
+      // id: "step3", 
+      // label: "Registro de Tutores legales", 
+      // component: <Step3Form 
+      //   formData={formData} 
+      //   updateFormData={setFormData}
+      //   onComplete={() => handleAutoNavigate("step4")}
+      // /> 
       id: "step3", 
       label: "Registro de Tutores legales", 
-      component: <Step3Form 
+      component: <Step3Only
         formData={formData} 
         updateFormData={setFormData}
         onComplete={() => handleAutoNavigate("step4")}

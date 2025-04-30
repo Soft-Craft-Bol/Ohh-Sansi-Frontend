@@ -35,7 +35,7 @@ const Step3Only = () => {
         },
         () => {
           setCiVerificado(false);
-          setMostrarFormulario(true); // Solo mostramos si no tiene tutor
+          setMostrarFormulario(true);
         }
       );
     }
@@ -141,7 +141,7 @@ const Step3Only = () => {
             }, [debouncedCI]);
 
             return (
-              <Form className="step3-form">
+              <Form className="step3-grid">
                 <div className="step3-form-group">
                   <InputText name="carnetIdentidadTutor" label="N° de documento del tutor" type="text" placeholder="Documento del tutor" required onlyNumbers maxLength={9} />
                 </div>
@@ -160,7 +160,9 @@ const Step3Only = () => {
                 <div className="step3-form-group">
                   <InputText name="telefono" label="Teléfono" type="text" placeholder="Teléfono del tutor" required onlyNumbers maxLength={8} />
                 </div>
-                <div className="step3-navigation">
+                <div>
+                </div>
+                <div className="step3-finish">
                   <ButtonPrimary type="submit" buttonStyle="primary" disabled={!isValid}>
                     Registrar Tutor
                   </ButtonPrimary>
