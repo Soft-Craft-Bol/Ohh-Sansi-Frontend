@@ -4,6 +4,7 @@ import Step1Form from "./Step1Form";
 import Step2Form from "./Step2Form";
 import Step3Form from "./Step3Form";
 import Step4Form from "./Step4Form";
+import Step3Only from "./Step3Only";
 import "./InscripcionIndividual.css";
 import {User, Award, Users, ClipboardCheck} from "lucide-react"
 import Header from "../header/Header";
@@ -80,10 +81,21 @@ const InscripcionIndividual = () => {
       /> 
     },
     { 
-      id: "step3",
-      label: "Información de tutores",
+      // id: "step3", 
+      // label: "Registro de Tutores legales", 
+      // component: <Step3Form 
+      //   formData={formData} 
+      //   updateFormData={setFormData}
+      //   onComplete={() => handleAutoNavigate("step4")}
+      // /> 
+      id: "step3", 
+      label: "Registro de Tutores legales",
       icon: <Users size={20} />,
-      component: <Step3Form formData={formData} updateFormData={setFormData} />
+      component: <Step3Only
+        formData={formData}
+        updateFormData={setFormData}
+        onComplete={() => handleAutoNavigate("step4")}
+      /> 
     },
     { 
       id: "step4",
