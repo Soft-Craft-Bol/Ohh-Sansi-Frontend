@@ -133,7 +133,7 @@ const PeriodPanel = ({ idOlimpiada, nombreOlimpiada, estadoOlimpiada, eventos, r
 
       <div className="view-events-toggle" onClick={() => setExpanded(!expanded)}>
         <span className="view-label">Ver eventos</span>
-        <button className="dropdown-toggle" aria-label="Toggle eventos">
+        <button className="dropdown-toggle-period" aria-label="Toggle eventos">
           {expanded ? <FiChevronUp /> : <FiChevronDown />}
         </button>
       </div>
