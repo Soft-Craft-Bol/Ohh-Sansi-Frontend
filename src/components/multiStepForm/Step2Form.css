@@ -272,3 +272,35 @@ body.dark .step2-selected-card {
   background-color: rgba(3, 55, 113, 0.1);
   border-color: #334b75;
 }
+
+
+/* Estilos para áreas asignadas */
+.step2-card.asignada {
+  opacity: 0.9;
+  background-color: #e8f5e9;
+  border: 1px solid #a5d6a7;
+  cursor: not-allowed;
+}
+
+.step2-card.asignada.selected {
+  background-color: #c8e6c9;
+}
+
+.badge-asignada {
+  background-color: #4caf50;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.75em;
+  margin-left: 8px;
+  display: inline-block;
+}
+
+/* Instrucciones */
+.step2-instructions {
+  margin-bottom: 15px;
+  padding: 10px;
+  background-color: #f0f7ff;
+  border-radius: 4px;
+  border-left: 4px solid #2196f3;
+}
