@@ -32,10 +32,10 @@ const Step3Only = () => {
         () => {
           setCiVerificado(true);
           cargarTutorExistente(debouncedCiParticipante);
+          setMostrarFormulario(true);
         },
         () => {
           setCiVerificado(false);
-          setMostrarFormulario(true);
         }
       );
     }
@@ -46,15 +46,14 @@ const Step3Only = () => {
       const response = await getTutorAsigando(ci);
       if (response.data?.tutoresLegales?.length > 0) {
         Swal.fire({
-          toast: true,
           icon: "info",
           title: "El participante ya tiene tutor legal registrado",
-          position: "top-end",
           showConfirmButton: false,
           timer: 3000,
           timerProgressBar: true,
         });
         setMostrarFormulario(false);
+        setCiParticipante("");
       } else {
         setMostrarFormulario(true);
       }
