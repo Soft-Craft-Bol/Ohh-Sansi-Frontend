@@ -77,7 +77,7 @@ const MultiStepForm = () => {
     },
     { 
       id: "step3", 
-      label: "Información de tutores", 
+      label: "Registro de Tutores legales", 
       component: <Step3Form 
         formData={formData} 
         updateFormData={setFormData}
