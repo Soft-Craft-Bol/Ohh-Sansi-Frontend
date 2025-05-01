@@ -8,7 +8,7 @@ import { ButtonPrimary } from '../button/ButtonPrimary';
 import './LoadExcel.css';
 import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom';
-import plantilla from '../../assets/PlantillaParticipante.xlsx';
+import plantilla from '../../assets/PrePlantilla.xlsx';
 import Table from '../table/Table';
 
 const validExtensions = ['.xlsx', '.xls', '.csv', '.xsb'];
