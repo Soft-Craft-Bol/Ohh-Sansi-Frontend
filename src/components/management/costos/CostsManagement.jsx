@@ -126,6 +126,7 @@ const CostsManagement = () => {
                   value={values.precioOlimpiada}
                   onChange={handleChange}
                   placeholder="Ej: 15.00"
+                  maxLength={6}
                   error={touched.precioOlimpiada && errors.precioOlimpiada}
                   icon={FaCoins}
                 />

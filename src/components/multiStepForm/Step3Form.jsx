@@ -15,7 +15,7 @@ const Step3Form = () => {
   let debouncedCiParticipante = useDebounce(ciParticipante, 1000);
   const [ciVerificado, setCiVerificado] = useState(false);
 
-  const MAX_TUTORES = 3; 
+  const MAX_TUTORES = 1; 
 
   const initialValues = {
     idTipoTutor: 2, //constant for Legal
@@ -48,7 +48,7 @@ const Step3Form = () => {
       Swal.fire({
         icon: 'error',
         title: "Error",
-        text: `Solo puede registrar un máximo de ${MAX_TUTORES} tutores`
+        text: `Solo puede registrar ${MAX_TUTORES} tutor legal`
       });
       return;
     }
@@ -179,7 +179,7 @@ const Step3Form = () => {
     <div className="step3-container page-padding">
       <h2 className="step3-title">Registro de Tutores Legales</h2>
       <p className="step3-description">
-        Registre un máximo de {MAX_TUTORES} tutores a un participante.
+        Registre solamente {MAX_TUTORES} tutor a un participante.
       </p>
 
       <div className="step3-content">
@@ -255,7 +255,7 @@ const Step3Form = () => {
                   <div className="step3-form-group">
                     <InputText
                       name="carnetIdentidadTutor"
-                      label="N° de documento"
+                      label="N° de documento del tutor"
                       type="text"
                       placeholder="Documento del tutor"
                       required

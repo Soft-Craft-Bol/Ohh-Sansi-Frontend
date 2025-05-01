@@ -1,12 +1,15 @@
 import React, { useState } from "react";
-import Tabs from "../../components/tabs/Tabs";  
+import Tabs from "../tabs/Tabs";  
 import Step1Form from "./Step1Form";
 import Step2Form from "./Step2Form";
 import Step3Form from "./Step3Form";
 import Step4Form from "./Step4Form";
-import "./MultiStepForm.css";
+import Step3Only from "./Step3Only";
+import "./InscripcionIndividual.css";
+import {User, Award, Users, ClipboardCheck} from "lucide-react"
+import Header from "../header/Header";
 
-const MultiStepForm = () => {
+const InscripcionIndividual = () => {
   const [formData, setFormData] = useState({
     participante: {
       idDepartamento: null,
@@ -53,7 +56,8 @@ const MultiStepForm = () => {
   const tabs = [
     { 
       id: "step1", 
-      label: "Información básica", 
+      label: "Información básica",
+      icon: <User size={20} />,
       component: <Step1Form 
         formData={formData} 
         updateFormData={setFormData} 
@@ -64,7 +68,8 @@ const MultiStepForm = () => {
     },
     { 
       id: "step2", 
-      label: "Áreas de competencia", 
+      label: "Áreas de competencia",
+      icon: <Award size={20} />,
       component: <Step2Form 
         formData={formData} 
         updateFormData={setFormData} 
@@ -76,23 +81,28 @@ const MultiStepForm = () => {
       /> 
     },
     { 
+      // id: "step3", 
+      // label: "Registro de Tutores legales", 
+      // component: <Step3Form 
+      //   formData={formData} 
+      //   updateFormData={setFormData}
+      //   onComplete={() => handleAutoNavigate("step4")}
+      // /> 
       id: "step3", 
-      label: "Información de tutores", 
-      component: <Step3Form 
-        formData={formData} 
+      label: "Registro de Tutores legales",
+      icon: <Users size={20} />,
+      component: <Step3Only
+        formData={formData}
         updateFormData={setFormData}
         onComplete={() => handleAutoNavigate("step4")}
       /> 
     },
     { 
-      id: "step4", 
-      label: "Asignación de tutor", 
-      component: <Step4Form 
-        formData={formData} 
-        updateFormData={setFormData}
-      /> 
+      id: "step4",
+      label: "Asignación de tutor",
+      icon: <ClipboardCheck size={20} />,
+      component: <Step4Form formData={formData} updateFormData={setFormData} />
     }
-
   ];
 
   const renderTabContent = (activeTab) => {
@@ -102,7 +112,7 @@ const MultiStepForm = () => {
 
   return (
     <div className="multi-step-container">
-      <h1>Nueva inscripción</h1>
+      <Header title="Inscripción Individual" description="Registro de participante" />
       <Tabs 
         tabs={tabs} 
         renderTabContent={renderTabContent} 
@@ -113,4 +123,4 @@ const MultiStepForm = () => {
   );
 };
 
-export default MultiStepForm;
+export default InscripcionIndividual;

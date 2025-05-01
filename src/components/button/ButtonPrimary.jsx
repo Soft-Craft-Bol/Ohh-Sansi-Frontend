@@ -8,6 +8,7 @@ export const ButtonPrimary = ({
   id = "",
   type = "button", 
   buttonStyle = "primary", 
+  disabled
 }) => {
   return (
     <div className="config-btn-primary">
@@ -17,6 +18,7 @@ export const ButtonPrimary = ({
         type={type} 
         className={`btn-${buttonStyle} ${className}`} 
         onClick={onClick}
+        disabled={disabled}
       >
         {children}
       </button>

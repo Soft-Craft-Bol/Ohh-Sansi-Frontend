@@ -20,12 +20,12 @@ const getEventValidationSchema = (existingEvents, periodo) => {
         .test(
           'orden-evento',
           'Debe seguir la secuencia predefinida',
-          function(value) {
+          function (value) {
             const eventosRegistrados = existingEvents
               .filter(e => !e.esPersonalizado)
               .sort((a, b) => EVENT_ORDER[a.nombre] - EVENT_ORDER[b.nombre]);
-            
-            const siguienteEvento = eventosRegistrados.length > 0 
+
+            const siguienteEvento = eventosRegistrados.length > 0
               ? EVENT_ORDER[eventosRegistrados[eventosRegistrados.length - 1].nombre] + 1
               : 1;
 
@@ -36,38 +36,34 @@ const getEventValidationSchema = (existingEvents, periodo) => {
     fechaInicio: yup.string()
       .required('Fecha inicial requerida')
       .test(
-        'formato-fecha',
-        'Formato de fecha inválido (dd/mm/aaaa)',
-        value => /^\d{4}-\d{2}-\d{2}$/.test(value)
-      )
-      .test(
         'no-full-period-start',
         'No puede ocupar todo el periodo anual',
-        function(value) {
+        function (value) {
           const fechaFin = this.parent.fechaFin;
+          if (!value || !fechaFin) return true;
+
           const inicioPeriodo = `${periodo}-01-01`;
           const finPeriodo = `${periodo}-12-31`;
-          
+
           return !(value === inicioPeriodo && fechaFin === finPeriodo);
         }
       ),
     fechaFin: yup.string()
       .required('Fecha final requerida')
       .test(
-        'formato-fecha',
-        'Formato de fecha inválido (dd/mm/aaaa)',
-        value => /^\d{4}-\d{2}-\d{2}$/.test(value)
-      )
-      .test(
         'fecha-posterior',
         'No puede ser anterior a la fecha de inicio',
-        function(value) {
+        function (value) {
           const fechaInicio = this.parent.fechaInicio;
-          return new Date(value) >= new Date(fechaInicio);
+          if (!value || !fechaInicio) return true;
+
+          const fechaFinDate = new Date(value);
+          const fechaInicioDate = new Date(fechaInicio);
+
+          return fechaFinDate >= fechaInicioDate;
         }
       )
   });
 };
-
 
 export default getEventValidationSchema;

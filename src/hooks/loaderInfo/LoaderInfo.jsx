@@ -72,8 +72,16 @@ export const verificarSerTutor = async (ci, onSuccess, onError) => {
       });
 
       if (!emailConfirm) {
+        Swal.fire({
+          icon: "info",
+          title: "Verificación cancelada",
+          text: "No se completó la verificación como tutor.",
+        });
+      
+        onError?.(); // Notifica al componente para detener el flujo
         return;
       }
+      
 
       const result = await verifyEstudiante({ ci, valuePermit: emailConfirm });
 
