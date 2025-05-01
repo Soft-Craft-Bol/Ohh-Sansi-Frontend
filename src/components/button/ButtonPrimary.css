@@ -105,3 +105,19 @@
 	background: #a0a0a0; 
 	box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
 }
+
+button:disabled, 
+button.disabled,
+.btn-disabled {
+  background: #a0a0a0 !important;
+  color: #e0e0e0 !important;
+  box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1) !important;
+  cursor: not-allowed !important;
+  opacity: 0.8;
+}
+
+/* Label del botón */
+.config-btn-primary > label {
+  font-size: 14px;
+  padding: 8px;
+}

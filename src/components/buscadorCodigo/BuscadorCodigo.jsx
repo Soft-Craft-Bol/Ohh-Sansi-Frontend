@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { FaSearch } from 'react-icons/fa';
+import { FaSearch, FaTimes } from 'react-icons/fa';
 import './BuscadorCodigo.css';
 
 const BuscadorCodigo = ({
@@ -13,7 +13,7 @@ const BuscadorCodigo = ({
   onSearch,
   error,
   containerVariants,
-  inputValue,
+  onClear
 }) => {
   return (
     <motion.div
@@ -27,11 +27,23 @@ const BuscadorCodigo = ({
         <input
           type="text"
           placeholder={placeholder}
-          value={inputValue} // Usar inputValue en lugar de codigoIntroducido
+          value={codigoIntroducido}
           onChange={onInputChange}
           onKeyPress={onKeyPress}
+          maxLength={11}
         />
-        <FaSearch className="search-icon" onClick={onSearch} />
+        {codigoIntroducido && (
+          <FaTimes 
+            className="clear-icon" 
+            onClick={onClear}
+            title="Limpiar campo"
+          />
+        )}
+        <FaSearch 
+          className="search-icon" 
+          onClick={onSearch} 
+          title="Buscar"
+        />
       </div>
       <div className="cont-cod-int">
         <p className="code-text">{codigoIntroducidoTexto}</p>
