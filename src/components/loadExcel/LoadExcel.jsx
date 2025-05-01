@@ -11,8 +11,8 @@ import { useNavigate } from 'react-router-dom';
 import plantilla from '../../assets/PlantillaParticipante.xlsx';
 import Table from '../table/Table';
 
-const validExtensions = ['.xlsx', '.xls', '.csv', '.xsb'];
-const columnasPermitidas = ['Nombres', 'Apellido Paterno', 'Apellido Materno', 'FechaNacimiento', 'Colegio', 'Carnet'];
+const validExtensions = ['.xlsx'];
+const columnasPermitidas = ['Nombres', 'Apellido Paterno', 'Apellido Materno', 'Departamento', 'Colegio', 'Carnet Identidad'];
 const columnas = columnasPermitidas.map((col) => ({
   header: col,
   accessor: col
@@ -22,6 +22,7 @@ const columnas = columnasPermitidas.map((col) => ({
 const LoadExcel = () => {
   const fileInputRef = useRef(null);
   const [excelData, setExcelData] = useState([]);
+  const [selectedFile, setSelectedFile] = useState(null);
   const [buttonState, setButtonState] = useState('upload'); // 'upload', 'loading', 'done'
   const navigate = useNavigate();
 
@@ -42,10 +43,10 @@ const LoadExcel = () => {
         const workbook = XLSX.read(data, { type: 'array' });
       
         // HOJA 1 - Participantes
-        const hoja1 = workbook.Sheets['Hoja1'];
+        const hoja1 = workbook.Sheets['Datos'];
         const jsonHoja1 = XLSX.utils.sheet_to_json(hoja1);
       
-        const columnasHoja1 = ['Nombres', 'Apellido Paterno', 'Apellido Materno', 'FechaNacimiento', 'Colegio', 'Carnet'];
+        const columnasHoja1 = ['Nombres', 'Apellido Paterno', 'Apellido Materno', 'Departamento', 'Colegio', 'Carnet Identidad'];
         const participantes = jsonHoja1.map((row) => {
           const nuevo = {};
           columnasHoja1.forEach((col) => {
@@ -112,6 +113,7 @@ const LoadExcel = () => {
 
   const handleFileChange = (event) => {
     const file = event.currentTarget.files[0];
+    setSelectedFile(file);
     if (!file) return;
     // (3 MB = 3 * 1024 * 1024 bytes)
     const maxSize = 3 * 1024 * 1024;
@@ -148,7 +150,7 @@ const LoadExcel = () => {
     formik.setFieldTouched('file', false);
   };
 
-  const handleSubmit = (event) => {
+  const handleConfirm = (event) => {
     event.preventDefault();
   
     Swal.fire({
@@ -189,6 +191,68 @@ const LoadExcel = () => {
     });
   };
 
+  const handleSubmit = async () => {
+    if (!selectedFile) {
+      Swal.fire("Archivo requerido", "Debes cargar un archivo Excel antes de registrar", "warning");
+      return;
+    }
+    const { value: formValues } = await Swal.fire({
+      title: 'Datos del Responsable de pago',
+      html: `
+        <input id="ci" class="swal2-input" placeholder="N° de documento del tutor" maxlength="9" />
+        <input id="comp" class="swal2-input" placeholder="Complemento CI" maxlength="2" />
+        <input id="nombres" class="swal2-input" placeholder="Nombres del tutor" maxlength="50" />
+        <input id="apellidos" class="swal2-input" placeholder="Apellidos del tutor" maxlength="50" />
+        <input id="correo" class="swal2-input" placeholder="Correo del tutor" type="email" />
+        <input id="telefono" class="swal2-input" placeholder="Teléfono del tutor" maxlength="8" />
+      `,
+      focusConfirm: false,
+      confirmButtonText: 'Registrar Tutor',
+      preConfirm: () => {
+        const ci = document.getElementById('ci').value.trim();
+        const comp = document.getElementById('comp').value.trim();
+        const nombres = document.getElementById('nombres').value.trim();
+        const apellidos = document.getElementById('apellidos').value.trim();
+        const correo = document.getElementById('correo').value.trim();
+        const telefono = document.getElementById('telefono').value.trim();
+  
+        // Validación básica
+        if (!ci || !nombres || !apellidos || !correo || !telefono) {
+          Swal.showValidationMessage('Por favor, complete todos los campos obligatorios');
+          return false;
+        }
+  
+        return { ci, comp, nombres, apellidos, correo, telefono };
+      }
+    });
+  
+    if (formValues) {
+    
+      const formData = new FormData();
+      formData.append("archivo", selectedFile);
+      formData.append("ci", formValues.ci);
+      formData.append("complemento", formValues.comp);
+      formData.append("nombres", formValues.nombres);
+      formData.append("apellidos", formValues.apellidos);
+      formData.append("correo", formValues.correo);
+      formData.append("telefono", formValues.telefono);
+    
+      try {
+        
+        await fetch("//endpoint del api pendiente", {
+          method: "POST",
+          body: formData,
+        });
+    
+        Swal.fire("Éxito", "Archivo y tutor enviados correctamente", "success");
+      } catch (error) {
+        console.error("Error:", error);
+        Swal.fire("Error", "Ocurrió un error al enviar los datos", "error");
+      }
+    }    
+  };
+  
+
   return (
     <div>
       <form onSubmit={formik.handleSubmit} className="excel-upload-container">
@@ -202,7 +266,7 @@ const LoadExcel = () => {
             id="file"
             name="file"
             type="file"
-            accept=".xlsx,.xls,.csv,.xsb"
+            accept=".xlsx"
             onChange={handleFileChange}
             className="input-file"
             ref={fileInputRef}
@@ -235,7 +299,7 @@ const LoadExcel = () => {
             <div className="error-message">{formik.errors.file}</div>
           )}
         </div>
-        <p className="formats">Formatos soportados: .xlsx, .xls, .csv, .xsb (máximo 7 mb)</p>
+        <p className="formats">Formatos soportados: .xlsx, .xls (máximo 7 mb)</p>
         <ButtonPrimary className="btn-loading" type="submit" disabled={buttonState === 'loading'}>
                 {buttonState === 'loading' ? (
                   <div className="btn-loader-active"></div>
@@ -258,16 +322,11 @@ const LoadExcel = () => {
           <h4>Recomendaciones de Formato</h4>
           <span className="tips-label">TIPS</span>
         </div>
-        <p>El archivo Excel o de celdas debe contener las siguientes columnas:</p>
-        <ul className="tips-list">
-          <li>• Nombres y apellidos</li>
-          <li>• Número de documento</li>
-          <li>• Fecha de nacimiento</li>
-          <li>• Datos del colegio</li>
-          <li>• Áreas de competencia</li>
-          <li>• Correo electrónico</li>
-          <li>• Demás campos</li>
-        </ul>
+        <p>Utilice la plantilla personalizada, en la Hoja de <strong>'Datos'</strong> ingrese la información del participante y tutor
+          legal. En la hoja de <strong>'Areas'</strong> asigne las áreas a las que postulará el participante seguido de la información
+          del profesor.
+        </p>
+        
         <a href={plantilla} download className="download-template">
           <FaDownload /> Descargar plantilla
         </a>
