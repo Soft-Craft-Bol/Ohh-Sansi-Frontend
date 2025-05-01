@@ -1,4 +1,5 @@
 @import '../../App.css';
+
 .buscador-codigo {
   color: #002c5f;
   margin-top: 20px;
@@ -25,10 +26,19 @@
   flex: 1;
 }
 
-.search-icon {
+.search-icon, .clear-icon {
   color: var(--blue);
   font-size: 1rem;
   cursor: pointer;
+  transition: color 0.2s;
+}
+
+.clear-icon:hover {
+  color: var(--red);
+}
+
+.search-icon:hover {
+  opacity: 0.8;
 }
 
 .cont-cod-int {
