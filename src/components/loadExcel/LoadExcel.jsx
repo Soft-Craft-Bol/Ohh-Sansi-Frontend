@@ -8,11 +8,11 @@ import { ButtonPrimary } from '../button/ButtonPrimary';
 import './LoadExcel.css';
 import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom';
-import plantilla from '../../assets/PrePlantilla.xlsx';
+import plantilla from '../../assets/PlantillaParticipante.xlsx';
 import Table from '../table/Table';
 
-const validExtensions = ['.xlsx', '.xls', '.csv', '.xsb'];
-const columnasPermitidas = ['Nombres', 'Apellido Paterno', 'Apellido Materno', 'FechaNacimiento', 'Colegio', 'Carnet'];
+const validExtensions = ['.xlsx'];
+const columnasPermitidas = ['Nombres', 'Apellido Paterno', 'Apellido Materno', 'Departamento', 'Colegio', 'Carnet Identidad'];
 const columnas = columnasPermitidas.map((col) => ({
   header: col,
   accessor: col
@@ -42,10 +42,10 @@ const LoadExcel = () => {
         const workbook = XLSX.read(data, { type: 'array' });
       
         // HOJA 1 - Participantes
-        const hoja1 = workbook.Sheets['Hoja1'];
+        const hoja1 = workbook.Sheets['Datos'];
         const jsonHoja1 = XLSX.utils.sheet_to_json(hoja1);
       
-        const columnasHoja1 = ['Nombres', 'Apellido Paterno', 'Apellido Materno', 'FechaNacimiento', 'Colegio', 'Carnet'];
+        const columnasHoja1 = ['Nombres', 'Apellido Paterno', 'Apellido Materno', 'Departamento', 'Colegio', 'Carnet Identidad'];
         const participantes = jsonHoja1.map((row) => {
           const nuevo = {};
           columnasHoja1.forEach((col) => {
@@ -202,7 +202,7 @@ const LoadExcel = () => {
             id="file"
             name="file"
             type="file"
-            accept=".xlsx,.xls,.csv,.xsb"
+            accept=".xlsx"
             onChange={handleFileChange}
             className="input-file"
             ref={fileInputRef}
@@ -235,7 +235,7 @@ const LoadExcel = () => {
             <div className="error-message">{formik.errors.file}</div>
           )}
         </div>
-        <p className="formats">Formatos soportados: .xlsx, .xls, .csv, .xsb (máximo 7 mb)</p>
+        <p className="formats">Formatos soportados: .xlsx, .xls (máximo 7 mb)</p>
         <ButtonPrimary className="btn-loading" type="submit" disabled={buttonState === 'loading'}>
                 {buttonState === 'loading' ? (
                   <div className="btn-loader-active"></div>
@@ -258,16 +258,11 @@ const LoadExcel = () => {
           <h4>Recomendaciones de Formato</h4>
           <span className="tips-label">TIPS</span>
         </div>
-        <p>El archivo Excel o de celdas debe contener las siguientes columnas:</p>
-        <ul className="tips-list">
-          <li>• Nombres y apellidos</li>
-          <li>• Número de documento</li>
-          <li>• Fecha de nacimiento</li>
-          <li>• Datos del colegio</li>
-          <li>• Áreas de competencia</li>
-          <li>• Correo electrónico</li>
-          <li>• Demás campos</li>
-        </ul>
+        <p>Utilice la plantilla personalizada, en la Hoja de Datos ingrese la información del participante y tutor
+          legal. En la hoja de Areas asigne las áreas a las que postulará el participante seguido de la información
+          del profesor.
+        </p>
+        
         <a href={plantilla} download className="download-template">
           <FaDownload /> Descargar plantilla
         </a>
