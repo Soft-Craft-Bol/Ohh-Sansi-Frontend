@@ -8,17 +8,13 @@ import Header from "../../components/header/Header";
 import "./Management.css";
 import { 
   CalendarCheck,
-  Trophy,
-  Layers3,
-  DollarSign,
   BookOpen,
   FlaskConical,
-  Atom,
   TestTube2,
-  School,
   Calculator
 } from 'lucide-react';
 import CatalogoMangament from "../../components/management/catalogo/CatalogoManagement";
+import { QueryClient, QueryClientProvider } from "react-query";
 
 const ManagementPage = () => {
   const tabs = [
@@ -61,7 +57,12 @@ const ManagementPage = () => {
       case "categories":
         return <CategoriesManagement />;
       case "olimpiadas":
-        return <PeriodosManagement />;
+        const queryCli = new QueryClient();
+        return (
+          <QueryClientProvider client={queryCli}>
+          <PeriodosManagement />
+          </QueryClientProvider>
+        );
       case "costs":
         return <CostsManagement />;
       case "catalogo":

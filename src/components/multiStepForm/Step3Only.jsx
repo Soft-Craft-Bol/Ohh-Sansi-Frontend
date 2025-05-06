@@ -2,18 +2,21 @@ import { useState, useEffect } from "react";
 import "./Step3Form.css";
 import InputText from "../inputs/InputText";
 import { ButtonPrimary } from "../button/ButtonPrimary";
-import { registerTutor, getTutorAsigando } from "../../api/api";
+import { registerTutor, getTutorAsigando, parentescoTutor } from "../../api/api";
 import registerTutorValidationSchema from "../../schemas/registerTutorValidate";
 import { Formik, Form } from "formik";
 import Swal from "sweetalert2";
 import useDebounce from "../../hooks/WriteInputs/useDebounce";
 import { verificarSerTutor, verificarTutor, verificarParticipante } from "../../hooks/loaderInfo/LoaderInfo";
+import SelectInput from "../selected/SelectInput";
 
 const Step3Only = () => {
   const [ciParticipante, setCiParticipante] = useState("");
   const [ciVerificado, setCiVerificado] = useState(false);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const debouncedCiParticipante = useDebounce(ciParticipante, 1000);
+  const [parentescoOptions, setParentescoOptions] = useState([]);
+  const [loadingParentesco, setLoadingParentesco] = useState(true);
 
   const initialValues = {
     idTipoTutor: 2,
@@ -41,6 +44,34 @@ const Step3Only = () => {
     }
   }, [debouncedCiParticipante]);
 
+  useEffect(() => {
+    const fetchParentescos = async () => {
+      setLoadingParentesco(true);
+      try {
+        const response = await parentescoTutor();
+        if (response.data.tutorParentescos) {
+          const filteredOptions = response.data.tutorParentescos
+            .filter(parentesco => parentesco.parentesco !== "Profesor") //estamos en tutores Legales
+            .map(p => ({
+              value: p.idTutorParentesco.toString(),
+              label: p.parentesco,
+            }));
+            console.log(filteredOptions)
+          setParentescoOptions(filteredOptions);
+        } else {
+          setParentescoOptions([]);
+        }
+      } catch (error) {
+        console.error("Error al cargar los parentescos:", error);
+        setParentescoOptions([]);
+      } finally {
+        setLoadingParentesco(false);
+      }
+    };
+
+    fetchParentescos();
+  }, []);
+
   const cargarTutorExistente = async (ci) => {
     try {
       const response = await getTutorAsigando(ci);
@@ -64,12 +95,31 @@ const Step3Only = () => {
 
   const handleRegistrarTutor = async (values, { resetForm }) => {
     try {
-      await registerTutor(ciParticipante, [{ ...values, fromBackend: false }]);
+      const idTutorParentesco = values.idTutorParentesco;
+      const tutorData = {
+        idTipoTutor: values.idTipoTutor,
+        emailTutor: values.emailTutor,
+        nombresTutor: values.nombresTutor,
+        apellidosTutor: values.apellidosTutor,
+        telefono: values.telefono,
+        carnetIdentidadTutor: values.carnetIdentidadTutor,
+        complementoCiTutor: values.complementoCiTutor,
+        fromBackend: false
+      };
+
+      const bodyForEndpoint = {
+        idTutorParentesco: parseInt(idTutorParentesco,10),
+        tutors: [tutorData]
+      }
+
+      console.log ('intento de envio;', bodyForEndpoint);
+      await registerTutor(ciParticipante, bodyForEndpoint);
       Swal.fire({ icon: "success", title: "Éxito", text: "Tutor registrado correctamente" });
       resetForm();
       setMostrarFormulario(false);
       setCiParticipante("");
     } catch (error) {
+      console.log(values)
       console.error("Error al registrar tutor:", error);
       Swal.fire({
         icon: "error",
@@ -98,7 +148,7 @@ const Step3Only = () => {
             setMostrarFormulario(false);
           }}
           required
-          className="step3-input"
+          className="step3-form-group"
           maxLength={10}
         />
       </div>
@@ -140,6 +190,19 @@ const Step3Only = () => {
             }, [debouncedCI]);
 
             return (
+              <div>
+              <SelectInput
+                label="Relación de parentesco con el participante "
+                name="idTutorParentesco"
+                options={parentescoOptions}
+                loading={loadingParentesco}
+                emptyMessage={"No hay parentescos disponibles"}
+                required
+                onChange={(e) => {
+                  setFieldValue("idTutorParentesco", e.target.value);
+                  console.log("Parentesco seleccionado:", e.target.value);
+                }}
+              />
               <Form className="step3-grid">
                 <div className="step3-form-group">
                   <InputText name="carnetIdentidadTutor" label="N° de documento del tutor" type="text" placeholder="Documento del tutor" required onlyNumbers maxLength={9} />
@@ -167,6 +230,7 @@ const Step3Only = () => {
                   </ButtonPrimary>
                 </div>
               </Form>
+              </div>
             );
           }}
         </Formik>
