@@ -11,6 +11,7 @@ const ManagementPage = lazy(() => import("../pages/admin/Management"));
 const NotFound404 = lazy(() => import("../pages/404NotFound/NotFound404").then(module => ({ default: module.NotFound404 })));
 const EstadoDeInscripcion = lazy(() => import('../pages/estadoDeInscripcion/EstadoDeInscripcion'));
 const LoginUser = lazy(() => import("../pages/login/LoginUser"));
+const SubirBoleta = lazy(() => import("../pages/subirComprobante/SubirComprobante"));
 const InscripcionExcel = lazy(
   () => import("../pages/inscripcion/InscripcionExcel")
 );
@@ -74,6 +75,15 @@ const AppRoutes = () => {
         element={
           <Layout>
             <EstadoDeInscripcion />
+          </Layout>
+        }
+      />
+
+      <Route
+        path="/subir-boleta"
+        element={
+          <Layout>
+            <SubirBoleta />
           </Layout>
         }
       />
