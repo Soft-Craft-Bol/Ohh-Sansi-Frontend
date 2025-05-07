@@ -6,8 +6,7 @@ import { ButtonPrimary } from '../../components/button/ButtonPrimary';
 import * as pdfjsLib from 'pdfjs-dist';
 import pdfWorker from 'pdfjs-dist/build/pdf.worker.min?worker';
 import Swal from 'sweetalert2';
-import ImageEditor from "../../components/imageEditor/ImageEditor";
-
+import ImageEditor from '../../components/imageEditor/ImageEditorKonva';
 
 pdfjsLib.GlobalWorkerOptions.workerPort = new pdfWorker();
 
@@ -145,7 +144,13 @@ export default function SubirComprobante() {
       {showEditor && editingImage && (
         <ImageEditor
           imageSrc={editingImage}
-          onComplete={(croppedUrl) => {
+          onComplete={async (croppedUrl) => {
+            const blob = await fetch(croppedUrl).then((res) => res.blob());
+            const editedFile = new File([blob], 'comprobante-editado.jpg', {
+              type: blob.type,
+            });
+
+            setSelectedFile(editedFile);
             setPreviewUrl(croppedUrl);
             setShowEditor(false);
           }}
@@ -155,68 +160,74 @@ export default function SubirComprobante() {
           }}
         />
       )}
+      {!showEditor && (
+  <div className="payment-receipt-preview-container">
+    <h2 className="preview-title">Vista previa de comprobante de pago</h2>
 
-      <div className="payment-receipt-preview-container">
-        <h2 className="preview-title">Vista previa de comprobante de pago</h2>
-
-        <div
-          className={`drop-area ${isDragging ? 'drag-over' : ''}`}
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-        >
-          {selectedFile ? (
-            <div className="preview-container">
-              {selectedFile.type === 'application/pdf' ? (
-                <div className="pdf-preview">
-                  <canvas ref={canvasRef} />
-                  <p>{selectedFile.name}</p>
-                  <p>{(selectedFile.size / 1024).toFixed(1)} KB</p>
-                </div>
-              ) : (
-                <>
-                  {previewUrl && (
-                    <img
-                      src={previewUrl}
-                      alt="Vista previa"
-                      className="preview-image"
-                    />
-                  )}
-                  <p>{selectedFile.name}</p>
-                  <p>{(selectedFile.size / 1024).toFixed(1)} KB</p>
-                </>
-              )}
-              <button className="select-button" onClick={handleButtonClick}>
-                Cambiar archivo
-              </button>
+    <div
+      className={`drop-area ${isDragging ? 'drag-over' : ''}`}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
+      {selectedFile ? (
+        <div className="preview-container">
+          {selectedFile.type === 'application/pdf' ? (
+            <div className="pdf-preview">
+              <canvas ref={canvasRef} />
+              <p>{selectedFile.name}</p>
+              <p>{(selectedFile.size / 1024).toFixed(1)} KB</p>
             </div>
           ) : (
             <>
-              <p className="no-preview">No hay archivo seleccionado.</p>
-              <div className="upload-icon-container">
-                <FaUpload />
-              </div>
-              <p className="drag-text">Arrastra y suelta aquí tu comprobante de pago</p>
-              <p className="format-text">Formatos aceptados: JPG, PNG o PDF (máx. 5MB)</p>
-              <button className="select-button" onClick={handleButtonClick}>
-                Seleccionar archivo
-              </button>
+              {previewUrl && (
+                <img
+                  src={previewUrl}
+                  alt="Vista previa"
+                  className="preview-image"
+                />
+              )}
+              <p>{selectedFile.name}</p>
+              <p>{(selectedFile.size / 1024).toFixed(1)} KB</p>
             </>
           )}
-
-          <input
-            type="file"
-            ref={fileInputRef}
-            style={{ display: 'none' }}
-            onChange={handleFileInputChange}
-            accept="image/jpeg,image/png,application/pdf"
-          />
+          <button className="select-button" onClick={handleButtonClick}>
+            Cambiar archivo
+          </button>
         </div>
+      ) : (
+        <>
+          <p className="no-preview">No hay archivo seleccionado.</p>
+          <div className="upload-icon-container">
+            <FaUpload />
+          </div>
+          <p className="drag-text">
+            Arrastra y suelta aquí tu comprobante de pago
+          </p>
+          <p className="format-text">
+            Formatos aceptados: JPG, PNG o PDF (máx. 5MB)
+          </p>
+          <button className="select-button" onClick={handleButtonClick}>
+            Seleccionar archivo
+          </button>
+        </>
+      )}
 
-        <div className="action-buttons">
-          <ButtonPrimary disabled={!selectedFile}>Confirmar y enviar</ButtonPrimary>
-        </div>
-      </div>
+      <input
+        type="file"
+        ref={fileInputRef}
+        style={{ display: 'none' }}
+        onChange={handleFileInputChange}
+        accept="image/jpeg,image/png,application/pdf"
+      />
+    </div>
+
+    <div className="action-buttons">
+      <ButtonPrimary disabled={!selectedFile}>Confirmar y enviar</ButtonPrimary>
+    </div>
+  </div>
+)}
+
     </div>
   );
 }
