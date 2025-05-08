@@ -14,7 +14,7 @@ import {
   Calculator
 } from 'lucide-react';
 import CatalogoMangament from "../../components/management/catalogo/CatalogoManagement";
-import { QueryClient, QueryClientProvider } from "react-query";
+
 
 const ManagementPage = () => {
   const tabs = [
@@ -57,12 +57,7 @@ const ManagementPage = () => {
       case "categories":
         return <CategoriesManagement />;
       case "olimpiadas":
-        const queryCli = new QueryClient();
-        return (
-          <QueryClientProvider client={queryCli}>
-          <PeriodosManagement />
-          </QueryClientProvider>
-        );
+        return <PeriodosManagement />;
       case "costs":
         return <CostsManagement />;
       case "catalogo":
