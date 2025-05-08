@@ -8,6 +8,8 @@ export default function ImageEditor({ imageSrc, onComplete, onCancel }) {
   const [image, status] = useImage(imageSrc, 'anonymous');
   const [rotation, setRotation] = useState(0);
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
+  const [rectPosition, setRectPosition] = useState({ x: 0, y: 0 });
+  const [rectSize, setRectSize] = useState({ width: 400, height: 300 });
   const rectRef = useRef();
   const trRef = useRef();
   const stageRef = useRef();
@@ -15,6 +17,11 @@ export default function ImageEditor({ imageSrc, onComplete, onCancel }) {
   useEffect(() => {
     if (image) {
       setDimensions({ width: image.width, height: image.height });
+      // Set initial position of the crop rectangle (centered)
+      setRectPosition({
+        x: (image.width - rectSize.width) / 2,
+        y: (image.height - rectSize.height) / 2,
+      });
     }
   }, [image]);
 
@@ -23,7 +30,7 @@ export default function ImageEditor({ imageSrc, onComplete, onCancel }) {
       trRef.current.nodes([rectRef.current]);
       trRef.current.getLayer().batchDraw();
     }
-  }, []);
+  }, [rectPosition, rectSize]);
 
   const handleConfirm = () => {
     const stage = stageRef.current;
@@ -78,6 +85,40 @@ export default function ImageEditor({ imageSrc, onComplete, onCancel }) {
     setRotation((prev) => (prev + 90) % 360);
   };
 
+  const handleDragMove = (e) => {
+    const node = e.target;
+    const newPos = node.position();
+    const { width, height } = dimensions;
+  
+    // Restrict the rectangle to stay within the bounds of the image
+    if (newPos.x < 0) newPos.x = 0;
+    if (newPos.y < 0) newPos.y = 0;
+  
+    // Restrict the rectangle to not exceed the right and bottom limits
+    if (newPos.x + node.width() > width) newPos.x = width - node.width();
+    if (newPos.y + node.height() > height) newPos.y = height - node.height();
+  
+    setRectPosition(newPos);
+    node.position(newPos);
+  };
+  
+
+  const handleResize = (e) => {
+    const node = e.target;
+    const newSize = {
+      width: node.width(),
+      height: node.height(),
+    };
+
+    const { width, height } = dimensions;
+
+    // Ensure the resized rectangle doesn't exceed the size of the image
+    if (newSize.width > width) newSize.width = width;
+    if (newSize.height > height) newSize.height = height;
+
+    setRectSize(newSize);
+  };
+
   return (
     <div className="editor-container">
       <Stage width={dimensions.width} height={dimensions.height} ref={stageRef}>
@@ -93,25 +134,25 @@ export default function ImageEditor({ imageSrc, onComplete, onCancel }) {
           )}
           <Rect
             ref={rectRef}
-            x={100}
-            y={100}
-            width={200}
-            height={150}
+            x={rectPosition.x}
+            y={rectPosition.y}
+            width={rectSize.width}
+            height={rectSize.height}
             fill="rgba(0,0,0,0.2)"
             stroke="red"
-            strokeWidth={2}
+            strokeWidth={4}
             draggable
-            onDragEnd={(e) => {
-              const node = e.target;
-              const newPos = node.position();
-              node.position(newPos);
-            }}
+            onDragMove={handleDragMove}
+            onResize={handleResize}
           />
           <Transformer
             ref={trRef}
             rotateEnabled={false}
             enabledAnchors={['top-left', 'top-right', 'bottom-left', 'bottom-right']}
             boundBoxFunc={(oldBox, newBox) => {
+              const { width, height } = dimensions;
+              if (newBox.width > width) newBox.width = width;
+              if (newBox.height > height) newBox.height = height;
               if (newBox.width < 50 || newBox.height < 50) return oldBox;
               return newBox;
             }}

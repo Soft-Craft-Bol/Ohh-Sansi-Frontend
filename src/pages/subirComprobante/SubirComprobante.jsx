@@ -3,12 +3,8 @@ import { FaUpload } from 'react-icons/fa';
 import Header from '../../components/header/Header';
 import './SubirComprobante.css';
 import { ButtonPrimary } from '../../components/button/ButtonPrimary';
-import * as pdfjsLib from 'pdfjs-dist';
-import pdfWorker from 'pdfjs-dist/build/pdf.worker.min?worker';
 import Swal from 'sweetalert2';
 import ImageEditor from '../../components/imageEditor/ImageEditorKonva';
-
-pdfjsLib.GlobalWorkerOptions.workerPort = new pdfWorker();
 
 export default function SubirComprobante() {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -17,7 +13,6 @@ export default function SubirComprobante() {
   const [editingImage, setEditingImage] = useState(null);
   const [showEditor, setShowEditor] = useState(false);
   const fileInputRef = useRef(null);
-  const canvasRef = useRef(null);
 
   useEffect(() => {
     return () => {
@@ -44,7 +39,7 @@ export default function SubirComprobante() {
   };
 
   const handleFileSelect = async (file) => {
-    const validTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+    const validTypes = ['image/jpeg', 'image/png']; // Eliminamos PDF
     const maxSize = 5 * 1024 * 1024;
     const invalidNameChars = /[<>:"/\\|?*]/;
 
@@ -54,7 +49,7 @@ export default function SubirComprobante() {
       Swal.fire({
         icon: 'error',
         title: 'Error',
-        text: 'Formato de archivo no válido. Solo JPG, PNG o PDF.',
+        text: 'Formato de archivo no válido. Solo JPG, PNG.',
         confirmButtonColor: '#7a5cf5',
       });
       return;
@@ -86,42 +81,12 @@ export default function SubirComprobante() {
       URL.revokeObjectURL(previewUrl);
     }
 
-    if (file.type === 'application/pdf') {
-      const blobUrl = URL.createObjectURL(file);
-      setPreviewUrl(blobUrl);
-      renderPDF(blobUrl);
-    } else {
-      const reader = new FileReader();
-      reader.onload = () => {
-        setEditingImage(reader.result);
-        setShowEditor(true);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const renderPDF = async (url) => {
-    try {
-      const pdf = await pdfjsLib.getDocument(url).promise;
-      const page = await pdf.getPage(1);
-      const scale = 1.5;
-      const viewport = page.getViewport({ scale });
-
-      const canvas = canvasRef.current;
-      const context = canvas.getContext('2d');
-      canvas.height = viewport.height;
-      canvas.width = viewport.width;
-
-      await page.render({ canvasContext: context, viewport }).promise;
-    } catch (err) {
-      console.error('Error al renderizar PDF:', err);
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'No se pudo cargar el PDF.',
-        confirmButtonColor: '#7a5cf5',
-      });
-    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      setEditingImage(reader.result);
+      setShowEditor(true);
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleButtonClick = () => {
@@ -160,74 +125,57 @@ export default function SubirComprobante() {
           }}
         />
       )}
-      {!showEditor && (
-  <div className="payment-receipt-preview-container">
-    <h2 className="preview-title">Vista previa de comprobante de pago</h2>
 
-    <div
-      className={`drop-area ${isDragging ? 'drag-over' : ''}`}
-      onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
-      onDrop={handleDrop}
-    >
-      {selectedFile ? (
-        <div className="preview-container">
-          {selectedFile.type === 'application/pdf' ? (
-            <div className="pdf-preview">
-              <canvas ref={canvasRef} />
+      <div className="payment-receipt-preview-container">
+        <h2 className="preview-title">Vista previa de comprobante de pago</h2>
+
+        <div
+          className={`drop-area ${isDragging ? 'drag-over' : ''}`}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+        >
+          {selectedFile ? (
+            <div className="preview-container">
+              <img
+                src={previewUrl}
+                alt="Vista previa"
+                className="preview-image"
+              />
               <p>{selectedFile.name}</p>
               <p>{(selectedFile.size / 1024).toFixed(1)} KB</p>
+              <button className="select-button" onClick={handleButtonClick}>
+                Cambiar archivo
+              </button>
             </div>
           ) : (
             <>
-              {previewUrl && (
-                <img
-                  src={previewUrl}
-                  alt="Vista previa"
-                  className="preview-image"
-                />
-              )}
-              <p>{selectedFile.name}</p>
-              <p>{(selectedFile.size / 1024).toFixed(1)} KB</p>
+              <p className="no-preview">No hay archivo seleccionado.</p>
+              <div className="upload-icon-container">
+                <FaUpload />
+              </div>
+              <p className="drag-text">Arrastra y suelta aquí tu comprobante de pago</p>
+              <p className="format-text">Formatos aceptados: JPG, PNG (máx. 5MB)</p>
+              <button className="select-button" onClick={handleButtonClick}>
+                Seleccionar archivo
+              </button>
             </>
           )}
-          <button className="select-button" onClick={handleButtonClick}>
-            Cambiar archivo
-          </button>
+
+          <input
+            type="file"
+            ref={fileInputRef}
+            style={{ display: 'none' }}
+            onChange={handleFileInputChange}
+            accept="image/jpeg,image/png" // Solo aceptamos imágenes ahora
+          />
         </div>
-      ) : (
-        <>
-          <p className="no-preview">No hay archivo seleccionado.</p>
-          <div className="upload-icon-container">
-            <FaUpload />
-          </div>
-          <p className="drag-text">
-            Arrastra y suelta aquí tu comprobante de pago
-          </p>
-          <p className="format-text">
-            Formatos aceptados: JPG, PNG o PDF (máx. 5MB)
-          </p>
-          <button className="select-button" onClick={handleButtonClick}>
-            Seleccionar archivo
-          </button>
-        </>
-      )}
 
-      <input
-        type="file"
-        ref={fileInputRef}
-        style={{ display: 'none' }}
-        onChange={handleFileInputChange}
-        accept="image/jpeg,image/png,application/pdf"
-      />
-    </div>
-
-    <div className="action-buttons">
-      <ButtonPrimary disabled={!selectedFile}>Confirmar y enviar</ButtonPrimary>
-    </div>
-  </div>
-)}
-
+        <div className="action-buttons">
+          <ButtonPrimary disabled={!selectedFile}>Confirmar y enviar</ButtonPrimary>
+        </div>
+      </div>
     </div>
   );
 }
+

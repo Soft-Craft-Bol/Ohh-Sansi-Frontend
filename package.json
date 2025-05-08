@@ -26,7 +26,6 @@
     "jspdf-autotable": "^5.0.2",
     "konva": "^9.3.20",
     "lucide-react": "^0.487.0",
-    "pdfjs-dist": "^3.11.174",
     "prop-types": "^15.8.1",
     "react": "^19.0.0",
     "react-datepicker": "^8.2.1",
