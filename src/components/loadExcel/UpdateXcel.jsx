@@ -9,6 +9,7 @@ import './LoadExcel.css';
 import Swal from 'sweetalert2';
 import plantilla from '../../assets/Plantilla-De-Inscripción.xlsx';
 import Table from '../table/Table';
+import excelRowSchema from '../../schemas/ExcelValidation';
 
 const validExtensions = ['.xlsx'];
 const columnasPermitidas = ['Nombres', 'Apellido Paterno', 'Apellido Materno', 'Departamento', 'Colegio', 'Carnet Identidad'];
@@ -114,11 +115,79 @@ const UpdateExcel = () => {
     formik.setFieldTouched('file', false);
   };
 
+  const validarFilasExcel = async (filas) => {
+  const errores = [];
+
+  for (let i = 0; i < filas.length; i++) {
+    try {
+      await excelRowSchema.validate(filas[i], { abortEarly: false });
+    } catch (validationError) {
+      validationError.inner.forEach(err => {
+        errores.push({
+          hoja: filas[i]._hoja || 'Desconocida',  // si no viene definido
+          fila: i + 2,
+          columna: err.path,
+          mensaje: err.message
+        });
+      });
+    }
+    }
+
+    return errores;
+    };
+
+
   const handleSubmit = async () => {
-    if (!selectedFile) {
-      Swal.fire("Archivo requerido", "Debes cargar un archivo Excel antes de registrar", "warning");
+  if (!selectedFile) {
+    Swal.fire("Archivo requerido", "Debes cargar un archivo Excel antes de registrar", "warning");
+    return;
+  }
+  const esFilaInvalida = (fila) => {
+    const ci = fila['Carnet Identidad'];
+    return !ci || String(ci).trim() === '' || ci === 0;
+    };
+  const leerExcel = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+
+      reader.onload = async (event) => {
+        try {
+          const data = new Uint8Array(event.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+
+          const hojaDatosRaw = XLSX.utils.sheet_to_json(workbook.Sheets['Datos'] || {});
+          const hojaAreasRaw = XLSX.utils.sheet_to_json(workbook.Sheets['Areas'] || {});
+
+          const hojaDatos = hojaDatosRaw.filter(fila => !esFilaInvalida(fila));
+          const hojaAreas = hojaAreasRaw.filter(fila => !esFilaInvalida(fila));
+
+          const filasConHojaDatos = hojaDatos.map(fila => ({ ...fila, _hoja: 'Datos' }));
+          const filasConHojaAreas = hojaAreas.map(fila => ({ ...fila, _hoja: 'Areas' }));
+
+          const erroresDatos = await validarFilasExcel(filasConHojaDatos);
+          const erroresAreas = await validarFilasExcel(filasConHojaAreas);
+
+          const erroresTotales = [...erroresDatos, ...erroresAreas];
+          resolve(erroresTotales);
+        } catch (error) {
+          reject(error);
+        }
+      };
+
+      reader.onerror = (error) => reject(error);
+      reader.readAsArrayBuffer(file);
+    });
+  };
+
+  try {
+    const errores = await leerExcel(selectedFile);
+
+    if (errores.length > 0) {
+      console.log(errores); // Puedes renderizar en tabla o alertar
+      Swal.fire("Errores en el archivo", "Corrige los errores antes de continuar", "error");
       return;
     }
+
     const { value: formValues } = await Swal.fire({
       title: 'Datos del Responsable de pago',
       html: `
@@ -138,19 +207,17 @@ const UpdateExcel = () => {
         const apellidos = document.getElementById('apellidos').value.trim();
         const correo = document.getElementById('correo').value.trim();
         const telefono = document.getElementById('telefono').value.trim();
-  
-        // Validación básica
+
         if (!ci || !nombres || !apellidos || !correo || !telefono) {
           Swal.showValidationMessage('Por favor, complete todos los campos obligatorios');
           return false;
         }
-  
+
         return { ci, comp, nombres, apellidos, correo, telefono };
       }
     });
-  
+
     if (formValues) {
-    
       const formData = new FormData();
       formData.append("archivo", selectedFile);
       formData.append("ci", formValues.ci);
@@ -159,22 +226,21 @@ const UpdateExcel = () => {
       formData.append("apellidos", formValues.apellidos);
       formData.append("correo", formValues.correo);
       formData.append("telefono", formValues.telefono);
-    
-      try {
-        
-        await fetch("//endpoint del api pendiente", {
-          method: "POST",
-          body: formData,
-        });
-    
-        Swal.fire("Éxito", "Archivo y tutor enviados correctamente", "success");
-      } catch (error) {
-        console.error("Error:", error);
-        Swal.fire("Error", "Ocurrió un error al enviar los datos", "error");
-      }
-    }    
-  };
-  
+
+      // Aquí puedes hacer el envío real
+      await fetch("//endpoint del api pendiente", {
+        method: "POST",
+        body: formData,
+      });
+
+      Swal.fire("Éxito", "Archivo y tutor enviados correctamente", "success");
+    }
+
+  } catch (error) {
+    console.error("Error al procesar el archivo Excel:", error);
+    Swal.fire("Error", "Hubo un problema al leer o validar el archivo", "error");
+  }
+};
 
   return (
     <div>

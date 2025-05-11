@@ -66,12 +66,5 @@ const excelRowSchema = Yup.object().shape({
     'num Telefono': telfSchema,
 
     'Nombre Tutor': nombreSchema,
-
-    'Nombre Tutor2': nombreSchema,
-    'Apellidos Tutor2': nombreSchema,
-    'Carnet tutor2': CIschema,
-    'Complemento tut2': complementoSchema,
-    'email tutor2': emailSchema,
-    'telefono2': telfSchema,
 });
 export default excelRowSchema;
