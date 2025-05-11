@@ -39,39 +39,22 @@ export default function SubirComprobante() {
   };
 
   const handleFileSelect = async (file) => {
-    const validTypes = ['image/jpeg', 'image/png']; // Eliminamos PDF
+    const validTypes = ['image/jpeg', 'image/png'];
     const maxSize = 5 * 1024 * 1024;
     const invalidNameChars = /[<>:"/\\|?*]/;
 
     if (!file) return;
 
     if (!validTypes.includes(file.type)) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'Formato de archivo no válido. Solo JPG, PNG.',
-        confirmButtonColor: '#7a5cf5',
-      });
+      Swal.fire({ icon: 'error', title: 'Formato de archivo no válido.', text: 'Solo se admite formato JPG, PNG', confirmButtonColor: '#7a5cf5' });
       return;
     }
-
     if (file.size > maxSize) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'El archivo no debe superar los 5MB.',
-        confirmButtonColor: '#7a5cf5',
-      });
+      Swal.fire({ icon: 'error', title: 'Archivo muy grande', text: 'El archivo no debe superar los 5MB', confirmButtonColor: '#7a5cf5' });
       return;
     }
-
     if (invalidNameChars.test(file.name)) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'El nombre del archivo contiene caracteres inválidos.',
-        confirmButtonColor: '#7a5cf5',
-      });
+      Swal.fire({ icon: 'error', title: 'Error', text: 'El nombre del archivo contiene caracteres inválidos', confirmButtonColor: '#7a5cf5' });
       return;
     }
 
@@ -114,7 +97,6 @@ export default function SubirComprobante() {
             const editedFile = new File([blob], 'comprobante-editado.jpg', {
               type: blob.type,
             });
-
             setSelectedFile(editedFile);
             setPreviewUrl(croppedUrl);
             setShowEditor(false);
@@ -167,7 +149,7 @@ export default function SubirComprobante() {
             ref={fileInputRef}
             style={{ display: 'none' }}
             onChange={handleFileInputChange}
-            accept="image/jpeg,image/png" // Solo aceptamos imágenes ahora
+            accept="image/jpeg,image/png" 
           />
         </div>
 

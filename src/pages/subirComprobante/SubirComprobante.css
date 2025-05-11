@@ -89,13 +89,6 @@
   margin-bottom: 10px;
 }
 
-.pdf-preview {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  color: #333;
-}
-
 .action-buttons {
   display: flex;
   justify-content: flex-end;
@@ -105,15 +98,6 @@
 .confirm-button:disabled {
   background-color: var(--blue-light);
   cursor: not-allowed;
-}
-.pdf-preview p {
-  margin: 4px 0;
-  font-size: 0.95em;
-}
-.pdf-preview canvas {
-  border-radius: 4px;
-  margin-bottom: 10px;
-  max-width: 100%;
 }
 
 .error-banner {
@@ -127,5 +111,3 @@
   text-align: center;
   font-weight: 500;
 }
-
-
