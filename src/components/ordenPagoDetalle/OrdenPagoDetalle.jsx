@@ -1,98 +1,188 @@
-import React from 'react';
-import './OrdenPagoDetalle.css';
-import { generateOrdenPagoPDF } from '../../utils/PDFGenerator';
+import React, { useState, useRef, useEffect } from 'react';
+import { FaUpload } from 'react-icons/fa';
+import Header from '../../components/header/Header';
+import './SubirComprobante.css';
+import { ButtonPrimary } from '../../components/button/ButtonPrimary';
+import Swal from 'sweetalert2';
+import ImageEditor from '../../components/imageEditor/ImageEditorKonva';
 
-const OrdenPagoDetalle = ({ data, nit_tutor }) => {
-  const formatFecha = (fechaStr) => {
-    if (!fechaStr) return '';
-    const meses = [
-      'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
-      'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
-    ];
-    const fecha = new Date(fechaStr);
-    const dia = fecha.getDate();
-    const mes = meses[fecha.getMonth()];
-    const año = fecha.getFullYear();
-    return `Cochabamba, ${dia} de ${mes} de ${año}`;
+export default function SubirComprobante() {
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState('');
+  const [isDragging, setIsDragging] = useState(false);
+  const [editingImage, setEditingImage] = useState(null);
+  const [showEditor, setShowEditor] = useState(false); // Estado para controlar si se muestra el editor
+  const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (previewUrl && previewUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
+
+  const handleDragOver = (event) => {
+    event.preventDefault();
+    setIsDragging(true);
   };
 
-  const handleDownload = () => {
-    try {
-      generateOrdenPagoPDF(data)
-        .save()
-        .catch(error => {
-          console.error('Error al generar el PDF:', error);
-          alert('Ocurrió un error al generar el PDF. Por favor intente nuevamente.');//cambiar a soner, criterio de acptacion
-        });
-    } catch (error) {
-      console.error('Error al generar el PDF:', error);
-      alert('Ocurrió un error al generar el PDF. Por favor intente nuevamente.');//cambiar a soner, criterio de acptacion
+  const handleDragLeave = () => {
+    setIsDragging(false);
+  };
+
+  const handleDrop = (event) => {
+    event.preventDefault();
+    setIsDragging(false);
+    const file = event.dataTransfer.files[0];
+    handleFileSelect(file);
+  };
+
+  const handleFileSelect = async (file) => {
+    const validTypes = ['image/jpeg', 'image/png'];
+    const maxSize = 5 * 1024 * 1024;
+    const invalidNameChars = /[<>:"/\\|?*]/;
+
+    if (!file) return;
+
+    if (!validTypes.includes(file.type)) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Formato de archivo no válido. Solo JPG, PNG.',
+        confirmButtonColor: '#7a5cf5',
+      });
+      return;
     }
+
+    if (file.size > maxSize) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'El archivo no debe superar los 5MB.',
+        confirmButtonColor: '#7a5cf5',
+      });
+      return;
+    }
+
+    if (invalidNameChars.test(file.name)) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'El nombre del archivo contiene caracteres inválidos.',
+        confirmButtonColor: '#7a5cf5',
+      });
+      return;
+    }
+
+    setSelectedFile(file);
+
+    if (previewUrl && previewUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(previewUrl);
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setEditingImage(reader.result);
+      setShowEditor(true); // Activamos el editor cuando se selecciona una imagen
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleButtonClick = () => {
+    fileInputRef.current.click();
+  };
+
+  const handleFileInputChange = (event) => {
+    const file = event.target.files[0];
+    handleFileSelect(file);
+    event.target.value = null;
+  };
+
+  const handleConfirm = (croppedImage) => {
+    setPreviewUrl(croppedImage);
+    setShowEditor(false); // Ocultamos el editor después de confirmar la edición
+  };
+
+  const handleCancel = () => {
+    setShowEditor(false); // Salimos del editor sin cambios
+    setEditingImage(null); // Restablecemos la imagen
   };
 
   return (
-    <div className="orden-pago-detalle">
-      <div className="cabecera">
-        <div>
-          <p className="titulo-uni">UNIVERSIDAD MAYOR DE SAN SIMÓN</p>
-          <p className="subtitulo">FACULTAD DE CIENCIAS Y TECNOLOGÍA</p>
-          <p className="subtexto">Secretaría Administrativa</p>
+    <div>
+      <Header
+        title="Comprobante de pago"
+        description="Suba su comprobante de pago para verificar su inscripción"
+      />
+
+      {/* Solo mostrar el editor de imagen si está activo */}
+      {showEditor && editingImage && (
+        <ImageEditor
+          imageSrc={editingImage}
+          onComplete={handleConfirm}
+          onCancel={handleCancel}
+        />
+      )}
+
+      {/* Ocultar la vista previa y los botones mientras se edita la imagen */}
+      {!showEditor && !previewUrl && (
+        <div className="payment-receipt-preview-container">
+          <h2 className="preview-title">Vista previa de comprobante de pago</h2>
+
+          <div
+            className={`drop-area ${isDragging ? 'drag-over' : ''}`}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+          >
+            {selectedFile ? (
+              <div className="preview-container">
+                {previewUrl && (
+                  <img
+                    src={previewUrl}
+                    alt="Vista previa"
+                    className="preview-image"
+                  />
+                )}
+                <p>{selectedFile.name}</p>
+                <p>{(selectedFile.size / 1024).toFixed(1)} KB</p>
+                <button className="select-button" onClick={handleButtonClick}>
+                  Cambiar archivo
+                </button>
+              </div>
+            ) : (
+              <>
+                <p className="no-preview">No hay archivo seleccionado.</p>
+                <div className="upload-icon-container">
+                  <FaUpload />
+                </div>
+                <p className="drag-text">
+                  Arrastra y suelta aquí tu comprobante de pago
+                </p>
+                <p className="format-text">
+                  Formatos aceptados: JPG, PNG (máx. 5MB)
+                </p>
+                <button className="select-button" onClick={handleButtonClick}>
+                  Seleccionar archivo
+                </button>
+              </>
+            )}
+
+            <input
+              type="file"
+              ref={fileInputRef}
+              style={{ display: 'none' }}
+              onChange={handleFileInputChange}
+              accept="image/jpeg,image/png"
+            />
+          </div>
+
+          <div className="action-buttons">
+            <ButtonPrimary disabled={!selectedFile}>Confirmar y enviar</ButtonPrimary>
+          </div>
         </div>
-        <div className="orden-numero">
-          <p><strong>ORDEN DE PAGO</strong></p>
-          <p className="numero-rojo">{data?.codOrdenPago || 'N°000000'}</p>
-        </div>
-      </div>
-      <div className="datos-emisor">
-        <p>
-          <strong>Emitido por la unidad:</strong> 
-          <span className="underline"> {data?.emisor || 'FACULTAD DE CIENCIAS Y TECNOLOGÍA'}</span>
-        </p>
-        <p>
-          <strong>Señor(es):</strong> 
-          <span className="underline"> {data?.responsablePago || 'Nombre no disponible'}</span> 
-          <strong> NIT/CI:</strong> 
-          <span className="underline espacio-nit">{nit_tutor}</span>
-        </p>
-        <p><strong>Por lo siguiente:</strong></p>
-      </div>
-      <table className="tabla-detalle">
-        <thead>
-          <tr>
-            <th>CANTIDAD</th>
-            <th>CONCEPTO</th>
-            <th>P. UNITARIO</th>
-            <th>IMPORTE</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>{data?.cantidad || 0}</td>
-            <td>{data?.concepto || 'Concepto no especificado'}</td>
-            <td>Bs. {data?.precio_unitario?.toFixed(2) || '0.00'}</td>
-            <td>Bs. {data?.montoTotalPago?.toFixed(2) || '0.00'}</td>
-          </tr>
-        </tbody>
-      </table>
-      <p className="nota">Nota: no vale como factura oficial</p>
-      <div className="totales">
-        <p>
-          <strong>Son:</strong> 
-          <span className="underline"> {data?.precioLiteral || 'CERO 00/100'}</span> 
-          Bolivianos: <span className="monto-box">{data?.montoTotalPago?.toFixed(2) || '0.00'}</span>
-        </p>
-      </div>
-      <p className="footer-fecha">
-        {formatFecha(data?.fechaEmisionOrdenPago) || 'Fecha no disponible'}
-      </p>
-      
-      <div className="boton-descargar">
-        <button className="btn-descargar" onClick={handleDownload}>
-          ⬇ Descargar orden
-        </button>
-      </div>
+      )}
     </div>
   );
-};
-
-export default OrdenPagoDetalle;
+}
