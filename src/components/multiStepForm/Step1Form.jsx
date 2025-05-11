@@ -28,25 +28,6 @@ const Step1Form = () => {
   const [loadingOverlay, setLoadingOverlay] = useState(false);
   const [isSubmittingForm, setIsSubmittingForm] = useState(false);
 
-  const loadSavedData = () => {
-    const savedData = localStorage.getItem("participanteFormData");
-    return savedData
-      ? JSON.parse(savedData)
-      : {
-        nombre: "",
-        apellido: "",
-        documento: "",
-        complemento: "",
-        fechaNacimiento: "",
-        departamento: "",
-        municipio: "",
-        institucion: "",
-        grado: "",
-        email: "",
-        telefono: "",
-      };
-  };
-
   const handleSubmit = async (values, resetForm) => {
     if (isSubmittingForm) return;
   
@@ -112,11 +93,7 @@ const Step1Form = () => {
         confirmButtonText: "Continuar",
         
       }).then(() => {
-        onRegistroExitoso(values.documento);
-        onComplete();
         resetForm();
-        localStorage.removeItem("participanteFormData");
-        
       });
   
     } catch (error) {

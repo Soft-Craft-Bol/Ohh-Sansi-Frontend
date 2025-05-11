@@ -12,7 +12,7 @@
 }
 
 .glassy-card {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(155, 168, 179, 0.93);
   border-radius: 20px;
   backdrop-filter: blur(10px);
   box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
@@ -41,6 +41,8 @@
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  --text-color: #ffffff;
+  text-align: left;
 }
 
 .actions {
@@ -49,10 +51,34 @@
   gap: 1rem;
 }
 
+.login-form input {
+  padding: 0.8rem;
+  border-radius: 12px;
+  border: none;
+  outline: none;
+  font-size: 1rem;
+  background-color: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  transition: background-color 0.3s ease;
+  text-emphasis-color: fffffff;
+}
+
+.login-form input::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.login-form input:focus {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-color: #00bfff;
+  box-shadow: 0 0 0 3px rgba(0, 191, 255, 0.3);
+}
+
+
 .login-form a {
   color: #00fff0;
   text-decoration: none;
   font-size: 0.9rem;
+  text-align: center;
 }
 
 .login-form a:hover {

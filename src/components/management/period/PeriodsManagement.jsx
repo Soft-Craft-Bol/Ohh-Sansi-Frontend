@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import PeriodPanel from './PeriodPanel';
 import EventModal from '../../modals/EventModal';
 import { getOlimpiadasConEventos, saveFechaConOlimpiada, saveFechaOlimpiada } from '../../../api/api';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import Swal from 'sweetalert2';
 import { EVENT_ORDER } from '../../../schemas/EventValidationSchema';
 import getEventValidationSchema from '../../../schemas/EventValidationSchema';
@@ -16,7 +16,9 @@ const PeriodosManagement = () => {
     const [eventosExistentes, setEventosExistentes] = useState([]);
     const [yearExists, setYearExists] = useState(null);
 
-    const { data: periodos = [], refetch, isLoading } = useQuery('periodos', getOlimpiadasConEventos, {
+    const { data: periodos = [], refetch, isLoading } = useQuery({
+        queryKey: ['periodos'],
+        queryFn: getOlimpiadasConEventos,
         onError: () => {
             Swal.fire({
                 icon: 'error',
@@ -26,6 +28,7 @@ const PeriodosManagement = () => {
         },
         select: (res) => res.data || []
     });
+    
 
     useEffect(() => {
         if (!periodoActual || !Array.isArray(periodos)) return;

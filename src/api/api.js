@@ -57,6 +57,7 @@ export const getGrados = () => api.get('/grados');
 export const getGradosCategorias = () => api.get('/grado-categoria');
 
 export const getEstudianteByCarnet = (carnet) => api.get(`/participante/carnet/${carnet}`);
+export const getEstudenteByCi = (ci) => api.get(`/participante/carnet/${ci}/datos`);
 export const verifyEstudiante = (data) => api.post('participante/verify', data);
 export const getAreaByIdGrade = (id) => api.get(`/nivelescolar-categoria-area/areas-categorias/${id}`);
 //CATEGORIAS 
@@ -71,6 +72,7 @@ export const registerTutorAcademico = (ciParticipante, idArea, data) =>api.post(
 export const getTutorAsigando = (data) => api.get(`/tutores/getTutoresLegales/${data}`);
 export const getTutorByCi = (data) => api.get(`/tutor/byCi/${data}`);
 export const verifyTutor = (data) => api.post('/tutor/verify', data);
+export const parentescoTutor = () => api.get('/parentesco/findAllParentescos');
 
 //OLIMPIADA
 export const getOlimpiadas = () => api.get('/olimpiada');

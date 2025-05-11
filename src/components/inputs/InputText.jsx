@@ -87,7 +87,9 @@ function InputText({
           </div>
         )}
         <input
-          className={`text-input ${meta.touched && meta.error ? "input-error" : ""} ${Icon ? 'with-icon' : ''}`}
+          className={`text-input ${meta.touched && meta.error ?
+           "input-error" : ""} 
+          ${Icon ? 'with-icon' : ''}`}
           {...field}
           {...props}
           type={type === "password" && showPassword ? "text" : type}

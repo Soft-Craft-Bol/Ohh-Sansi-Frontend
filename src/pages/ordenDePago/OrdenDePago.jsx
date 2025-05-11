@@ -136,7 +136,7 @@ const OrdenDePago = () => {
           descripcion="Genera la orden de pago referente a la inscripción, introduciendo el código"
           placeholder="Introduce el código"
           codigoIntroducidoTexto="Código introducido:"
-          codigoIntroducido={codigoIntroducido}
+         /*  codigoIntroducido={codigoIntroducido} */
           inputValue={inputValue} // Pasando inputValue al componente
           onInputChange={(e) => {
             const value = e.target.value;

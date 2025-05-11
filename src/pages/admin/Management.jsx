@@ -8,17 +8,13 @@ import Header from "../../components/header/Header";
 import "./Management.css";
 import { 
   CalendarCheck,
-  Trophy,
-  Layers3,
-  DollarSign,
   BookOpen,
   FlaskConical,
-  Atom,
   TestTube2,
-  School,
   Calculator
 } from 'lucide-react';
 import CatalogoMangament from "../../components/management/catalogo/CatalogoManagement";
+
 
 const ManagementPage = () => {
   const tabs = [

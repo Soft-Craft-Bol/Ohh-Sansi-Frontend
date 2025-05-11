@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import Tabs from "../tabs/Tabs";  
 import Step1Form from "./Step1Form";
 import Step2Form from "./Step2Form";
-import Step3Form from "./Step3Form";
 import Step4Form from "./Step4Form";
 import Step3Only from "./Step3Only";
 import "./InscripcionIndividual.css";
@@ -80,14 +79,7 @@ const InscripcionIndividual = () => {
         autoNavigate={autoNavigate}
       /> 
     },
-    { 
-      // id: "step3", 
-      // label: "Registro de Tutores legales", 
-      // component: <Step3Form 
-      //   formData={formData} 
-      //   updateFormData={setFormData}
-      //   onComplete={() => handleAutoNavigate("step4")}
-      // /> 
+    {
       id: "step3", 
       label: "Registro de Tutores legales",
       icon: <Users size={20} />,
@@ -99,7 +91,7 @@ const InscripcionIndividual = () => {
     },
     { 
       id: "step4",
-      label: "Asignación de tutor",
+      label: "Asignación de Profesor",
       icon: <ClipboardCheck size={20} />,
       component: <Step4Form formData={formData} updateFormData={setFormData} />
     }
