@@ -6,10 +6,10 @@ const nombreSchema = Yup.string()
 
 const CIschema = Yup.string()
     .required('El documento de identidad es requerido')
-    .test('no-espacios', 'El nombre no puede contener solo espacios', (value) => value && value.trim().length > 0)
+    .test('no-espacios', 'No puede contener solo espacios', (value) => value && value.trim().length > 0)
     .matches(/^[0-9]+$/, 'El documento solo puede contener números')
     .min(5, 'El documento debe tener al menos 5 caracteres')
-    .max(9,'El documento debe tener al menos 9 caracteres' );
+    .max(9,'El documento debe tener máximo 9 caracteres' );
 
 const complementoSchema= Yup.string()
     .matches(/^[a-zA-Z0-9]+$/, 'Solo caracteres alfanuméricos permitidos')
@@ -26,7 +26,7 @@ const emailSchema= Yup.string()
         .email('Correo electrónico inválido')  
         .required('El correo electrónico es requerido');
 
-const excelRowSchema = Yup.object().shape({
+export const excelRowSchemaDatos = Yup.object().shape({
     'Nombres': nombreSchema,
 
     'Apellido Paterno': Yup.string()
@@ -66,4 +66,12 @@ const excelRowSchema = Yup.object().shape({
 
     'Nombre Tutor': nombreSchema,
 });
-export default excelRowSchema;
+
+export const excelRowSchemaAreas = Yup.object().shape({
+    'Apellidos Tutor': nombreSchema,
+    'Carnet tutor': CIschema,
+    'Complemento tut': complementoSchema,
+    'email tutor': emailSchema,
+    'telefono': telfSchema,
+    'Nombre Tutor': nombreSchema,
+});

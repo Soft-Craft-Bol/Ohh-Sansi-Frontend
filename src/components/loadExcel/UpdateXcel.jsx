@@ -9,7 +9,7 @@ import './LoadExcel.css';
 import Swal from 'sweetalert2';
 import plantilla from '../../assets/Plantilla-De-Inscripción.xlsx';
 import Table from '../table/Table';
-import excelRowSchema from '../../schemas/ExcelValidation';
+import { excelRowSchemaAreas, excelRowSchemaDatos } from '../../schemas/ExcelValidation';
 
 const validExtensions = ['.xlsx'];
 const columnasPermitidas = ['Nombres', 'Apellido Paterno', 'Apellido Materno', 'Departamento', 'Colegio', 'Carnet Identidad'];
@@ -115,16 +115,36 @@ const UpdateExcel = () => {
     formik.setFieldTouched('file', false);
   };
 
-  const validarFilasExcel = async (filas) => {
+  const validarFilasDatos = async (filas) => {
   const errores = [];
 
   for (let i = 0; i < filas.length; i++) {
     try {
-      await excelRowSchema.validate(filas[i], { abortEarly: false });
+      await excelRowSchemaDatos.validate(filas[i], { abortEarly: false });
     } catch (validationError) {
       validationError.inner.forEach(err => {
         errores.push({
-          hoja: filas[i]._hoja || 'Desconocida',  // si no viene definido
+          hoja: filas[i]._hoja || 'Desconocida',
+          fila: i + 2,
+          columna: err.path,
+          mensaje: err.message
+        });
+      });
+    }
+    }
+
+    return errores;
+    };
+const validarFilasAreas = async (filas) => {
+  const errores = [];
+
+  for (let i = 0; i < filas.length; i++) {
+    try {
+      await excelRowSchemaAreas.validate(filas[i], { abortEarly: false });
+    } catch (validationError) {
+      validationError.inner.forEach(err => {
+        errores.push({
+          hoja: filas[i]._hoja || 'Desconocida',
           fila: i + 2,
           columna: err.path,
           mensaje: err.message
@@ -136,14 +156,13 @@ const UpdateExcel = () => {
     return errores;
     };
 
-
   const handleSubmit = async () => {
   if (!selectedFile) {
     Swal.fire("Archivo requerido", "Debes cargar un archivo Excel antes de registrar", "warning");
     return;
   }
   const esFilaInvalida = (fila) => {
-    const ci = fila['Carnet Identidad'];
+    const ci = fila['Carnet tutor'];
     return !ci || String(ci).trim() === '' || ci === 0;
     };
   const leerExcel = (file) => {
@@ -175,10 +194,10 @@ const UpdateExcel = () => {
             const filasConHojaDatos = hojaDatos.map(fila => ({ ...convertirFechas(fila), _hoja: 'Datos' }));
             const filasConHojaAreas = hojaAreas.map(fila => ({ ...convertirFechas(fila), _hoja: 'Areas' }));
 
-        console.log(filasConHojaDatos);
-          const erroresDatos = await validarFilasExcel(filasConHojaDatos);
-          const erroresAreas = await validarFilasExcel(filasConHojaAreas);
-
+        console.log(filasConHojaAreas);
+          const erroresDatos = await validarFilasDatos(filasConHojaDatos);
+          const erroresAreas = await validarFilasAreas(filasConHojaAreas);
+            console.log(erroresAreas)
           const erroresTotales = [...erroresDatos, ...erroresAreas];
           resolve(erroresTotales);
         } catch (error) {
@@ -264,7 +283,6 @@ const UpdateExcel = () => {
       formData.append("correo", formValues.correo);
       formData.append("telefono", formValues.telefono);
 
-      // Aquí puedes hacer el envío real
       await fetch("//endpoint del api pendiente", {
         method: "POST",
         body: formData,
