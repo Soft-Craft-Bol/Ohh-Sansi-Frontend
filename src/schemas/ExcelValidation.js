@@ -58,7 +58,6 @@ const excelRowSchema = Yup.object().shape({
     'Carnet Identidad': CIschema,
     'ComplementoCi': complementoSchema,
     
-    'NombreTutor': nombreSchema,
     'Apellidos Tutor': nombreSchema,
     'Carnet tutor': CIschema,
     'Complemento tut': complementoSchema,

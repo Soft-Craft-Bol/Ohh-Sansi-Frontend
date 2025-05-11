@@ -161,9 +161,21 @@ const UpdateExcel = () => {
           const hojaDatos = hojaDatosRaw.filter(fila => !esFilaInvalida(fila));
           const hojaAreas = hojaAreasRaw.filter(fila => !esFilaInvalida(fila));
 
-          const filasConHojaDatos = hojaDatos.map(fila => ({ ...fila, _hoja: 'Datos' }));
-          const filasConHojaAreas = hojaAreas.map(fila => ({ ...fila, _hoja: 'Areas' }));
+          const convertirFechas = (fila) => {
+            const copia = { ...fila };
+            if (typeof copia.FechaNacimiento === 'number') {
+                const serial = copia.FechaNacimiento;
+                const utc_days = Math.floor(serial - 25569);
+                const utc_value = utc_days * 86400;
+                copia.FechaNacimiento = new Date(utc_value * 1000);
+            }
+            return copia;
+            };
 
+            const filasConHojaDatos = hojaDatos.map(fila => ({ ...convertirFechas(fila), _hoja: 'Datos' }));
+            const filasConHojaAreas = hojaAreas.map(fila => ({ ...convertirFechas(fila), _hoja: 'Areas' }));
+
+        console.log(filasConHojaDatos);
           const erroresDatos = await validarFilasExcel(filasConHojaDatos);
           const erroresAreas = await validarFilasExcel(filasConHojaAreas);
 
@@ -183,9 +195,34 @@ const UpdateExcel = () => {
     const errores = await leerExcel(selectedFile);
 
     if (errores.length > 0) {
-      console.log(errores); // Puedes renderizar en tabla o alertar
-      Swal.fire("Errores en el archivo", "Corrige los errores antes de continuar", "error");
-      return;
+      const erroresPorHoja = errores.reduce((acc, error) => {
+        const hoja = error.hoja || 'Desconocida';
+        if (!acc[hoja]) acc[hoja] = [];
+        acc[hoja].push(`Fila ${error.fila}, Columna "${error.columna}": ${error.mensaje}`);
+        return acc;
+    }, {});
+
+    let htmlErrores = '';
+
+    for (const hoja in erroresPorHoja) {
+        htmlErrores += `<h3 style="margin-top: 10px; font-size: 16px;">Hoja: ${hoja}</h3><ul>`;
+        erroresPorHoja[hoja].forEach(err => {
+        htmlErrores += `<li style="text-align: left; font-size: 14px;">${err}</li>`;
+        });
+        htmlErrores += '</ul>';
+    }
+
+    Swal.fire({
+        title: 'Errores de validación en el archivo Excel',
+        html: htmlErrores,
+        icon: 'error',
+        width: 800,
+        customClass: {
+        htmlContainer: 'scrollable-swals',
+        },
+        showConfirmButton: true
+    });
+    return;
     }
 
     const { value: formValues } = await Swal.fire({
