@@ -1,5 +1,5 @@
 import Header from "../../components/header/Header";
-import LoadExcel from "../../components/loadExcel/LoadExcel";
+import UpdateExcel from "../../components/loadExcel/UpdateXcel";
 
 const InscripcionExcel = () =>{
     return(
@@ -8,7 +8,7 @@ const InscripcionExcel = () =>{
             title="Inscribir múltiples participantes con un archivo Excel"
             description="Registra varios participantes en un archivo con todos los datos requeridos"
             />
-            <LoadExcel/>
+            <UpdateExcel/>
         </div>
     )
 }
