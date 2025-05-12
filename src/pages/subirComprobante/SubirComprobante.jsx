@@ -15,84 +15,100 @@ export default function SubirComprobante() {
   const [showEditor, setShowEditor]     = useState(false);
   const fileInputRef                    = useRef(null);
 
-  // ─── Limpieza de blobs ────────────────────────────────────────────────────────
+  // ─── Limpiar blobs cuando cambie la URL ──────────────────────────────────────
   useEffect(() => {
     return () => {
-      if (previewUrl && previewUrl.startsWith('blob:')) {
+      if (previewUrl.startsWith('blob:')) {
         URL.revokeObjectURL(previewUrl);
       }
     };
   }, [previewUrl]);
 
-  // ─── Validación y selección de archivo ─────────────────────────────────────────
-  const handleFileSelect = useCallback(file => {
-    if (!file) return;
-    const validTypes = ['image/jpeg', 'image/png'];
-    const maxSize    = 5 * 1024 * 1024; // 5MB
-    const invalidChars = /[<>:"/\\|?*]/;
+  // ─── Validación y preparación del archivo para edición ──────────────────────
+  const handleFileSelect = useCallback(
+    file => {
+      if (!file) return;
 
-    if (!validTypes.includes(file.type)) {
-      Swal.fire('Formato inválido', 'Solo JPG o PNG.', 'error');
-      return;
-    }
-    if (file.size > maxSize) {
-      Swal.fire('Archivo muy grande', 'Máx. 5MB.', 'error');
-      return;
-    }
-    if (invalidChars.test(file.name)) {
-      Swal.fire('Nombre inválido', 'Caracteres no permitidos.', 'error');
-      return;
-    }
+      const validTypes   = ['image/jpeg', 'image/png'];
+      const maxSize      = 5 * 1024 * 1024; // 5MB
+      const invalidChars = /[<>:"/\\|?*]/;
 
-    setSelectedFile(file);
-    if (previewUrl.startsWith('blob:')) URL.revokeObjectURL(previewUrl);
+      if (!validTypes.includes(file.type)) {
+        Swal.fire('Formato inválido', 'Solo JPG o PNG.', 'error');
+        return;
+      }
+      if (file.size > maxSize) {
+        Swal.fire('Archivo muy grande', 'Máx. 5MB.', 'error');
+        return;
+      }
+      if (invalidChars.test(file.name)) {
+        Swal.fire('Nombre inválido', 'Caracteres no permitidos.', 'error');
+        return;
+      }
 
-    // Preparar editor
-    const reader = new FileReader();
-    reader.onload = () => {
-      setEditingImage(reader.result);
-      setShowEditor(true);
-    };
-    reader.readAsDataURL(file);
-  }, [previewUrl]);
+      // guardamos el archivo y preparamos el editor
+      setSelectedFile(file);
+      if (previewUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(previewUrl);
+      }
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        setEditingImage(reader.result);
+        setShowEditor(true);
+      };
+      reader.readAsDataURL(file);
+    },
+    [previewUrl]
+  );
 
   // ─── Drag & drop ───────────────────────────────────────────────────────────────
-  const handleDragOver  = useCallback(e => { e.preventDefault(); setIsDragging(true); }, []);
+  const handleDragOver  = useCallback(e => { e.preventDefault(); setIsDragging(true);  }, []);
   const handleDragLeave = useCallback(() => setIsDragging(false), []);
-  const handleDrop      = useCallback(e => {
-    e.preventDefault();
-    setIsDragging(false);
-    handleFileSelect(e.dataTransfer.files[0]);
-  }, [handleFileSelect]);
+  const handleDrop      = useCallback(
+    e => {
+      e.preventDefault();
+      setIsDragging(false);
+      handleFileSelect(e.dataTransfer.files[0]);
+    },
+    [handleFileSelect]
+  );
 
-  // ─── Input file ────────────────────────────────────────────────────────────────
-  const handleButtonClick      = useCallback(() => fileInputRef.current.click(), []);
-  const handleFileInputChange  = useCallback(e => {
-    handleFileSelect(e.target.files[0]);
-    e.target.value = null;
-  }, [handleFileSelect]);
+  // ─── Input file click/change ──────────────────────────────────────────────────
+  const handleButtonClick     = useCallback(() => fileInputRef.current.click(), []);
+  const handleFileInputChange = useCallback(
+    e => {
+      handleFileSelect(e.target.files[0]);
+      e.target.value = null;
+    },
+    [handleFileSelect]
+  );
 
-  // ─── Editor de imagen ─────────────────────────────────────────────────────────
-  const handleEditorComplete = useCallback(async croppedUrl => {
-    const blob = await fetch(croppedUrl).then(r => r.blob());
-    const editedFile = new File([blob], 'comprobante-editado.jpg', { type: blob.type });
-    setSelectedFile(editedFile);
-    setPreviewUrl(croppedUrl);
-    setShowEditor(false);
-  }, []);
+  // ─── Callbacks del ImageEditor ────────────────────────────────────────────────
+  const handleEditorComplete = useCallback(
+    async croppedUrl => {
+      const blob = await fetch(croppedUrl).then(r => r.blob());
+      const editedFile = new File([blob], 'comprobante-editado.jpg', { type: blob.type });
+
+      setSelectedFile(editedFile);
+      setPreviewUrl(croppedUrl);
+      setShowEditor(false);
+    },
+    []
+  );
 
   const handleEditorCancel = useCallback(() => {
     setShowEditor(false);
     setEditingImage(null);
   }, []);
 
-  // ─── Subida al servidor ───────────────────────────────────────────────────────
+  // ─── Envío al servidor con manejo de 403 ───────────────────────────────────────
   const handleSubmit = useCallback(async () => {
     if (!selectedFile) return;
     try {
       const resp = await fetch('/api/subir-boleta', {
         method: 'POST',
-        body: selectedFile
+        body: selectedFile,
       });
       if (resp.status === 403) {
         throw new Error('No tienes permisos para subir este comprobante.');
@@ -107,7 +123,7 @@ export default function SubirComprobante() {
     }
   }, [selectedFile]);
 
-  // ─── Render ────────────────────────────────────────────────────────────────────
+  // ─── Render ───────────────────────────────────────────────────────────────────
   return (
     <div>
       <Header
@@ -115,71 +131,72 @@ export default function SubirComprobante() {
         description="Sube tu comprobante para verificar tu inscripción"
       />
 
-      {showEditor && editingImage && (
+      {/* ── Si showEditor=true, abrimos el cropper y OCULTAMOS todo lo demás ── */}
+      {showEditor && editingImage ? (
         <ImageEditor
           imageSrc={editingImage}
           onComplete={handleEditorComplete}
           onCancel={handleEditorCancel}
         />
-      )}
+      ) : (
+        /* ── Zona de preview + upload normal ────────────────────────────────── */
+        <div className="payment-receipt-preview-container">
+          <h2 className="preview-title">Vista previa de comprobante de pago</h2>
 
-      <div className="payment-receipt-preview-container">
-        <h2 className="preview-title">Vista previa de comprobante de pago</h2>
-
-        <div
-          className={`drop-area ${isDragging ? 'drag-over' : ''}`}
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-        >
-          {selectedFile ? (
-            <div className="preview-container">
-              {/* Render condicional para evitar src="" */}
-              {previewUrl && (
-                <img
-                  src={previewUrl}
-                  alt="Vista previa"
-                  className="preview-image"
-                />
-              )}
-              <p>{selectedFile.name}</p>
-              <p>{(selectedFile.size / 1024).toFixed(1)} KB</p>
-              <button className="select-button" onClick={handleButtonClick}>
-                Cambiar archivo
-              </button>
-            </div>
-          ) : (
-            <>
-              <p className="no-preview">No hay archivo seleccionado.</p>
-              <div className="upload-icon-container">
-                <FaUpload />
-              </div>
-              <p className="drag-text">Arrastra y suelta tu comprobante aquí</p>
-              <p className="format-text">Solo JPG o PNG (máx. 5MB)</p>
-              <button className="select-button" onClick={handleButtonClick}>
-                Seleccionar archivo
-              </button>
-            </>
-          )}
-
-          <input
-            type="file"
-            ref={fileInputRef}
-            style={{ display: 'none' }}
-            onChange={handleFileInputChange}
-            accept="image/jpeg,image/png"
-          />
-        </div>
-
-        <div className="action-buttons">
-          <ButtonPrimary
-            onClick={handleSubmit}
-            disabled={!selectedFile}
+          <div
+            className={`drop-area ${isDragging ? 'drag-over' : ''}`}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
           >
-            Confirmar y enviar
-          </ButtonPrimary>
+            {selectedFile ? (
+              <div className="preview-container">
+                {previewUrl && (
+                  <img
+                    src={previewUrl}
+                    alt="Vista previa"
+                    className="preview-image"
+                  />
+                )}
+                <p>{selectedFile.name}</p>
+                <p>{(selectedFile.size / 1024).toFixed(1)} KB</p>
+                <button className="select-button" onClick={handleButtonClick}>
+                  Cambiar archivo
+                </button>
+              </div>
+            ) : (
+              <>
+                <p className="no-preview">No hay archivo seleccionado.</p>
+                <div className="upload-icon-container">
+                  <FaUpload />
+                </div>
+                <p className="drag-text">Arrastra y suelta tu comprobante aquí</p>
+                <p className="format-text">Solo JPG o PNG (máx. 5MB)</p>
+                <button className="select-button" onClick={handleButtonClick}>
+                  Seleccionar archivo
+                </button>
+              </>
+            )}
+
+            <input
+              type="file"
+              ref={fileInputRef}
+              style={{ display: 'none' }}
+              onChange={handleFileInputChange}
+              accept="image/jpeg,image/png"
+            />
+          </div>
+
+          <div className="action-buttons">
+            <ButtonPrimary
+              onClick={handleSubmit}
+              disabled={!selectedFile}
+            >
+              Confirmar y enviar
+            </ButtonPrimary>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

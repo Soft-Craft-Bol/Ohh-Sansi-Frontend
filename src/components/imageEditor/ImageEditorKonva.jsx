@@ -183,7 +183,7 @@ export default function ImageEditor({ imageSrc, onComplete, onCancel }) {
         style={{
           width:      WRAPPER_SIZE,
           height:     WRAPPER_SIZE,
-          overflow:   'hidden',
+          overflow:   'visible',
           margin:     '0 auto 1rem',
           border:     '1px solid #ccc',
           position:   'relative',
@@ -233,26 +233,39 @@ export default function ImageEditor({ imageSrc, onComplete, onCancel }) {
             <Transformer
   ref={trRef}
   rotateEnabled={false}
-  enabledAnchors={['top-left','top-right','bottom-left','bottom-right']}
-  anchorSize={18}
-  anchorStrokeWidth={4}
-  borderStrokeWidth={4}
+
+  // ── SOLO EN LOS CUATRO PUNTOS CENTRALES DE CADA LADO ─────
+  enabledAnchors={[
+    'top-center',
+    'middle-right',
+    'bottom-center',
+    'middle-left',
+  ]}
+
+  // ── STROKE PUNTEADO PARA EL BORDE ────────────────────────
+  borderStroke="white"
+  borderStrokeWidth={2}
+  borderDash={[6,4]}
+
+  // ── MANIJAS CIRCULARES (PERO ATRAPAN EN EL CENTRO DEL BORDE) ─
+  anchorSize={14}
+  anchorCornerRadius={7}
+  anchorFill="white"
+  anchorStroke="blue"
+  anchorStrokeWidth={3}
 
   boundBoxFunc={(oldBox, newBox) => {
-    // 1) Limitar ancho/alto al interior de la imagen
-    newBox.width  = Math.min(boundWidth  - Math.max(0, newBox.x), newBox.width);
-    newBox.height = Math.min(boundHeight - Math.max(0, newBox.y), newBox.height);
-
-    // 2) Limitar posición x/y para que no queden fuera
+    // aquí tu lógica de límites para que el recorte nunca salga
+    // fuera de la imagen
+    newBox.width  = Math.min(boundWidth,  newBox.width);
+    newBox.height = Math.min(boundHeight, newBox.height);
     newBox.x = Math.max(0, Math.min(newBox.x, boundWidth  - newBox.width));
     newBox.y = Math.max(0, Math.min(newBox.y, boundHeight - newBox.height));
 
-    // 3) Tamaño mínimo
     const minSize = 50;
     if (newBox.width < minSize || newBox.height < minSize) {
       return oldBox;
     }
-
     return newBox;
   }}
 />
