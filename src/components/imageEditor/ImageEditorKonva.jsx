@@ -1,164 +1,187 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { Stage, Layer, Image as KonvaImage, Rect, Transformer } from 'react-konva';
+import {
+  Stage,
+  Layer,
+  Image as KonvaImage,
+  Rect,
+  Transformer,
+} from 'react-konva';
 import useImage from 'use-image';
 import Button from '@mui/material/Button';
 import './ImageEditor.css';
 
 export default function ImageEditor({ imageSrc, onComplete, onCancel }) {
-  const [image, status] = useImage(imageSrc, 'anonymous');
-  const [rotation, setRotation] = useState(0);
+  const [image]      = useImage(imageSrc, 'anonymous');
+  const [rotation, setRotation]     = useState(0);
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
-  const [rectPosition, setRectPosition] = useState({ x: 0, y: 0 });
-  const [rectSize, setRectSize] = useState({ width: 400, height: 300 });
-  const rectRef = useRef();
-  const trRef = useRef();
+  const [rectPos, setRectPos]       = useState({ x: 0, y: 0 });
+  const [rectSize, setRectSize]     = useState({ width: 400, height: 300 });
+
+  const rectRef  = useRef();
+  const trRef    = useRef();
   const stageRef = useRef();
 
+  // 1) Cuando la imagen carga, ajusta sus dimensiones y centra el rect de recorte
   useEffect(() => {
-    if (image) {
-      setDimensions({ width: image.width, height: image.height });
-      // Set initial position of the crop rectangle (centered)
-      setRectPosition({
-        x: (image.width - rectSize.width) / 2,
-        y: (image.height - rectSize.height) / 2,
-      });
-    }
+    if (!image) return;
+    const { width, height } = image;
+    setDimensions({ width, height });
+    setRectPos({
+      x: (width  - rectSize.width) / 2,
+      y: (height - rectSize.height) / 2,
+    });
   }, [image]);
 
+  // 2) Conecta Transformer al Rect
   useEffect(() => {
     if (trRef.current && rectRef.current) {
       trRef.current.nodes([rectRef.current]);
       trRef.current.getLayer().batchDraw();
     }
-  }, [rectPosition, rectSize]);
+  }, [rectPos, rectSize]);
 
+  // 3) Al confirmar: rotamos en un canvas y recortamos
   const handleConfirm = () => {
-    const stage = stageRef.current;
-    const rectNode = rectRef.current;
+    const node = rectRef.current;
+    const sX = node.scaleX(), sY = node.scaleY();
+    node.scaleX(1); node.scaleY(1);
 
-    const scaleX = rectNode.scaleX();
-    const scaleY = rectNode.scaleY();
+    const { x, y } = node.absolutePosition();
+    const w = node.width()  * sX;
+    const h = node.height() * sY;
 
-    rectNode.scaleX(1);
-    rectNode.scaleY(1);
+    // Canvas intermedio para rotar
+    const tmp = document.createElement('canvas');
+    tmp.width  = dimensions.width;
+    tmp.height = dimensions.height;
+    const tctx = tmp.getContext('2d');
+    tctx.save();
+    tctx.translate(dimensions.width/2, dimensions.height/2);
+    tctx.rotate((rotation * Math.PI)/180);
+    tctx.translate(-dimensions.width/2, -dimensions.height/2);
+    tctx.drawImage(image, 0, 0);
+    tctx.restore();
 
-    const position = rectNode.absolutePosition();
-    const width = rectNode.width() * scaleX;
-    const height = rectNode.height() * scaleY;
+    // Canvas final de recorte
+    const out = document.createElement('canvas');
+    out.width  = w; out.height = h;
+    const octx = out.getContext('2d');
+    octx.drawImage(tmp, x, y, w, h, 0, 0, w, h);
 
-    const newCanvas = document.createElement('canvas');
-    newCanvas.width = width;
-    newCanvas.height = height;
-    const context = newCanvas.getContext('2d');
-
-    const tmpCanvas = document.createElement('canvas');
-    tmpCanvas.width = dimensions.width;
-    tmpCanvas.height = dimensions.height;
-    const tmpCtx = tmpCanvas.getContext('2d');
-
-    tmpCtx.save();
-    tmpCtx.translate(dimensions.width / 2, dimensions.height / 2);
-    tmpCtx.rotate((rotation * Math.PI) / 180);
-    tmpCtx.translate(-dimensions.width / 2, -dimensions.height / 2);
-    tmpCtx.drawImage(image, 0, 0);
-    tmpCtx.restore();
-
-    context.drawImage(
-      tmpCanvas,
-      position.x,
-      position.y,
-      width,
-      height,
-      0,
-      0,
-      width,
-      height
-    );
-
-    newCanvas.toBlob((blob) => {
-      const url = URL.createObjectURL(blob);
-      onComplete(url);
+    out.toBlob(blob => {
+      onComplete(URL.createObjectURL(blob));
     }, 'image/jpeg');
   };
 
-  const rotateImage = () => {
-    setRotation((prev) => (prev + 90) % 360);
-  };
+  const rotateImage = () => setRotation(r => (r + 90) % 360);
 
-  const handleDragMove = (e) => {
+  // 4) Mantiene el rect dentro de la imagen original
+  const handleDragMove = e => {
     const node = e.target;
-    const newPos = node.position();
+    let { x, y } = node.position();
     const { width, height } = dimensions;
-  
-    // Restrict the rectangle to stay within the bounds of the image
-    if (newPos.x < 0) newPos.x = 0;
-    if (newPos.y < 0) newPos.y = 0;
-  
-    // Restrict the rectangle to not exceed the right and bottom limits
-    if (newPos.x + node.width() > width) newPos.x = width - node.width();
-    if (newPos.y + node.height() > height) newPos.y = height - node.height();
-  
-    setRectPosition(newPos);
-    node.position(newPos);
+    x = Math.max(0, Math.min(x, width  - node.width()));
+    y = Math.max(0, Math.min(y, height - node.height()));
+    node.position({ x, y });
+    setRectPos({ x, y });
   };
-  
 
-  const handleResize = (e) => {
-    const node = e.target;
-    const newSize = {
-      width: node.width(),
-      height: node.height(),
-    };
-
-    const { width, height } = dimensions;
-
-    // Ensure the resized rectangle doesn't exceed the size of the image
-    if (newSize.width > width) newSize.width = width;
-    if (newSize.height > height) newSize.height = height;
-
-    setRectSize(newSize);
+  // 5) Ajusta tamaño tras el transform
+  const handleTransformEnd = () => {
+    const node = rectRef.current;
+    const sX = node.scaleX(), sY = node.scaleY();
+    const newW = Math.min(dimensions.width,  node.width()  * sX);
+    const newH = Math.min(dimensions.height, node.height() * sY);
+    node.scaleX(1); node.scaleY(1);
+    setRectSize({ width: newW, height: newH });
   };
+
+  // 6) Calcula las “dimensiones rotadas” para el Stage
+  const isRotated = rotation % 180 !== 0;
+  const stageW    = isRotated ? dimensions.height : dimensions.width;
+  const stageH    = isRotated ? dimensions.width  : dimensions.height;
+
+  // 7) Escala “contain” dentro de un wrapper fijo
+  const wrapperSize = 600; 
+  const scale       = Math.min(wrapperSize / stageW, wrapperSize / stageH);
 
   return (
     <div className="editor-container">
-      <Stage width={dimensions.width} height={dimensions.height} ref={stageRef}>
-        <Layer>
-          {image && (
-            <KonvaImage
-              image={image}
-              rotation={rotation}
-              x={dimensions.width / 2}
-              y={dimensions.height / 2}
-              offset={{ x: image.width / 2, y: image.height / 2 }}
+      {/* Wrapper siempre 1000×1000, overflow hidden */}
+      <div
+        style={{
+          width:      wrapperSize,
+          height:     wrapperSize,
+          overflow:   'hidden',
+          margin:     '0 auto 1rem',
+          border:     '1px solid #ccc',
+          position:   'relative',
+        }}
+      >
+        {/* Stage con dims rotadas y centrado + escalado */}
+        <Stage
+          width={stageW}
+          height={stageH}
+          ref={stageRef}
+          style={{
+            position:       'absolute',
+            top:            (wrapperSize - stageH * scale) / 2,
+            left:           (wrapperSize - stageW * scale) / 2,
+            transform:      `scale(${scale})`,
+            transformOrigin:'0 0',
+          }}
+        >
+          <Layer>
+            {image && (
+              <KonvaImage
+                image={image}
+                rotation={rotation}
+                x={stageW  / 2}
+                y={stageH / 2}
+                offset={{
+                  x: dimensions.width / 2,
+                  y: dimensions.height / 2,
+                }}
+              />
+            )}
+
+            <Rect
+              ref={rectRef}
+              x={rectPos.x}
+              y={rectPos.y}
+              width={rectSize.width}
+              height={rectSize.height}
+              fill="rgba(0,0,0,0.2)"
+              stroke="red"
+              strokeWidth={4}
+              draggable
+              onDragMove={handleDragMove}
+              onTransformEnd={handleTransformEnd}
             />
-          )}
-          <Rect
-            ref={rectRef}
-            x={rectPosition.x}
-            y={rectPosition.y}
-            width={rectSize.width}
-            height={rectSize.height}
-            fill="rgba(0,0,0,0.2)"
-            stroke="red"
-            strokeWidth={4}
-            draggable
-            onDragMove={handleDragMove}
-            onResize={handleResize}
-          />
-          <Transformer
-            ref={trRef}
-            rotateEnabled={false}
-            enabledAnchors={['top-left', 'top-right', 'bottom-left', 'bottom-right']}
-            boundBoxFunc={(oldBox, newBox) => {
-              const { width, height } = dimensions;
-              if (newBox.width > width) newBox.width = width;
-              if (newBox.height > height) newBox.height = height;
-              if (newBox.width < 50 || newBox.height < 50) return oldBox;
-              return newBox;
-            }}
-          />
-        </Layer>
-      </Stage>
+
+            <Transformer
+              ref={trRef}
+              rotateEnabled={false}
+              enabledAnchors={[
+                'top-left','top-right','bottom-left','bottom-right'
+              ]}
+              anchorSize={12}
+              anchorStrokeWidth={3}
+              borderStrokeWidth={3}
+              boundBoxFunc={(oldBox, newBox) => {
+                const { width, height } = dimensions;
+                newBox.width  = Math.min(width,  newBox.width);
+                newBox.height = Math.min(height, newBox.height);
+                const minSize = 50;
+                if (newBox.width < minSize || newBox.height < minSize) {
+                  return oldBox;
+                }
+                return newBox;
+              }}
+            />
+          </Layer>
+        </Stage>
+      </div>
 
       <div className="editor-buttons">
         <Button variant="contained" color="primary" onClick={rotateImage}>
@@ -166,8 +189,9 @@ export default function ImageEditor({ imageSrc, onComplete, onCancel }) {
         </Button>
         <Button
           variant="outlined"
-          style={{ borderColor: '#d32f2f', color: '#d32f2f' }}
+          color="error"
           onClick={onCancel}
+          style={{ margin: '0 1rem' }}
         >
           Cancelar
         </Button>

@@ -1,113 +1,83 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { FaUpload } from 'react-icons/fa';
 import Header from '../../components/header/Header';
-import './SubirComprobante.css';
+import './OrdenPagoDetalle.css';
 import { ButtonPrimary } from '../../components/button/ButtonPrimary';
 import Swal from 'sweetalert2';
 import ImageEditor from '../../components/imageEditor/ImageEditorKonva';
 
+// Extraemos constantes a nivel de módulo 
+const VALID_TYPES = ['image/jpeg', 'image/png'];
+const MAX_SIZE = 5 * 1024 * 1024; // 5 MB
+const INVALID_NAME_CHARS = /[<>:"/\\|?*]/;
+
 export default function SubirComprobante() {
+  // Estados organizados y referencias
   const [selectedFile, setSelectedFile] = useState(null);
-  const [previewUrl, setPreviewUrl] = useState('');
-  const [isDragging, setIsDragging] = useState(false);
+  const [previewUrl, setPreviewUrl]     = useState('');
   const [editingImage, setEditingImage] = useState(null);
-  const [showEditor, setShowEditor] = useState(false); // Estado para controlar si se muestra el editor
+  const [showEditor, setShowEditor]     = useState(false);
+  const [isDragging, setIsDragging]     = useState(false);
   const fileInputRef = useRef(null);
 
+  //Limpieza de URLs blob al desmontar o cambiar previewUrl
   useEffect(() => {
     return () => {
-      if (previewUrl && previewUrl.startsWith('blob:')) {
+      if (previewUrl.startsWith('blob:')) {
         URL.revokeObjectURL(previewUrl);
       }
     };
   }, [previewUrl]);
 
-  const handleDragOver = (event) => {
-    event.preventDefault();
-    setIsDragging(true);
-  };
+  //Función de validación centralizada
+  const validateFile = useCallback((file) => {
+    if (!file) return 'No se seleccionó ningún archivo.';
+    if (!VALID_TYPES.includes(file.type)) return 'Formato no válido. Solo JPG o PNG.';
+    if (file.size > MAX_SIZE)       return 'El archivo supera 5 MB.';
+    if (INVALID_NAME_CHARS.test(file.name)) return 'El nombre contiene caracteres inválidos.';
+    return null;
+  }, []);
 
-  const handleDragLeave = () => {
-    setIsDragging(false);
-  };
-
-  const handleDrop = (event) => {
-    event.preventDefault();
-    setIsDragging(false);
-    const file = event.dataTransfer.files[0];
-    handleFileSelect(file);
-  };
-
-  const handleFileSelect = async (file) => {
-    const validTypes = ['image/jpeg', 'image/png'];
-    const maxSize = 5 * 1024 * 1024;
-    const invalidNameChars = /[<>:"/\\|?*]/;
-
-    if (!file) return;
-
-    if (!validTypes.includes(file.type)) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'Formato de archivo no válido. Solo JPG, PNG.',
-        confirmButtonColor: '#7a5cf5',
-      });
-      return;
-    }
-
-    if (file.size > maxSize) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'El archivo no debe superar los 5MB.',
-        confirmButtonColor: '#7a5cf5',
-      });
-      return;
-    }
-
-    if (invalidNameChars.test(file.name)) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'El nombre del archivo contiene caracteres inválidos.',
-        confirmButtonColor: '#7a5cf5',
-      });
+  //Manejador de selección/edición de archivo
+  const handleFileSelect = useCallback((file) => {
+    const error = validateFile(file);
+    if (error) {
+      Swal.fire({ icon: 'error', title: 'Error', text: error, confirmButtonColor: '#7a5cf5' });
       return;
     }
 
     setSelectedFile(file);
 
-    if (previewUrl && previewUrl.startsWith('blob:')) {
+    // revocamos la URL anterior si existía
+    if (previewUrl.startsWith('blob:')) {
       URL.revokeObjectURL(previewUrl);
     }
 
+    // cargamos como data URL para el editor
     const reader = new FileReader();
     reader.onload = () => {
       setEditingImage(reader.result);
-      setShowEditor(true); // Activamos el editor cuando se selecciona una imagen
+      setShowEditor(true);
     };
     reader.readAsDataURL(file);
-  };
+  }, [validateFile, previewUrl]);
 
-  const handleButtonClick = () => {
-    fileInputRef.current.click();
-  };
+  //Hooks para drag & drop y clicks
+  const handleDragOver       = useCallback(e => { e.preventDefault(); setIsDragging(true); }, []);
+  const handleDragLeave      = useCallback(() => setIsDragging(false), []);
+  const handleDrop           = useCallback(e => { e.preventDefault(); setIsDragging(false); handleFileSelect(e.dataTransfer.files[0]); }, [handleFileSelect]);
+  const handleButtonClick    = useCallback(() => fileInputRef.current.click(), []);
+  const handleFileInputChange= useCallback(e => { handleFileSelect(e.target.files[0]); e.target.value = null; }, [handleFileSelect]);
 
-  const handleFileInputChange = (event) => {
-    const file = event.target.files[0];
-    handleFileSelect(file);
-    event.target.value = null;
-  };
-
-  const handleConfirm = (croppedImage) => {
+  //Confirmar o cancelar la edición
+  const handleConfirm = useCallback((croppedImage) => {
     setPreviewUrl(croppedImage);
-    setShowEditor(false); // Ocultamos el editor después de confirmar la edición
-  };
-
-  const handleCancel = () => {
-    setShowEditor(false); // Salimos del editor sin cambios
-    setEditingImage(null); // Restablecemos la imagen
-  };
+    setShowEditor(false);
+  }, []);
+  const handleCancel  = useCallback(() => {
+    setShowEditor(false);
+    setEditingImage(null);
+  }, []);
 
   return (
     <div>
@@ -116,7 +86,7 @@ export default function SubirComprobante() {
         description="Suba su comprobante de pago para verificar su inscripción"
       />
 
-      {/* Solo mostrar el editor de imagen si está activo */}
+      {/* 8. Editor de imagen */}
       {showEditor && editingImage && (
         <ImageEditor
           imageSrc={editingImage}
@@ -125,7 +95,7 @@ export default function SubirComprobante() {
         />
       )}
 
-      {/* Ocultar la vista previa y los botones mientras se edita la imagen */}
+      {/* 9. Zona de arrastre / vista previa */}
       {!showEditor && !previewUrl && (
         <div className="payment-receipt-preview-container">
           <h2 className="preview-title">Vista previa de comprobante de pago</h2>
@@ -139,11 +109,24 @@ export default function SubirComprobante() {
             {selectedFile ? (
               <div className="preview-container">
                 {previewUrl && (
+                  <div
+                  style={{
+                    width: 200,
+                    height: 200,
+                    overflow: 'hidden',
+                    border: '1px solid #ccc',   // opcional, te ayuda a ver el recorte
+                  }}
+                >
                   <img
                     src={previewUrl}
                     alt="Vista previa"
-                    className="preview-image"
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',        // o 'contain' si no quieres recortar
+                    }}
                   />
+                </div>
                 )}
                 <p>{selectedFile.name}</p>
                 <p>{(selectedFile.size / 1024).toFixed(1)} KB</p>
@@ -174,12 +157,14 @@ export default function SubirComprobante() {
               ref={fileInputRef}
               style={{ display: 'none' }}
               onChange={handleFileInputChange}
-              accept="image/jpeg,image/png"
+              accept={VALID_TYPES.join(',')}
             />
           </div>
 
           <div className="action-buttons">
-            <ButtonPrimary disabled={!selectedFile}>Confirmar y enviar</ButtonPrimary>
+            <ButtonPrimary disabled={!selectedFile}>
+              Confirmar y enviar
+            </ButtonPrimary>
           </div>
         </div>
       )}
