@@ -80,9 +80,26 @@ export default function ImageEditor({ imageSrc, onComplete, onCancel }) {
   }, [stageW, stageH]);
 
   // 6) Rotar la imagen 90°
-  const rotateImage = useCallback(() => {
-    setRotation(r => (r + 90) % 360);
-  }, []);
+  const rotateImage = () => {
+      // 1) Calculamos el nuevo ángulo
+       const next = (rotation + 90) % 360;
+       setRotation(next);
+    
+       // 2) Determinamos las dimensiones en la nueva orientación
+       const isRotated  = next % 180 !== 0;
+       const boundW     = isRotated ? dimensions.height : dimensions.width;
+       const boundH     = isRotated ? dimensions.width  : dimensions.height;
+    
+       // 3) Hacemos el rectángulo cuadrado con lado = mínimo de ancho/alto
+       const side = Math.min(boundW, boundH);
+    
+       // 4) Centramos ese cuadrado dentro de la imagen
+       setRectSize({ width: side, height: side });
+       setRectPos({
+         x: (boundW - side) / 2,
+         y: (boundH - side) / 2,
+       });
+     };
 
   // 7) Mantener el rectángulo dentro de la imagen al arrastrar
   const handleDragMove = useCallback(e => {
