@@ -329,11 +329,13 @@ const AsignarAreasForm = ({ participanteCI, shouldSearch, onSearchComplete, onCo
           placeholder="Ej: 123456789"
           codigoIntroducidoTexto="Carnet introducido:"
           codigoIntroducido={codigoIntroducido}
-          onInputChange={handleInputChange}
+          onInputChange={(e) => setCodigoIntroducido(e.target.value)}
           onKeyPress={handleKeyPress}
           onSearch={() => buscarEstudiante(codigoIntroducido)}
           onClear={handleClearCI}
           containerVariants={containerVariants}
+          allowLetters={false}
+          maxLength={11}
         />
       </div>
 

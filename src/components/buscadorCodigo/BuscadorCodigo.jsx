@@ -13,8 +13,35 @@ const BuscadorCodigo = ({
   onSearch,
   error,
   containerVariants,
-  onClear
+  onClear,
+  allowLetters = false, // Nueva prop para controlar si permite letras
+  maxLength = 11 // Nueva prop para longitud máxima
 }) => {
+  const handleInternalChange = (e) => {
+    const value = e.target.value;
+    
+    if (allowLetters) {
+      if (value.length <= maxLength) {
+        onInputChange(e); // Pasamos el evento completo
+      } else {
+        // Cortar el valor si excede maxLength
+        e.target.value = value.slice(0, maxLength);
+        onInputChange(e);
+      }
+    } 
+    // Si allowLetters es false, solo permite números
+    else {
+      if (/^\d*$/.test(value)) {
+        if (value.length <= maxLength) {
+          onInputChange(e);
+        } else {
+          e.target.value = value.slice(0, maxLength);
+          onInputChange(e);
+        }
+      }
+    }
+  };
+
   return (
     <motion.div
       className="buscador-codigo"
@@ -28,9 +55,9 @@ const BuscadorCodigo = ({
           type="text"
           placeholder={placeholder}
           value={codigoIntroducido}
-          onChange={onInputChange}
+          onChange={handleInternalChange}
           onKeyPress={onKeyPress}
-          maxLength={11}
+          maxLength={maxLength}
         />
         {codigoIntroducido && (
           <FaTimes 

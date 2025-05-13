@@ -35,9 +35,9 @@ const OrdenDePago = () => {
 
   const containerVariants = {
     hidden: { opacity: 0, y: 50 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }, 
+    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
   };
-  
+
   const renderInfoSection = () => {
     if (!ordenData) return null;
 
@@ -137,17 +137,14 @@ const OrdenDePago = () => {
           placeholder="Introduce el código"
           codigoIntroducidoTexto="Código introducido:"
           codigoIntroducido={codigoIntroducido}
-          inputValue={inputValue} // Pasando inputValue al componente
-          onInputChange={(e) => {
-            const value = e.target.value;
-            if (value.length <= 6) {
-              setInputValue(value);
-            }
-          }}
+          inputValue={inputValue}
+          onInputChange={(e) => setInputValue(e.target.value)}
           onKeyPress={handleKeyPress}
           onSearch={handleSearch}
           error={null}
           containerVariants={containerVariants}
+          allowLetters={true} // Permite letras
+          maxLength={6} // Longitud máxima diferente
         />
       </motion.div>
       <motion.div
@@ -164,14 +161,14 @@ const OrdenDePago = () => {
             initial="hidden"
             animate="visible"
           >
-            <button 
-              onClick={handleGenerarOrdenWithFeedback} 
+            <button
+              onClick={handleGenerarOrdenWithFeedback}
               className="btn-generar"
               disabled={isLoading}
             >
               {isLoading ? 'Generando...' : 'Generar Orden de Pago'}
             </button>
-        </motion.div>
+          </motion.div>
         )}
       </motion.div>
       {mostrarDetalle && ordenGenerada && (
@@ -181,9 +178,9 @@ const OrdenDePago = () => {
           initial="hidden"
           animate="visible"
         >
-          <OrdenPagoDetalle 
+          <OrdenPagoDetalle
             data={ordenGenerada}
-            nit_tutor={ordenData.tutores[0]?.carnet_identidad_tutor || '000000000' }
+            nit_tutor={ordenData.tutores[0]?.carnet_identidad_tutor || '000000000'}
           />
         </motion.div>
       )}
