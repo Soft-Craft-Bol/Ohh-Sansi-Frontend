@@ -303,7 +303,7 @@ const Step4Form = () => {
 
   return (
     <div className="step3-container page-padding">
-      <h2 className="step3-title">Registro de Tutores Académicos</h2>
+      <h2 className="step3-title">Registro de Profesores</h2>
       <p className="step3-description">
         Registre un máximo de {getMaxTutores()} {getMaxTutores() === 1 ? 'tutor académico' : 'tutores académicos'} a un participante.
       </p>
@@ -464,7 +464,7 @@ const Step4Form = () => {
         </div>
 
         <div className="step3-tutores-list">
-          <h3>Tutores Académicos Actuales ({tutoresLocales.length}/{getMaxTutores()})</h3>
+          <h3>Profesores Actuales ({tutoresLocales.length}/{getMaxTutores()})</h3>
 
           {tutoresLocales.length === 0 ? (
             <p className="no-tutores-message">No hay tutores agregados aún</p>
@@ -521,7 +521,7 @@ const Step4Form = () => {
                       className="remove-tutor-btn"
                       onClick={() => eliminarTutor(index)}
                     >
-                      × Eliminar
+                      × Cancelar
                     </button>
                   )}
                 </li>

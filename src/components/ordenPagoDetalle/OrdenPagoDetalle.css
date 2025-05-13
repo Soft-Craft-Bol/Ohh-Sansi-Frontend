@@ -239,3 +239,17 @@
     overflow-x: auto;
   }
 }
+
+/* ⚙️ Fija la caja de preview a 200×200 */
+.preview-container {
+  width: 200px !important;
+  height: 200px !important;
+  overflow: hidden !important;
+}
+
+/* ⚙️ Fuerza que la imagen escale y recorte */
+.preview-image {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}

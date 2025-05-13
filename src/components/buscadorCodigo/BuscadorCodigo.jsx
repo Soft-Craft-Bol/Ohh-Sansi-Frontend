@@ -7,7 +7,7 @@ const BuscadorCodigo = ({
   descripcion,
   placeholder,
   codigoIntroducidoTexto,
-  codigoIntroducido,
+  inputValue,
   onInputChange,
   onKeyPress,
   onSearch,
@@ -54,12 +54,12 @@ const BuscadorCodigo = ({
         <input
           type="text"
           placeholder={placeholder}
-          value={codigoIntroducido}
-          onChange={handleInternalChange}
+          value={inputValue}
+          onChange={onInputChange}
           onKeyPress={onKeyPress}
           maxLength={maxLength}
         />
-        {codigoIntroducido && (
+        {inputValue && (
           <FaTimes 
             className="clear-icon" 
             onClick={onClear}
@@ -74,7 +74,7 @@ const BuscadorCodigo = ({
       </div>
       <div className="cont-cod-int">
         <p className="code-text">{codigoIntroducidoTexto}</p>
-        <span className="codigo-introducido">{codigoIntroducido || "sin código"}</span>
+        <span className="codigo-introducido">{inputValue|| "sin código"}</span>
       </div>
       {error && <div className="error-message">{error}</div>}
     </motion.div>

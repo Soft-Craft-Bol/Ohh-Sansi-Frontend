@@ -72,6 +72,7 @@ export const registerTutorAcademico = (ciParticipante, idArea, data) =>api.post(
 export const getTutorAsigando = (data) => api.get(`/tutores/getTutoresLegales/${data}`);
 export const getTutorByCi = (data) => api.get(`/tutor/byCi/${data}`);
 export const verifyTutor = (data) => api.post('/tutor/verify', data);
+export const parentescoTutor = () => api.get('/parentesco/findAllParentescos');
 
 //OLIMPIADA
 export const getOlimpiadas = () => api.get('/olimpiada');
