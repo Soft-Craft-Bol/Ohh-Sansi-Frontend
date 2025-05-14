@@ -94,8 +94,9 @@ export const getOrdenPagoDetailInfo = (codigoUnico) => api.get(`/inscripcion/det
 export const createOrdenPago = (data) => api.post('/orden-pago', data);
 
 //estado orden de pago
-export const getEstadoOrdenPago = () => api.get(`/estadisticas/ordenes-pago`);
-
+export const getEstadoOrdenPago = () => api.get(`/api/estadisticas/ordenes-pago`);
+export const getReporteOrdenPago = (fechaInicio, fechaFin) => 
+  api.get(`/orden-pago/no-vencidas?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`);
 //estado de inscripcoin
 export const getEstadoInscripcion = (ciParticipante) => api.get(`/estado-inscripcion/${ciParticipante}`);
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Formik, Form} from "formik";
+import { Formik, Form } from "formik";
 import Swal from "sweetalert2";
 import InputText from "../../inputs/InputText";
 import { ButtonPrimary } from "../../button/ButtonPrimary";
@@ -7,7 +7,7 @@ import olimpiadaValidationSchema from "../../../schemas/olimpiadaValidate";
 import { getOlimpiadas, saveOlimpiada } from "../../../api/api";
 import "./OlimpiadaManagement.css";
 import ManagementCard from "../../cards/ManagementCard";
-import { FaCalendarAlt, FaCoins, FaSpinner} from "react-icons/fa";
+import { FaCalendarAlt, FaCoins, FaSpinner } from "react-icons/fa";
 import "react-datepicker/dist/react-datepicker.css";
 
 const OlimpiadaManagement = () => {
@@ -57,38 +57,37 @@ const OlimpiadaManagement = () => {
     try {
       const response = await saveOlimpiada(values);
 
-      const success = response?.data?.success;
-      const message = response?.data?.message ||
-        (editMode ? "Olimpiada actualizada exitosamente!" : "Olimpiada creada exitosamente!");
+      if (response.data?.status === "success") {
+        const message = response.data?.message ||
+          (editMode ? "Olimpiada actualizada exitosamente!" : "Olimpiada creada exitosamente!");
 
-      if (!success) throw new Error(message);
+        await Swal.fire({
+          icon: 'success',
+          title: '¡Operación exitosa!',
+          text: message,
+          timer: 3000,
+          showConfirmButton: false,
+          background: 'var(--light)',
+          color: 'var(--dark)'
+        });
 
-      await Swal.fire({
-        icon: 'success',
-        title: '¡Operación exitosa!',
-        text: message,
-        timer: 3000,
-        showConfirmButton: false,
-        background: 'var(--light)',
-        color: 'var(--dark)'
-      });
-
-      await fetchData();
-      resetForm();
-      setEditMode(false);
-      setCurrentOlimpiada(null);
+        await fetchData();
+        resetForm();
+        setEditMode(false);
+        setCurrentOlimpiada(null);
+        return;
+      }
+      throw new Error(response.data?.message || "Error desconocido");
     } catch (error) {
       console.error(error);
 
-      const backendMsg = error?.response?.data?.message?.Error?.Error ||
-        error?.response?.data?.message ||
-        error?.message ||
-        "Error al procesar la solicitud. Intenta nuevamente.";
+      const errorMessage = 
+      error?.response?.data?.message ||error?.response?.data?.Error?.Error || error?.message ||"Error al procesar la solicitud. Intenta nuevamente.";
 
       await Swal.fire({
         icon: 'error',
         title: 'Error',
-        text: backendMsg,
+        text: errorMessage,
         showCloseButton: true,
         background: 'var(--light)',
         color: 'var(--dark)',
@@ -130,7 +129,7 @@ const OlimpiadaManagement = () => {
                   maxLength={5}
                   min={new Date().getFullYear()}
                   error={touched.anio && errors.anio}
-                  
+
                 />
               </div>
 
@@ -141,7 +140,7 @@ const OlimpiadaManagement = () => {
                   value={values.nombreOlimpiada}
                   onChange={handleChange}
                   maxLength={50}
-                  
+                  onlyLettersCapital
                   required
                   placeholder="Ej: OLIMPIADA CIENTIFICA 2025"
                   error={touched.nombreOlimpiada && errors.nombreOlimpiada}
