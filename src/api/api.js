@@ -118,3 +118,7 @@ export const postOnlyExcelFile = (file) => {
   formData.append("file", file);
   return api.post("/inscripcion/masiva", formData);
 };
+
+//OCR2
+export const sendImageForOCR = (data) => api.post('/ocr', data);
+export const verificarPago = (data) => api.post('/ocr/verificar', data);

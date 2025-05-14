@@ -15,6 +15,9 @@ const SubirBoleta = lazy(() => import("../pages/subirComprobante/SubirComprobant
 const InscripcionExcel = lazy(
   () => import("../pages/inscripcion/InscripcionExcel")
 );
+const AdvancedImageScanner = lazy(() => import("../components/camScanner/AdvancedImageScanner"));
+const ImageScanner = lazy(() => import("../components/camScanner/ImageScanner"));
+import Comprobante from "../pages/subirComprobante/Comprobante";
 
 const AppRoutes = () => {
   return (
@@ -83,11 +86,29 @@ const AppRoutes = () => {
         path="/subir-boleta"
         element={
           <Layout>
-            <SubirBoleta />
+            <Comprobante />
           </Layout>
         }
       />
+      <Route
+        path="/cam-scanner"
+        element={
+          <Layout>
+            <AdvancedImageScanner />
+          </Layout>
+        }
+      />
+
+      <Route
+        path="/image-scanner"
+        element={
+          <Layout>
+            <Comprobante />
+          </Layout>
+        } 
+      />
     </Routes>
+    
   );
 };
 
