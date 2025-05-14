@@ -36,6 +36,7 @@ export const getInscripciones = () => api.get('/inscripciones');
 export const addInscripcion = (data) => api.post('/inscripciones', data);
 export const updateInscripcion = (data) => api.put('/inscripciones', data);
 export const deleteInscripcion = (id) => api.delete(`/inscripciones/${id}`);
+export const getInscripcionByID = (id) => api.get(`/inscripcion/${id}`);
 export const inscripcionEstudiante = (data) => api.post(`/inscripcion/v1/register`, data);
 export const registerParticipante = (data) => api.post('/participante/register-participant', data);
 export const register = (data) => api.post('/register', data)
