@@ -10,7 +10,7 @@ import Swal from 'sweetalert2';
 import plantilla from '../../assets/Plantilla-De-Inscipción-v1.xlsx';
 import Table from '../table/Table';
 import { excelRowSchemaAreas, excelRowSchemaDatos } from '../../schemas/ExcelValidation';
-import { postOnlyExcelFile } from '../../api/api';
+import { postOnlyExcelFile, registerTutor } from '../../api/api';
 
 const validExtensions = ['.xlsx'];
 const columnasPermitidas = ['Nombres', 'Apellido Paterno', 'Apellido Materno', 'Departamento', 'Colegio', 'Carnet Identidad'];
@@ -284,7 +284,34 @@ const validarFilasAreas = async (filas) => {
         }
       });
       try {
-        await postOnlyExcelFile(selectedFile);
+        const res = await postOnlyExcelFile(selectedFile);
+        const result = await res.data;
+        Swal.close();
+        console.log(result)
+
+        if (Array.isArray(result)) {
+          const tutorPayload = {
+            idTutorParentesco: 2,
+            tutors: [
+              {
+                idTipoTutor: 3,
+                emailTutor: formValues.correo,
+                nombresTutor: formValues.nombres,
+                apellidosTutor: formValues.apellidos,
+                telefono: Number(formValues.telefono),
+                carnetIdentidadTutor: Number(formValues.ci),
+                complementoCiTutor: formValues.comp
+              }
+            ]
+          };
+
+          for (const fila of result) {
+            if (fila.success) {
+              const ciParticipanteExcel = fila.ci_participante_excel;
+              await registerTutor(ciParticipanteExcel, tutorPayload);
+              break;
+            }
+          }}
         Swal.fire("Éxito", "Archivo Excel enviado correctamente", "success");
       } catch (error) {
         console.error("Error al enviar archivo:", error);
