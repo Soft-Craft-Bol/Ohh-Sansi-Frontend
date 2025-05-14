@@ -7,9 +7,10 @@ import { RiFileExcel2Line } from 'react-icons/ri';
 import { ButtonPrimary } from '../button/ButtonPrimary';
 import './LoadExcel.css';
 import Swal from 'sweetalert2';
-import plantilla from '../../assets/Plantilla-De-Inscripción.xlsx';
+import plantilla from '../../assets/Plantilla-De-Inscipción-v1.xlsx';
 import Table from '../table/Table';
 import { excelRowSchemaAreas, excelRowSchemaDatos } from '../../schemas/ExcelValidation';
+import { postOnlyExcelFile } from '../../api/api';
 
 const validExtensions = ['.xlsx'];
 const columnasPermitidas = ['Nombres', 'Apellido Paterno', 'Apellido Materno', 'Departamento', 'Colegio', 'Carnet Identidad'];
@@ -273,22 +274,22 @@ const validarFilasAreas = async (filas) => {
       }
     });
 
-    if (formValues) {
-      const formData = new FormData();
-      formData.append("archivo", selectedFile);
-      formData.append("ci", formValues.ci);
-      formData.append("complemento", formValues.comp);
-      formData.append("nombres", formValues.nombres);
-      formData.append("apellidos", formValues.apellidos);
-      formData.append("correo", formValues.correo);
-      formData.append("telefono", formValues.telefono);
-
-      await fetch("//endpoint del api pendiente", {
-        method: "POST",
-        body: formData,
+    if (selectedFile) {
+      Swal.fire({
+        title: "Subiendo archivo...",
+        text: "Espere un momento mientras se procesa",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
       });
-
-      Swal.fire("Éxito", "Archivo y tutor enviados correctamente", "success");
+      try {
+        await postOnlyExcelFile(selectedFile);
+        Swal.fire("Éxito", "Archivo Excel enviado correctamente", "success");
+      } catch (error) {
+        console.error("Error al enviar archivo:", error);
+        Swal.fire("Error", "No se pudo enviar el archivo", "error");
+      }
     }
 
   } catch (error) {

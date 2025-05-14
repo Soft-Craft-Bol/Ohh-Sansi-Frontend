@@ -110,3 +110,8 @@ export const setCatalogoAreasParticipante = (ciParticipante, data) =>
 
 export const getTutorAreaParticipanteInfo = (ciParticipante) => api.get(`/tutor-area-participante/${ciParticipante}`);
 export const setTutorAreaParticipante = (data) => api.post('/tutor-area-participante/save', data);
+export const postOnlyExcelFile = (file) => {
+  const formData = new FormData();
+  formData.append("file", file);
+  return api.post("/inscripcion/masiva", formData);
+};
