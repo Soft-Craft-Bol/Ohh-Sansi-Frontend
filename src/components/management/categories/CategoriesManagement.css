@@ -26,32 +26,19 @@
   width: 100%;
 }
 
-.form-container:hover {
-  transform: translateY(-5px) rotateX(1deg);
-  box-shadow: 
-    0 15px 45px var(--science-blue),
-    0 0 0 1px var(--science-blue);
-}
 
-.form-header {
-  position: relative;
-  z-index: 2;
-  margin-bottom: 1.5rem;
-}
 
 .form-header h2 {
   color: var(--blue-color);
   font-size: 1.8rem;
   margin-bottom: 0.5rem;
-  display: flex;
-  align-items: center;
   gap: 0.8rem;
 }
 
 .form-header h2::before {
   content: '';
   display: inline-block;
-  width: 30px;
+  width: 20px;
   height: 3px;
   background: var(--blue-color);
   margin-right: 0.8rem;

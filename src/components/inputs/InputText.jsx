@@ -45,7 +45,7 @@ function InputText({
     } else if (props.onlyAlphaNumeric === true) {
       value = value.replace(/[^a-zA-Z0-9]/g, "");
     } else if (props.onlyLettersCapital === true) {
-      value = value.replace(/[^A-Z]/g, "");
+      value = value.replace(/[^A-Z0-9\s]/g, "");
     }
 
     field.onChange({

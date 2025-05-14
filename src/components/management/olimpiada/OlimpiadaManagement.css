@@ -1,4 +1,4 @@
-.costs-management-container {
+.olimpiada-management-container {
   display: flex;
   flex-direction: column;
   gap: 2rem;
@@ -6,20 +6,6 @@
   width: 100%;
   max-width: 1400px;
   margin: 0 auto;
-}
-
-/* Form Container */
-.costs-form-container {
-  background: var(--light);
-  border-radius: 16px;
-  padding: 1.5rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  width: 100%;
-}
-
-.form-header {
-  text-align: center;
-  margin-bottom: 1.5rem;
 }
 
 .header-icon {
@@ -40,29 +26,45 @@
   font-size: 0.95rem;
 }
 
-/* Form Styles */
-.cost-form {
+.periodos-section {
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--light-gray);
+}
+
+.periodos-section h3 {
+  color: var(--blue-color);
+  margin-bottom: 0.5rem;
+}
+
+.periodos-list {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  margin-top: 1rem;
 }
 
-.form-group {
+.periodo-item {
+  background: var(--light-gray);
+  padding: 1rem;
+  border-radius: 8px;
   position: relative;
 }
 
-.input-icon {
-  position: absolute;
-  left: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
+.periodo-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.periodo-header h4 {
   color: var(--blue-color);
-  font-size: 1.2rem;
+  margin: 0;
 }
 
 /* List Container */
-.costs-list-container {
-  background: var(--light);
+.olimpiadas-list-container {
   border-radius: 16px;
   padding: 1.5rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -86,10 +88,10 @@
   font-size: 0.9rem;
 }
 
-/* Costs Grid */
-.costs-grid {
+/* Olimpiadas Grid */
+.olimpiadas-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 1rem;
 }
 
@@ -133,29 +135,31 @@
 
 /* Responsive Design */
 @media (min-width: 768px) {
-  .costs-management-container {
+  .olimpiada-management-container {
     flex-direction: row;
     align-items: flex-start;
   }
   
-  .costs-form-container {
+  .form-container {
     flex: 1;
     min-width: 350px;
-    max-width: 450px;
+    max-width: 500px;
+    position: sticky;
+    top: 1rem;
   }
   
-  .costs-list-container {
+  .olimpiadas-list-container {
     flex: 2;
   }
 }
 
 @media (max-width: 480px) {
-  .costs-management-container {
+  .olimpiada-management-container {
     padding: 1rem;
   }
   
-  .costs-form-container,
-  .costs-list-container {
+  .form-container,
+  .olimpiadas-list-container {
     padding: 1.2rem;
   }
   
@@ -167,12 +171,7 @@
     font-size: 1.2rem;
   }
   
-  .costs-grid {
+  .olimpiadas-grid {
     grid-template-columns: 1fr;
-  }
-  
-  .input-icon {
-    font-size: 1rem;
-    left: 0.8rem;
   }
 }

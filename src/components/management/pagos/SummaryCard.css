@@ -1,0 +1,50 @@
+.summary-card {
+  border-radius: 8px;
+  padding: 20px;
+  background: white;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e0e0e0;
+  transition: all 0.3s ease;
+}
+
+.summary-card:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+  border-color: #008fbf;
+}
+
+.card-icon {
+  font-size: 1.5rem;
+  margin-left: 30px;
+  color: #008fbf;
+  font-weight: 300;
+}
+
+.material-icon {
+  font-weight: 300;
+}
+
+.card-content h3 {
+  margin: 0 0 5px 0;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.card-content .count {
+  margin: 0;
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.card-content .amount {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #333;
+}
