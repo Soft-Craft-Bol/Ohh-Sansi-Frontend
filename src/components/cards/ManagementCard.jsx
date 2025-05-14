@@ -15,7 +15,7 @@ const ManagementCard = ({ title, info = [], extraContent = null, status }) => {
               {status !== undefined && (
                 <span className={`status-indicator ${status ? 'active' : 'inactive'}`}>
                   <FaCircle className="status-icon" />
-                  {status ? 'Activo' : 'Inactivo'}
+                  {status}
                 </span>
               )}
             </h4>

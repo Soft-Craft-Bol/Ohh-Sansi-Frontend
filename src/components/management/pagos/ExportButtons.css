@@ -1,0 +1,36 @@
+.export-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.export-btn {
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.export-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-2px);
+}
+
+.pdf {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.excel {
+  background-color: #2ecc71;
+  color: white;
+}
+
+.csv {
+  background-color: #3498db;
+  color: white;
+}

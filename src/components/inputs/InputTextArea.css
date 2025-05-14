@@ -85,7 +85,7 @@
 .char-count {
   font-size: 0.875rem;
   color: #666;
-  position: absolute;
+  position: relative;
   right: 0;
 }
 
