@@ -1,0 +1,57 @@
+.summary-card {
+  border-radius: 10px;
+  padding: 20px;
+  color: white;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.summary-card:hover {
+  transform: translateY(-5px);
+}
+
+.card-icon {
+  font-size: 2rem;
+  margin-right: 15px;
+}
+
+.card-content h3 {
+  margin: 0 0 5px 0;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.card-content .count {
+  margin: 0;
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+.card-content .amount {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+/* Variant colors */
+.primary {
+  background: linear-gradient(135deg, #3498db, #2980b9);
+}
+
+.success {
+  background: linear-gradient(135deg, #2ecc71, #27ae60);
+}
+
+.warning {
+  background: linear-gradient(135deg, #f39c12, #e67e22);
+}
+
+.danger {
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
+}
+
+.info {
+  background: linear-gradient(135deg, #9b59b6, #8e44ad);
+}

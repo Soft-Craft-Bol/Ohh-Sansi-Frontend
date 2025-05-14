@@ -85,8 +85,7 @@ export const getCatalogoOlimpiada = () => api.get('/catalogo-olimpiada');
 
 //FechaOlimpiada
 export const getOlimpiadasConEventos = () => api.get('/fecha-olimpiada/olimpiadas-con-eventos');
-export const saveFechaOlimpiada = (data) => api.post('/fecha-olimpiada/register', data);
-export const saveFechaConOlimpiada = (data) => api.post('/fecha-olimpiada/full-register', data);
+export const savePeriodoOlimpiada = (data) => api.post('/fecha-olimpiada/register', data);
 //EMAILS
 export const sendEmail = (data) => api.post('/email/send', data);
 
@@ -94,6 +93,8 @@ export const sendEmail = (data) => api.post('/email/send', data);
 export const getOrdenPagoDetailInfo = (codigoUnico) => api.get(`/inscripcion/details/${codigoUnico}`);
 export const createOrdenPago = (data) => api.post('/orden-pago', data);
 
+//estado orden de pago
+export const getEstadoOrdenPago = () => api.get(`/estadisticas/ordenes-pago`);
 
 //estado de inscripcoin
 export const getEstadoInscripcion = (ciParticipante) => api.get(`/estado-inscripcion/${ciParticipante}`);

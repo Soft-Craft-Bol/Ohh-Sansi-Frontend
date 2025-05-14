@@ -1,114 +1,218 @@
 import { useState, useEffect } from 'react';
-import CatalogForm from './CatalogForm';
+import { FiPlus, FiRefreshCw } from 'react-icons/fi';
 import CatalogCard from './CatalogCard';
-import { getAreas, getCatalogoOlimpiada, getGradosCategorias, getOlimpiadas, saveCatalogoOlimpiada } from '../../../api/api';
-import Swal from 'sweetalert2';
+import CatalogModal from './CatalogModal';
+import {
+  getAreas,
+  getCatalogoOlimpiada,
+  getGradosCategorias,
+  getOlimpiadas,
+  saveCatalogoOlimpiada
+} from '../../../api/api';
 import './CatalogoManagement.css';
+import Swal from 'sweetalert2';
 
-const CatalogoMangament = () => {
-    const [categories, setCategories] = useState([]);
-    const [areas, setAreas] = useState([]);
-    const [olimpiadas, setOlimpiadas] = useState([]);
-    const [activeOlimpiadaId, setActiveOlimpiadaId] = useState(null);
-    const [catalogoById, setCatalogoById] = useState([]);
+const CatalogoManagement = () => {
+  const [state, setState] = useState({
+    areas: [],
+    categories: [],
+    olimpiadas: [],
+    catalogo: [],
+    selectedOlimpiada: null,
+    loading: true,
+    modalOpen: false
+  });
 
-    useEffect(() => {
-        fetchData();
-    }, []);
+  const showToast = (type, message) => {
+    Swal.fire({
+      icon: type,
+      title: type === 'error' ? 'Error' : 'Éxito',
+      text: message,
+      timer: 3000
+    });
+  };
 
-    const fetchData = async () => {
-        try {
-            const [olimpiadaRes, areasRes, categoriesRes, catalogoRes] = await Promise.all([
-                getOlimpiadas(),
-                getAreas(),
-                getGradosCategorias(),
-                getCatalogoOlimpiada(),
-            ]);
-            const olimpiadasData = olimpiadaRes.data?.data || [];
-            const active = olimpiadasData.find(o => o.estadoOlimpiada)?.idOlimpiada || null;
-            setOlimpiadas(olimpiadasData);
-            setActiveOlimpiadaId(active);
-            setCategories(categoriesRes.data);
-            setAreas(Array.isArray(areasRes.data?.areas) ? areasRes.data.areas : []);
-            setCatalogoById(catalogoRes.data);
-        } catch (error) {
-            console.error("Error fetching data:", error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Error al cargar los datos.',
-            });
-        }
-    };
+  const fetchData = async () => {
+    try {
+      setState(prev => ({ ...prev, loading: true }));
+      
+      const [olimpiadasRes, areasRes, categoriesRes, catalogoRes] = await Promise.all([
+        getOlimpiadas(),
+        getAreas(),
+        getGradosCategorias(),
+        getCatalogoOlimpiada(),
+      ]);
 
-    const handleAddCatalogo = async (data) => {
-        try {
-            const response = await saveCatalogoOlimpiada(data);
-    
-            if (response?.data?.status === 'success') {
-                Swal.fire('Guardado', response.data.message, 'success');
-                fetchData();
-            } else {
-                console.log("Mensaje de error desde backend:", response?.data?.message);
-                Swal.fire('Error', response?.data?.message || 'No se pudo guardar.', 'error');
-            }
-        } catch (error) {
-            console.error("Error al guardar:", error);
-    
-            if (error?.response) {
-                Swal.fire('Error', error.response.data?.message || 'No se pudo conectar con el servidor.', 'error');
-            } else {
-                Swal.fire('Error', 'Error desconocido al conectar con el servidor.', 'error');
-            }
-        }
-    };
-    
+      const olimpiadasData = Array.isArray(olimpiadasRes.data?.data) ? olimpiadasRes.data.data : [];
+      const areasData = Array.isArray(areasRes.data?.areas) ? areasRes.data.areas : [];
+      const categoriesData = Array.isArray(categoriesRes.data) ? categoriesRes.data : [];
+      const catalogoData = Array.isArray(catalogoRes.data) ? catalogoRes.data : [];
 
-    const activeOlimpiadaNombre = olimpiadas.find(o => o.idOlimpiada === activeOlimpiadaId)?.nombreOlimpiada || '';
-    const catalogosFiltrados = catalogoById.filter(item => item.nombreOlimpiada === activeOlimpiadaNombre);
+      console.log("Datos recibidos:", {
+        olimpiadas: olimpiadasData,
+        areas: areasData,
+        categories: categoriesData,
+        catalogo: catalogoData
+      });
 
-    return (
-        <div className="configurator page-padding">
-            <h2>Configuración del Catálogo Olímpico</h2>
-            <div className="period-selector">
-                {olimpiadas.map((o) => (
-                    <button
-                        key={o.idOlimpiada}
-                        className={`period-btn ${activeOlimpiadaId === o.idOlimpiada ? 'active' : ''}`}
-                        onClick={() => setActiveOlimpiadaId(o.idOlimpiada)}
-                    >
-                        {o.nombreOlimpiada}
-                        {o.estadoOlimpiada && <span className="green-dot" />}
-                    </button>
-                ))}
-            </div>
+      // Selecciona la primera olimpiada por defecto
+      const defaultOlimpiada = olimpiadasData[0] || null;
 
-            {activeOlimpiadaId && typeof handleAddCatalogo === 'function' && (
-                <CatalogForm
-                    areas={areas}
-                    categories={categories}
-                    activeOlimpiadaId={activeOlimpiadaId}
-                    onAdd={handleAddCatalogo}
-                />
-            )}
+      setState({
+        areas: areasData,
+        categories: categoriesData,
+        olimpiadas: olimpiadasData,
+        catalogo: catalogoData,
+        selectedOlimpiada: defaultOlimpiada ? defaultOlimpiada.idOlimpiada : null,
+        loading: false,
+        modalOpen: false
+      });
 
-            <div className="configured-list">
-                <h3>Catálogo Configurado</h3>
-                {catalogosFiltrados.length === 0 ? (
-                    <p>No hay configuraciones aún para esta olimpiada.</p>
-                ) : (
-                    catalogosFiltrados.map((item, i) => (
-                        <CatalogCard
-                            key={i}
-                            area={item.nombreArea}
-                            categories={item.nombreCategoria}
-                            grades={item.grados.join(', ')}
-                        />
-                    ))
-                )}
-            </div>
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      setState(prev => ({ ...prev, loading: false }));
+      showToast('error', 'Error al cargar los datos');
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const handleAddItem = async (formData) => {
+    try {
+      const payload = {
+        ...formData,
+        idOlimpiada: state.selectedOlimpiada
+      };
+
+      const response = await saveCatalogoOlimpiada(payload);
+      
+      if (response?.data?.status === 'success') {
+        showToast('success', response.data.message);
+        await fetchData();
+      } else {
+        throw new Error(response?.data?.message || 'Error al guardar');
+      }
+    } catch (error) {
+      console.error("Error saving catalog item:", error);
+      showToast('error', error.message);
+    }
+  };
+
+  // Obtener la olimpiada seleccionada actual
+  const currentOlimpiada = state.olimpiadas.find(o => 
+    o.idOlimpiada === state.selectedOlimpiada
+  );
+
+  // Filtrar catálogo por nombre de olimpiada (ya que los datos muestran nombreOlimpiada)
+  const filteredCatalogo = state.catalogo.filter(item => 
+    item.nombreOlimpiada && currentOlimpiada?.nombreOlimpiada &&
+    item.nombreOlimpiada === currentOlimpiada.nombreOlimpiada
+  );
+
+  return (
+    <div className="catalogo-app">
+      <header className="app-header">
+        <h1>Configuración del Catálogo</h1>
+        <p>Administra las áreas y categorías para cada olimpiada</p>
+      </header>
+
+      <div className="control-panel">
+        <div className="olimpiada-selector">
+          <label>Olimpiada:</label>
+          <div className="selector-buttons">
+            {state.olimpiadas.map(olimpiada => (
+              <button
+                key={olimpiada.idOlimpiada}
+                className={`selector-btn ${state.selectedOlimpiada === olimpiada.idOlimpiada ? 'active' : ''}`}
+                onClick={() => setState(prev => ({ 
+                  ...prev, 
+                  selectedOlimpiada: olimpiada.idOlimpiada 
+                }))}
+              >
+                {olimpiada.nombreOlimpiada}
+                {olimpiada.estadoOlimpiada && <span className="active-indicator" />}
+              </button>
+            ))}
+          </div>
         </div>
-    );
+
+        <div className="action-buttons">
+          <button 
+            className="refresh-btn"
+            onClick={fetchData}
+            disabled={state.loading}
+          >
+            <FiRefreshCw className={state.loading ? 'spinning' : ''} />
+          </button>
+          <button 
+            className="add-btn"
+            onClick={() => setState(prev => ({ ...prev, modalOpen: true }))}
+            disabled={!state.selectedOlimpiada || state.loading}
+          >
+            <FiPlus /> Nuevo Item
+          </button>
+        </div>
+      </div>
+
+      <main className="catalogo-content">
+        {state.loading ? (
+          <div className="loading-state">
+            <div className="spinner"></div>
+            <p>Cargando configuración...</p>
+          </div>
+        ) : (
+          <>
+            <div className="catalogo-info">
+              <h2>
+                {currentOlimpiada?.nombreOlimpiada || 'Selecciona una olimpiada'}
+                {filteredCatalogo.length > 0 && (
+                  <span className="items-count">{filteredCatalogo.length} items</span>
+                )}
+              </h2>
+            </div>
+
+            {filteredCatalogo.length === 0 ? (
+              <div className="empty-state">
+                <p>
+                  {state.selectedOlimpiada 
+                    ? `No se encontraron configuraciones para ${currentOlimpiada?.nombreOlimpiada || 'esta olimpiada'}`
+                    : 'Selecciona una olimpiada para ver sus configuraciones'}
+                </p>
+                <button 
+                  className="primary-btn"
+                  onClick={() => setState(prev => ({ ...prev, modalOpen: true }))}
+                >
+                  <FiPlus /> Crear primera configuración
+                </button>
+              </div>
+            ) : (
+              <div className="catalogo-grid">
+                {filteredCatalogo.map((item, index) => (
+                  <CatalogCard
+                    key={`${item.nombreArea}-${item.nombreCategoria}-${index}`}
+                    area={item.nombreArea}
+                    category={item.nombreCategoria}
+                    grades={item.grados}
+                  />
+                ))}
+              </div>
+            )}
+          </>
+        )}
+      </main>
+
+      {state.modalOpen && (
+        <CatalogModal
+          areas={state.areas}
+          categories={state.categories}
+          onClose={() => setState(prev => ({ ...prev, modalOpen: false }))}
+          onSubmit={handleAddItem}
+        />
+      )}
+    </div>
+  );
 };
 
-export default CatalogoMangament;
+export default CatalogoManagement;
