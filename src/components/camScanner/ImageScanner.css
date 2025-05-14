@@ -1,0 +1,211 @@
+/* Estilos para el componente ImageScanner */
+
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Poppins:wght@400;500;600;700&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--grey);
+  font-family: var(--poppins);
+  color: var(--dark);
+  overflow-x: hidden;
+}
+
+/* Contenedor principal del escáner de boletas */
+.image-scanner-container {
+  background-color: var(--lighter);
+  padding: 2rem;
+  margin: 2rem auto;
+  max-width: 1200px;
+  border-radius: 1rem;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Título principal */
+.image-scanner-container h2 {
+  font-family: var(--poppins);
+  color: var(--blue-dark);
+  font-size: 2.5rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+/* Controles */
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.controls button {
+  background-color: var(--science-blue);
+  color: var(--lighter);
+  font-family: var(--poppins);
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.controls button:hover {
+  background-color: var(--science-purple);
+}
+
+.settings {
+  display: flex;
+  gap: 5rem;
+}
+
+.settings label {
+  flex: 1 1 200px;
+  display: flex;
+  flex-direction: column;
+  font-family: var(--lato);
+  font-weight: 600;
+}
+
+.settings input[type="range"] {
+  margin-top: 0.5rem;
+  cursor: pointer;
+}
+
+.settings input[type="checkbox"] {
+  margin-right: 0.5rem;
+}
+
+/* Resultados de validación */
+.validation-results {
+  background-color: var(--light-yellow);
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 2rem;
+}
+
+.validation-results.valid {
+  border-left: 4px solid var(--science-green);
+}
+
+.validation-results.invalid {
+  border-left: 4px solid var(--science-red);
+}
+
+/* Contenedor de imágenes */
+.image-container {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 2rem;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.image-column {
+  flex: 1;
+  max-width: 45%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.image-column h3 {
+  margin-bottom: 1rem;
+  color: var(--blue-dark);
+  font-size: 1.2rem;
+}
+
+.image-column canvas {
+  max-width: 100%;
+  height: auto;
+  border: 1px solid var(--border-gray);
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.image-column p {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--dark-gray);
+}
+
+/* Resultados del texto extraído */
+.text-results {
+  background-color: var(--light-blue2);
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 2rem;
+}
+
+.text-results textarea {
+  width: 100%;
+  min-height: 150px;
+  font-family: var(--lato);
+  margin-top: 0.5rem;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border-gray);
+  background-color: var(--light);
+  resize: vertical;
+}
+
+/* Datos estructurados */
+.structured-data {
+  background-color: var(--light);
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.structured-data h3 {
+  color: var(--dark);
+  margin-bottom: 0.75rem;
+}
+
+.data-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.data-grid div {
+  background-color: var(--light-blue);
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  font-family: var(--lato);
+  font-weight: 600;
+}
+
+/* Barra de progreso */
+.progress {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 1rem 0;
+  font-family: var(--lato);
+  font-weight: 600;
+  color: var(--blue-dark);
+}
+
+progress {
+  width: 100%;
+  height: 1rem;
+  margin-top: 0.5rem;
+  border-radius: 0.5rem;
+}
+
+progress::-webkit-progress-bar {
+  background-color: var(--light-blue);
+  border-radius: 0.5rem;
+}
+
+progress::-webkit-progress-value {
+  background-color: var(--science-blue);
+  border-radius: 0.5rem;
+  transition: width 0.3s ease;
+}

@@ -110,3 +110,7 @@ export const setCatalogoAreasParticipante = (ciParticipante, data) =>
 
 export const getTutorAreaParticipanteInfo = (ciParticipante) => api.get(`/tutor-area-participante/${ciParticipante}`);
 export const setTutorAreaParticipante = (data) => api.post('/tutor-area-participante/save', data);
+
+//OCR
+export const sendImageForOCR = (data) => api.post('/ocr', data);
+export const verificarPago = (data) => api.post('/ocr/verificar', data);
