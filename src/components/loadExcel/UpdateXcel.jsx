@@ -7,9 +7,11 @@ import { RiFileExcel2Line } from 'react-icons/ri';
 import { ButtonPrimary } from '../button/ButtonPrimary';
 import './LoadExcel.css';
 import Swal from 'sweetalert2';
-import plantilla from '../../assets/Plantilla-De-Inscripción.xlsx';
+import plantilla from '../../assets/Plantilla-De-Inscipción-v1.xlsx';
 import Table from '../table/Table';
 import { excelRowSchemaAreas, excelRowSchemaDatos } from '../../schemas/ExcelValidation';
+import { getInscripcionByID, postOnlyExcelFile, registerTutor } from '../../api/api';
+import { useNavigate } from 'react-router-dom';
 
 const validExtensions = ['.xlsx'];
 const columnasPermitidas = ['Nombres', 'Apellido Paterno', 'Apellido Materno', 'Departamento', 'Colegio', 'Carnet Identidad'];
@@ -24,6 +26,7 @@ const UpdateExcel = () => {
   const [excelData, setExcelData] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
   const [buttonState, setButtonState] = useState('upload'); // 'upload', 'loading', 'done'
+  const navigate = useNavigate();
 
   const formik = useFormik({
     initialValues: {
@@ -156,6 +159,45 @@ const validarFilasAreas = async (filas) => {
     return errores;
     };
 
+const handleConfirm = (codigoGenerado) => {
+  Swal.fire({
+    title: '<h2 style="color:#003366;">Inscripción correctamente realizada</h2>',
+    html: `
+      <div style="margin: 20px 0;">
+        <div style="font-size: 40px; font-weight: bold; color: #555;">${codigoGenerado}</div>
+        <p style="color: #666; font-size: 16px; line-height: 1.5; margin: 20px 0;">
+          Este es un código único generado para la inscripción realizada, con este código completa los detalles del pago.
+          Guarda <strong>este código</strong>, <strong>se envió al correo</strong> de igual manera.
+        </p>
+      </div>
+      <div style="display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;">
+        <button id="goHome" style="background-color:#003366; color:white; border:none; padding:10px 20px; border-radius:8px; font-size:14px;">Ir al inicio</button>
+        <button id="viewDetails" style="background-color:#003366; color:white; border:none; padding:10px 20px; border-radius:8px; font-size:14px;">Detalles del pago</button>
+      </div>
+    `,
+    showConfirmButton: false,
+    showCloseButton: true,
+    didOpen: () => {
+      const goHome = document.getElementById('goHome');
+      const viewDetails = document.getElementById('viewDetails');
+
+      if (goHome) {
+        goHome.addEventListener('click', () => {
+          navigate("/");
+          Swal.close();
+        });
+      }
+
+      if (viewDetails) {
+        viewDetails.addEventListener('click', () => {
+          navigate("/orden-de-pago");
+          Swal.close();
+        });
+      }
+    }
+  });
+};
+
   const handleSubmit = async () => {
   if (!selectedFile) {
     Swal.fire("Archivo requerido", "Debes cargar un archivo Excel antes de registrar", "warning");
@@ -273,22 +315,52 @@ const validarFilasAreas = async (filas) => {
       }
     });
 
-    if (formValues) {
-      const formData = new FormData();
-      formData.append("archivo", selectedFile);
-      formData.append("ci", formValues.ci);
-      formData.append("complemento", formValues.comp);
-      formData.append("nombres", formValues.nombres);
-      formData.append("apellidos", formValues.apellidos);
-      formData.append("correo", formValues.correo);
-      formData.append("telefono", formValues.telefono);
-
-      await fetch("//endpoint del api pendiente", {
-        method: "POST",
-        body: formData,
+    if (selectedFile) {
+      Swal.fire({
+        title: "Subiendo archivo...",
+        text: "Espere un momento mientras se procesa",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
       });
+      try {
+        const res = await postOnlyExcelFile(selectedFile);
+        const result = await res.data;
+        Swal.close();
+        console.log(result)
 
-      Swal.fire("Éxito", "Archivo y tutor enviados correctamente", "success");
+        if (Array.isArray(result)) {
+          const tutorPayload = {
+            idTutorParentesco: 2,
+            tutors: [
+              {
+                idTipoTutor: 3,
+                emailTutor: formValues.correo,
+                nombresTutor: formValues.nombres,
+                apellidosTutor: formValues.apellidos,
+                telefono: Number(formValues.telefono),
+                carnetIdentidadTutor: Number(formValues.ci),
+                complementoCiTutor: formValues.comp
+              }
+            ]
+          };
+
+          for (const fila of result) {
+            if (fila.success) {
+              const ciParticipanteExcel = fila.ci_participante_excel;
+              await registerTutor(ciParticipanteExcel, tutorPayload);
+              const idInscripcion = fila.id_inscripcion;
+              const forModal = await getInscripcionByID(idInscripcion);
+              console.log(forModal)
+              handleConfirm(forModal.data.data.codigoUnicoInscripcion);
+              break;
+            }
+          }}
+      } catch (error) {
+        console.error("Error al enviar archivo:", error);
+        Swal.fire("Error", "No se pudo enviar el archivo", "error");
+      }
     }
 
   } catch (error) {

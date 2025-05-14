@@ -36,6 +36,7 @@ export const getInscripciones = () => api.get('/inscripciones');
 export const addInscripcion = (data) => api.post('/inscripciones', data);
 export const updateInscripcion = (data) => api.put('/inscripciones', data);
 export const deleteInscripcion = (id) => api.delete(`/inscripciones/${id}`);
+export const getInscripcionByID = (id) => api.get(`/inscripcion/${id}`);
 export const inscripcionEstudiante = (data) => api.post(`/inscripcion/v1/register`, data);
 export const registerParticipante = (data) => api.post('/participante/register-participant', data);
 export const register = (data) => api.post('/register', data)
@@ -85,8 +86,7 @@ export const getCatalogoOlimpiada = () => api.get('/catalogo-olimpiada');
 
 //FechaOlimpiada
 export const getOlimpiadasConEventos = () => api.get('/fecha-olimpiada/olimpiadas-con-eventos');
-export const saveFechaOlimpiada = (data) => api.post('/fecha-olimpiada/register', data);
-export const saveFechaConOlimpiada = (data) => api.post('/fecha-olimpiada/full-register', data);
+export const savePeriodoOlimpiada = (data) => api.post('/fecha-olimpiada/register', data);
 //EMAILS
 export const sendEmail = (data) => api.post('/email/send', data);
 
@@ -94,7 +94,10 @@ export const sendEmail = (data) => api.post('/email/send', data);
 export const getOrdenPagoDetailInfo = (codigoUnico) => api.get(`/inscripcion/details/${codigoUnico}`);
 export const createOrdenPago = (data) => api.post('/orden-pago', data);
 
-
+//estado orden de pago
+export const getEstadoOrdenPago = () => api.get(`/api/estadisticas/ordenes-pago`);
+export const getReporteOrdenPago = (fechaInicio, fechaFin) => 
+  api.get(`/orden-pago/no-vencidas?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`);
 //estado de inscripcoin
 export const getEstadoInscripcion = (ciParticipante) => api.get(`/estado-inscripcion/${ciParticipante}`);
 
@@ -110,7 +113,12 @@ export const setCatalogoAreasParticipante = (ciParticipante, data) =>
 
 export const getTutorAreaParticipanteInfo = (ciParticipante) => api.get(`/tutor-area-participante/${ciParticipante}`);
 export const setTutorAreaParticipante = (data) => api.post('/tutor-area-participante/save', data);
+export const postOnlyExcelFile = (file) => {
+  const formData = new FormData();
+  formData.append("file", file);
+  return api.post("/inscripcion/masiva", formData);
+};
 
-//OCR
+//OCR2
 export const sendImageForOCR = (data) => api.post('/ocr', data);
 export const verificarPago = (data) => api.post('/ocr/verificar', data);

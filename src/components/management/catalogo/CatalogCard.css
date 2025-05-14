@@ -2,7 +2,7 @@
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   align-items: center;
-  background: var(--light);
+  background: var(--science-blue);
   border: 1px solid rgba(30, 144, 255, 0.15);
   border-radius: 12px;
   padding: 1rem 1.5rem;

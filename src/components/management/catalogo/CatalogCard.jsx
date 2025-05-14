@@ -1,22 +1,29 @@
 import './CatalogCard.css';
-import { GRADO_ORDEN, ordenarGrados } from '../../../utils/GradesOrder';
 
-const CatalogCard = ({ area, categories, grades = '', onDelete }) => {
-  const gradosOrdenados = ordenarGrados(
-    grades.split(',').map(g => ({ nombreGrado: g.trim() }))
-  ).map(g => g.nombreGrado);
+const CatalogCard = ({ area, category, grades }) => {
+  const formatGrades = () => {
+    if (!grades || grades.length === 0) return 'Sin grados especificados';
+    
+    const sortedGrades = [...grades].sort((a, b) => {
+      const getNumber = (grade) => parseInt(grade.match(/\d+/)?.[0] || 0);
+      return getNumber(a) - getNumber(b);
+    });
 
-  const rangoGrados = gradosOrdenados.length === 0
-    ? 'Sin grados'
-    : gradosOrdenados.length === 1
-      ? gradosOrdenados[0]
-      : `${gradosOrdenados[0]} - ${gradosOrdenados[gradosOrdenados.length - 1]}`;
+    if (sortedGrades.length === 1) return sortedGrades[0];
+    
+    return `${sortedGrades[0]} - ${sortedGrades[sortedGrades.length - 1]}`;
+  };
 
   return (
-    <div className="catalog-card-grid">
-      <div className="grid-item area">{area}</div>
-      <div className="grid-item category">{categories}</div>
-      <div className="grid-item grades">{rangoGrados}</div>
+    <div className="catalog-card">
+      <div className="card-badge">{area}</div>
+      <div className="card-content">
+        <h3>{category}</h3>
+        <div className="grades-info">
+          <span>Grados:</span>
+          <strong>{formatGrades()}</strong>
+        </div>
+      </div>
     </div>
   );
 };
