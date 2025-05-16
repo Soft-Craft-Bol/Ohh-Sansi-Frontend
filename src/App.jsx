@@ -5,8 +5,9 @@ import AppRoutes from './routes/AppRoutes';
 import { AuthProvider } from './context/AuthProvider';
 
 const App = () => {
+
   return (
-    <BrowserRouter>
+    <BrowserRouter> 
       <AuthProvider>
         <AppRoutes />
       </AuthProvider>

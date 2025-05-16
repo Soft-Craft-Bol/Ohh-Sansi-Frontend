@@ -36,6 +36,7 @@ export const getInscripciones = () => api.get('/inscripciones');
 export const addInscripcion = (data) => api.post('/inscripciones', data);
 export const updateInscripcion = (data) => api.put('/inscripciones', data);
 export const deleteInscripcion = (id) => api.delete(`/inscripciones/${id}`);
+export const getInscripcionByID = (id) => api.get(`/inscripcion/${id}`);
 export const inscripcionEstudiante = (data) => api.post(`/inscripcion/v1/register`, data);
 export const registerParticipante = (data) => api.post('/participante/register-participant', data);
 export const register = (data) => api.post('/register', data)
@@ -112,3 +113,12 @@ export const setCatalogoAreasParticipante = (ciParticipante, data) =>
 
 export const getTutorAreaParticipanteInfo = (ciParticipante) => api.get(`/tutor-area-participante/${ciParticipante}`);
 export const setTutorAreaParticipante = (data) => api.post('/tutor-area-participante/save', data);
+export const postOnlyExcelFile = (file) => {
+  const formData = new FormData();
+  formData.append("file", file);
+  return api.post("/inscripcion/masiva", formData);
+};
+
+//OCR43
+export const sendImageForOCR = (data) => api.post('/ocr', data);
+export const verificarPago = (data) => api.post('/ocr/verificar', data);
