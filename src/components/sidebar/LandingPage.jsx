@@ -1,68 +1,73 @@
 import React, { useEffect } from 'react';
 import { FaUserGraduate, FaUsers, FaSearch, FaMoneyCheckAlt, FaFileInvoice, FaUpload, FaFacebookF, FaInstagramSquare, FaTiktok, FaFlask, FaAtom, FaMicroscope } from 'react-icons/fa';
 import { GiChemicalDrop, GiBrain } from 'react-icons/gi';
-import ScrollReveal from 'scrollreveal';
 import './LandingPage.css';
 
 const LandingPage = () => {
   useEffect(() => {
-    // Configuración de ScrollReveal
-    ScrollReveal().reveal('.hero-content', { 
-      duration: 1000, 
-      origin: 'top', 
-      distance: '100px', 
-      reset: false,
-      easing: 'cubic-bezier(0.5, 0, 0, 1)'
-    });
-    
-    ScrollReveal().reveal('.action-card', { 
-      duration: 800, 
-      origin: 'bottom', 
-      distance: '50px', 
-      reset: false,
-      interval: 200,
-      easing: 'cubic-bezier(0.5, 0, 0, 1)'
-    });
-    
-    ScrollReveal().reveal('.footer-ohsansi', { 
-      duration: 1000, 
-      origin: 'bottom', 
-      distance: '50px', 
-      reset: false 
-    });
-
-    // Efecto de partículas científicas
-    const createParticle = () => {
-      const particle = document.createElement('div');
-      particle.className = 'science-particle';
-      
-      // Tipos de partículas (átomos, moléculas, etc.)
-      const types = ['atom', 'molecule', 'flask', 'brain'];
-      const type = types[Math.floor(Math.random() * types.length)];
-      particle.classList.add(type);
-      
-      particle.style.left = `${Math.random() * 100}%`;
-      particle.style.top = `${Math.random() * 100}%`;
-      particle.style.animationDuration = `${5 + Math.random() * 10}s`;
-      particle.style.animationDelay = `${Math.random() * 5}s`;
-      particle.style.opacity = Math.random() * 0.5 + 0.1;
-      
-      document.querySelector('.particles-container').appendChild(particle);
-    };
-
-    // Crear partículas
-    for (let i = 0; i < 30; i++) {
-      createParticle();
+    // Cargar ScrollReveal solo cuando sea necesario
+    if (typeof window !== 'undefined' && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      import('scrollreveal').then((ScrollReveal) => {
+        ScrollReveal.default().reveal('.hero-content', { 
+          duration: 1000, 
+          origin: 'top', 
+          distance: '100px',
+          easing: 'cubic-bezier(0.5, 0, 0, 1)'
+        });
+        
+        ScrollReveal.default().reveal('.action-card', { 
+          duration: 800, 
+          origin: 'bottom', 
+          distance: '50px',
+          interval: 200,
+          easing: 'cubic-bezier(0.5, 0, 0, 1)'
+        });
+      });
     }
 
+    // Efecto de partículas simplificado (solo 10 en móvil)
+    const createParticles = () => {
+      if (typeof window !== 'undefined' && document.querySelector('.particles-container')) {
+        const container = document.querySelector('.particles-container');
+        const particleCount = window.innerWidth < 768 ? 10 : 20;
+        
+        // Usar fragmento de documento para inserción masiva
+        const fragment = document.createDocumentFragment();
+        
+        for (let i = 0; i < particleCount; i++) {
+          const particle = document.createElement('div');
+          particle.className = 'science-particle';
+          
+          // Asignar posición y animación directamente
+          particle.style.cssText = `
+            left: ${Math.random() * 100}%;
+            top: ${Math.random() * 100}%;
+            animation-duration: ${5 + Math.random() * 10}s;
+            animation-delay: ${Math.random() * 5}s;
+            opacity: ${Math.random() * 0.3 + 0.1};
+          `;
+          
+          fragment.appendChild(particle);
+        }
+        
+        container.appendChild(fragment);
+      }
+    };
+
+    // Retrasar la creación de partículas para priorizar contenido
+    const particleTimeout = setTimeout(createParticles, 500);
+
     return () => {
-      document.querySelectorAll('.science-particle').forEach(el => el.remove());
+      clearTimeout(particleTimeout);
+      if (typeof window !== 'undefined' && document.querySelector('.particles-container')) {
+        document.querySelector('.particles-container').innerHTML = '';
+      }
     };
   }, []);
 
   return (
     <div className="landing-container">
-      {/* Fondo con efecto de olas y partículas */}
+      {/* Fondo optimizado */}
       <div className="hero-background">
         <div className="wave wave1"></div>
         <div className="wave wave2"></div>
@@ -82,19 +87,15 @@ const LandingPage = () => {
             <FaMicroscope className="inline-icon" />
           </p>
           <div className="cta-container">
-            <a href="#acciones" className="btn-primary-landing pulse-animation">
+            <a href="#acciones" className="btn-primary-landing">
               ¡Explorar!
-              <span className="hover-effect"></span>
             </a>
           </div>
         </div>
         
-        {/* Elementos científicos flotantes */}
-        <div className="floating-elements">
-          <FaAtom className="floating-atom" />
-          <GiChemicalDrop className="floating-chemical" />
-          <GiBrain className="floating-brain" />
-        </div>
+        {/* Elementos científicos estáticos (mejor performance) */}
+        <FaAtom className="floating-atom" />
+        <GiChemicalDrop className="floating-chemical" />
       </header>
 
       <section id="acciones" className="quick-actions">
@@ -118,7 +119,6 @@ const LandingPage = () => {
                 {item.icon}
               </div>
               <h3>{item.title}</h3>
-              <div className="card-hover-effect"></div>
             </a>
           ))}
         </div>
@@ -128,15 +128,12 @@ const LandingPage = () => {
         <div className="social-icons">
           <a href="https://www.facebook.com/people/Ohsansi/61560666333554/" target="_blank" rel="noopener noreferrer">
             <FaFacebookF />
-            <span className="social-tooltip">Facebook</span>
           </a>
           <a href="https://www.instagram.com/ohsansi/" target="_blank" rel="noopener noreferrer">
             <FaInstagramSquare />
-            <span className="social-tooltip">Instagram</span>
           </a>
           <a href="https://www.tiktok.com/@ohsansi" target="_blank" rel="noopener noreferrer">
             <FaTiktok />
-            <span className="social-tooltip">TikTok</span>
           </a>
         </div>
         <p className="footer-text">

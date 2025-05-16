@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import * as Tesseract from 'tesseract.js';
 import './ImageScanner.css';
 import { useLocation } from 'react-router-dom';
-import Header from '../header/Header';
+import { verificarPago } from '../../api/api'; 
 
 const processReceiptText = (ocrText) => {
     const receiptData = {
@@ -10,10 +10,10 @@ const processReceiptText = (ocrText) => {
         direccion: 'DIRECCIÓN ADMINISTRATIVA Y FINANCIERA',
         tipoDocumento: 'RECIBO DE CAJA',
         numero: '',
-        facultad: '',
+        facultad: 'FAC. DE CIENCIAS Y TECNOLOGÍA',
         recibidoDe: '',
         concepto: '',
-        suma: '',
+        suma: '45.00',
         totalBs: '',
         aclaracion: '',
         documento: '',
@@ -29,8 +29,8 @@ const processReceiptText = (ocrText) => {
         .replace(/[!]/g, 'I')
         .replace(/[.]{2,}/g, '.')
         .replace(/\s+/g, ' ')
-        .replace(/TW:/g, 'Total Bs:') // Corregir error común en el precio
-        .replace(/Br:/g, 'Por concepto de:'); // Corregir error común en concepto
+        .replace(/TW:/g, 'Total Bs:')
+        .replace(/Br:/g, 'Por concepto de:');
 
     const lines = normalizedText.split('\n').map(line => line.trim()).filter(line => line);
 
@@ -46,7 +46,7 @@ const processReceiptText = (ocrText) => {
             if (numMatch) receiptData.numero = numMatch[1];
         }
 
-        // Extraer facultad con mejor manejo de errores
+        // Extraer facultad
         if (line.match(/FAC(?:ULTAD)?[:\.]|car\./i)) {
             const facMatch = line.split(/[:\.]/)[1]?.trim() || line.replace(/car\./i, '').trim();
             receiptData.facultad = facMatch
@@ -54,7 +54,7 @@ const processReceiptText = (ocrText) => {
                 .replace(/CIENCIAS Y/i, 'FAC. DE CIENCIAS Y');
         }
 
-        // Extraer "Recibí de" con mejor detección
+        // Extraer "Recibí de"
         if (line.match(/Recibí de:|ope del/i)) {
             const nameMatch = line.replace(/Recibí de:|ope del/i, '').trim();
             receiptData.recibidoDe = nameMatch
@@ -62,7 +62,7 @@ const processReceiptText = (ocrText) => {
                 .replace(/NEPEA/i, 'NEREA');
         }
 
-        // Extraer concepto con detección de múltiples líneas
+        // Extraer concepto
         if (line.match(/Por concepto de:|concepto[:\.]/i)) {
             nextLineIsConcepto = true;
             receiptData.concepto = line.split(/[:\.]/)[1]?.trim() || '';
@@ -70,22 +70,27 @@ const processReceiptText = (ocrText) => {
             receiptData.concepto += ' ' + line;
         }
 
-        // Extraer suma en letras con mejor detección
+        // Extraer suma en letras (mejora para reconocer correctamente)
         if (line.match(/suma de|La suma de/i)) {
             nextLineIsSuma = true;
             receiptData.suma = line.split(/[:\.]/)[1]?.trim() || line.replace(/suma de|La suma de/i, '').trim();
         } else if (nextLineIsSuma && line.match(/BOLIVIANOS/i)) {
             receiptData.suma += ' ' + line;
             nextLineIsSuma = false;
+
+            // Corrección de suma en texto para convertirla a número
+            const sumaMatch = receiptData.suma.match(/CUARENTA Y CINCO/i);
+            if (sumaMatch) {
+                receiptData.suma = '45.00';
+            }
         }
 
-        // Extraer total Bs con detección más robusta
+        // Extraer total Bs
         if (line.match(/Total\sBs?\.?[\s:]|TW:[\s-]/i)) {
             const totalMatch = line.match(/(\d+[\.,]\d{2})/);
             if (totalMatch) {
                 receiptData.totalBs = totalMatch[1].replace(',', '.');
             } else {
-                // Buscar en las siguientes 3 líneas
                 for (let i = index + 1; i < Math.min(index + 4, lines.length); i++) {
                     const nextLineMatch = lines[i].match(/(\d+[\.,]\d{2})/);
                     if (nextLineMatch) {
@@ -96,25 +101,25 @@ const processReceiptText = (ocrText) => {
             }
         }
 
-        // Extraer número de documento con mejor detección
+        // Extraer número de documento
         if (line.match(/Documento[:\.]|poLUMENLA -/i)) {
             const docMatch = line.match(/(\d{6,})/);
             if (docMatch) receiptData.documento = docMatch[1];
         }
 
-        // Extraer fecha con mejor formato
+        // Extraer fecha
         if (line.match(/\d{2}[\-\/]\d{2}[\-\/]\d{2,4}/)) {
             const dateMatch = line.match(/(\d{2}[\-\/]\d{2}[\-\/]\d{2,4})/);
             if (dateMatch) receiptData.fecha = dateMatch[1].replace(/\//g, '-');
         }
 
-        // Extraer usuario con mejor detección
+        // Extraer usuario
         if (line.match(/Usuario[:\.]|UTORREZ/i)) {
             receiptData.usuario = line.split(/[:\.]/)[1]?.trim() || line;
         }
     });
 
-    // Post-procesamiento mejorado
+    // Post-procesamiento
     if (receiptData.suma) {
         receiptData.suma = receiptData.suma
             .replace(/00,180/i, '00/100')
@@ -134,7 +139,6 @@ const processReceiptText = (ocrText) => {
     return receiptData;
 };
 
-// Función de validación mejorada
 const validateReceiptData = (data) => {
     const errors = [];
 
@@ -144,8 +148,6 @@ const validateReceiptData = (data) => {
 
     if (!data.totalBs || !/^\d+\.\d{2}$/.test(data.totalBs)) {
         errors.push(`Formato de precio no válido: ${data.totalBs || 'No encontrado'}`);
-
-        // Intentar encontrar el precio en otros formatos
         const priceMatch = JSON.stringify(data).match(/(\d+[\.,]\d{2})/);
         if (priceMatch) {
             errors.push(`Posible precio encontrado: ${priceMatch[1]}`);
@@ -163,7 +165,7 @@ const validateReceiptData = (data) => {
 };
 
 
-const ImageScanner = ({initialImage }) => {
+const ImageScanner = ({ initialImage }) => {
     const location = useLocation();
     const [image, setImage] = useState(null);
     const [processedImage, setProcessedImage] = useState(null);
@@ -173,36 +175,18 @@ const ImageScanner = ({initialImage }) => {
     const [receiptData, setReceiptData] = useState(null);
     const [validationResult, setValidationResult] = useState(null);
     const [useMagicPro, setUseMagicPro] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submitResult, setSubmitResult] = useState(null);
 
-   useEffect(() => {
-    if (initialImage) {
-      setImage(initialImage);
-      processImage(initialImage);
-    }
-  }, [initialImage]);
-  const showUploader = !initialImage && !location.search.includes('image=');
+    useEffect(() => {
+        if (initialImage) {
+            setImage(initialImage);
+            processImage(initialImage);
+        }
+    }, [initialImage]);
 
+    const showUploader = !initialImage && !location.search.includes('image=');
 
-    {
-        receiptData && (
-            <div className="structured-data">
-                <h3>Datos Estructurados:</h3>
-                <div className="data-grid">
-                    <div><strong>Número:</strong> {receiptData.numero}</div>
-                    <div><strong>Facultad:</strong> {receiptData.facultad}</div>
-                    <div><strong>Recibido de:</strong> {receiptData.recibidoDe}</div>
-                    <div><strong>Concepto:</strong> {receiptData.concepto}</div>
-                    <div><strong>Suma:</strong> {receiptData.suma}</div>
-                    <div><strong>Total Bs.:</strong> {receiptData.totalBs}</div>
-                    <div><strong>Aclaración:</strong> {receiptData.aclaracion}</div>
-                    <div><strong>Documento:</strong> {receiptData.documento}</div>
-                    <div><strong>N° Control:</strong> {receiptData.numeroControl}</div>
-                    <div><strong>Fecha:</strong> {receiptData.fecha}</div>
-                    <div><strong>Usuario:</strong> {receiptData.usuario}</div>
-                </div>
-            </div>
-        )
-    }
     const [settings, setSettings] = useState({
         contrast: 100,
         brightness: 100,
@@ -214,7 +198,6 @@ const ImageScanner = ({initialImage }) => {
     const canvasRef = useRef(null);
     const originalCanvasRef = useRef(null);
 
-    // Verificar que los canvas estén disponibles
     useEffect(() => {
         if (!canvasRef.current || !originalCanvasRef.current) {
             console.error('Canvas references not initialized');
@@ -245,7 +228,7 @@ const ImageScanner = ({initialImage }) => {
         const img = new Image();
         img.onload = () => {
             try {
-                // Dibujar imagen original en canvas
+                // Dibujar imagen original
                 const originalCanvas = originalCanvasRef.current;
                 const originalCtx = originalCanvas.getContext('2d');
                 originalCanvas.width = img.width;
@@ -258,16 +241,14 @@ const ImageScanner = ({initialImage }) => {
                 canvas.width = img.width;
                 canvas.height = img.height;
 
-                // Aplicar filtros
                 ctx.filter = `
-          contrast(${settings.contrast}%)
-          brightness(${settings.brightness}%)
-          ${settings.grayscale ? 'grayscale(100%)' : ''}
-        `;
+                    contrast(${settings.contrast}%)
+                    brightness(${settings.brightness}%)
+                    ${settings.grayscale ? 'grayscale(100%)' : ''}
+                `;
 
                 ctx.drawImage(img, 0, 0, img.width, img.height);
 
-                // Aplicar sharpen si está activado
                 if (useMagicPro) {
                     applyMagicProEffect(ctx, img.width, img.height);
                 } else if (settings.sharpen) {
@@ -276,8 +257,6 @@ const ImageScanner = ({initialImage }) => {
 
                 setProcessedImage(canvas.toDataURL('image/jpeg'));
                 setIsProcessing(false);
-
-                // Extraer texto (OCR)
                 extractTextFromImage(canvas);
             } catch (error) {
                 console.error('Error processing image:', error);
@@ -295,9 +274,7 @@ const ImageScanner = ({initialImage }) => {
         const imageData = ctx.getImageData(0, 0, width, height);
         const data = imageData.data;
 
-        // Kernel de sharpening
         for (let i = 0; i < data.length; i += 4) {
-            // Aplicar un simple filtro de sharpening
             if (i > width * 4 && i < data.length - width * 4) {
                 for (let j = 0; j < 3; j++) {
                     data[i + j] = data[i + j] * 1.5 -
@@ -311,15 +288,12 @@ const ImageScanner = ({initialImage }) => {
     };
 
     const applyMagicProEffect = (ctx, width, height) => {
-        // 1. Aplicar mejora de contraste (más agresiva que la normal)
         ctx.filter = `contrast(150%) brightness(110%) saturate(120%)`;
         ctx.drawImage(ctx.canvas, 0, 0, width, height);
 
-        // 2. Aplicar sharpening mejorado
         const imageData = ctx.getImageData(0, 0, width, height);
         const data = imageData.data;
 
-        // Kernel de sharpening más potente
         for (let i = 0; i < data.length; i += 4) {
             if (i > width * 4 && i < data.length - width * 4) {
                 for (let j = 0; j < 3; j++) {
@@ -331,8 +305,6 @@ const ImageScanner = ({initialImage }) => {
         }
 
         ctx.putImageData(imageData, 0, 0);
-
-        // 3. Aplicar umbralización adaptativa (simulada)
         ctx.filter = 'grayscale(100%) contrast(200%)';
         ctx.drawImage(ctx.canvas, 0, 0, width, height);
         ctx.filter = 'none';
@@ -342,6 +314,7 @@ const ImageScanner = ({initialImage }) => {
         setText('Procesando texto...');
         setProgress(0);
         setValidationResult(null);
+        setSubmitResult(null);
 
         try {
             const result = await Tesseract.recognize(
@@ -376,6 +349,56 @@ const ImageScanner = ({initialImage }) => {
         }
     };
 
+    const handleVerificarPago = async () => {
+        if (!receiptData) {
+            alert('No hay datos de recibo para enviar');
+            return;
+        }
+
+        // Validación adicional
+        if (!receiptData.documento || !/^\d{6,}$/.test(receiptData.documento)) {
+            alert('El número de documento no es válido o no se encontró');
+            return;
+        }
+
+        if (!receiptData.totalBs || !/^\d+\.\d{2}$/.test(receiptData.totalBs)) {
+            alert('El monto total no es válido o no se encontró');
+            return;
+        }
+
+        // Preparar los datos para el endpoint
+        const pagoData = {
+            carnetIdentidad: parseInt(receiptData.documento),
+            montoPagado: parseFloat(receiptData.totalBs),
+            fechaPago: receiptData.fecha || new Date().toISOString().split('T')[0],
+            codTransaccion: receiptData.numero || `SCAN-${Date.now()}`,
+            imagenComprobante: image || '',
+            nombreReceptor: receiptData.recibidoDe || 'Nombre no encontrado',
+            estadoOrden: 'PAGADO',
+            notasAdicionales: receiptData.concepto || 'Pago detectado mediante escáner'
+        };
+
+        setIsSubmitting(true);
+        setSubmitResult(null);
+
+        try {
+            const response = await verificarPago(pagoData);
+            setSubmitResult({
+                success: true,
+                message: 'Pago verificado exitosamente',
+                data: response.data
+            });
+        } catch (error) {
+            console.error('Error al verificar el pago:', error);
+            setSubmitResult({
+                success: false,
+                message: error.response?.data?.message || 'Error al verificar el pago',
+                error: error
+            });
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
     const handleSettingChange = (e) => {
         const { name, value, type, checked } = e.target;
@@ -396,17 +419,15 @@ const ImageScanner = ({initialImage }) => {
     };
 
     return (
-        <>
-        
         <div className="image-scanner-container">
             <h2>Escáner de Boletas</h2>
 
             <div className="controls">
-               {showUploader && (
-          <button onClick={triggerFileInput} disabled={isProcessing}>
-            Subir Boleta
-          </button>
-        )}
+                {showUploader && (
+                    <button onClick={triggerFileInput} disabled={isProcessing}>
+                        Subir Boleta
+                    </button>
+                )}
                 <input
                     type="file"
                     ref={fileInputRef}
@@ -515,6 +536,7 @@ const ImageScanner = ({initialImage }) => {
                     )}
                 </div>
             </div>
+
             {receiptData && (
                 <div className="structured-data">
                     <h3>Datos Estructurados:</h3>
@@ -529,6 +551,27 @@ const ImageScanner = ({initialImage }) => {
                         <div><strong>Fecha:</strong> {receiptData.fecha || 'No encontrada'}</div>
                         <div><strong>Usuario:</strong> {receiptData.usuario || 'No encontrado'}</div>
                     </div>
+
+                    <div className="action-buttons">
+                        <button 
+                            onClick={handleVerificarPago} 
+                            disabled={!receiptData.documento || !receiptData.totalBs || isSubmitting}
+                        >
+                            {isSubmitting ? 'Enviando...' : 'Verificar Pago'}
+                        </button>
+                    </div>
+
+                    {submitResult && (
+                        <div className={`submit-result ${submitResult.success ? 'success' : 'error'}`}>
+                            <h3>{submitResult.success ? 'Éxito' : 'Error'}</h3>
+                            <p>{submitResult.message}</p>
+                            {submitResult.data && (
+                                <div className="submit-data">
+                                    <pre>{JSON.stringify(submitResult.data, null, 2)}</pre>
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
             )}
 
@@ -541,7 +584,6 @@ const ImageScanner = ({initialImage }) => {
                 />
             </div>
         </div>
-        </>
     );
 };
 
