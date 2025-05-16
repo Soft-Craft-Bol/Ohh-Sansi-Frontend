@@ -22,7 +22,7 @@ const Navbar = () => {
     setIsDarkMode(newMode);
     document.body.classList.toggle('dark', newMode);
     localStorage.setItem('darkMode', newMode);
-  };
+  };//coment
 
   useEffect(() => {
     const savedMode = localStorage.getItem('darkMode');
