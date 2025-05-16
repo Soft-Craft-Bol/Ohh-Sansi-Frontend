@@ -6,15 +6,10 @@ import OlimpiadaManagement from "../../components/management/olimpiada/Olimpiada
 import PeriodosManagement from "../../components/management/period/PeriodsManagement";
 import Header from "../../components/header/Header";
 import "./Management.css";
-import {
-  CalendarCheck,
-  BookOpen,
-  FlaskConical,
-  TestTube2,
-  Calculator
-} from 'lucide-react';
+import {CalendarCheck, BookOpen, FlaskConical, TestTube2, Calculator} from 'lucide-react';
 import CatalogoMangament from "../../components/management/catalogo/CatalogoManagement";
 import OrderSummaryDashboard from "../../components/management/pagos/OrderSummaryDashboard";
+import ReporteOrdenPago from "../../components/management/pagos/ReporteOrdenPago";
 
 
 const ManagementPage = () => {
@@ -50,10 +45,15 @@ const ManagementPage = () => {
       description: "Administra niveles y categorías"
     },
     {
-      id: "pagos",
+      id: "reportepagos",
       icon: <Calculator className="tab-icon" />,
-      label: "Pagos",
-      description: "Gestiona los pagos de las olimpiadas"
+      label: "Reporte de Ordenes de Pagos",
+      description: "Genera reportes de pagos"
+    },{
+      id: "ordenespagos",
+      icon: <Calculator className="tab-icon" />,
+      label: "Reporte de Pagos",
+      description: "Generar reportes de estado de ordenes de pago"
     }
   ];
 
@@ -69,8 +69,10 @@ const ManagementPage = () => {
         return <OlimpiadaManagement />;
       case "catalogo":
         return <CatalogoMangament />;
-      case "pagos":
+        case "ordenespagos":
         return <OrderSummaryDashboard />;
+      case "reportepagos":
+        return <ReporteOrdenPago />;
       default:
         return null;
     }
