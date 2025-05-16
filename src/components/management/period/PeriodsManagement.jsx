@@ -4,7 +4,7 @@ import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as yup from 'yup';
 import Swal from 'sweetalert2';
 import { FiPlus, FiCalendar, FiChevronDown, FiChevronUp } from 'react-icons/fi';
-import { getOlimpiadasConEventos, savePeriodoOlimpiada } from '../../../api/api';
+import { getOlimpiadasConEventos, savePeriodoOlimpiada, getOlimpiadas } from '../../../api/api';
 import { PERIOD_TYPES, PERIOD_ORDER } from '../../../schemas/PeriodValidationSchema';
 import './PeriodsManagement.css';
 
@@ -14,9 +14,9 @@ const PeriodosManagement = () => {
     const [showForm, setShowForm] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const { data: olimpiadas = [], isLoading, refetch } = useQuery({
+    const { data: olimpiadas, isLoading: isLoadingOlimpiadas } = useQuery({
         queryKey: ['olimpiadas'],
-        queryFn: getOlimpiadasConEventos,
+        queryFn: getOlimpiadas,
         onError: (error) => {
             Swal.fire({
                 icon: 'error',
@@ -25,17 +25,36 @@ const PeriodosManagement = () => {
                 timer: 3000
             });
         },
+        select: (res) => res.data?.data || []
+    });
+
+    const { data: olimpiadasConEventos, refetch, isLoading: isLoadingPeriodos } = useQuery({
+        queryKey: ['olimpiadasConEventos', olimpiadaSeleccionada],
+        queryFn: getOlimpiadasConEventos,
+        enabled: !!olimpiadaSeleccionada,
+        onError: (error) => {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: error.message || 'Error al cargar los períodos',
+                timer: 3000
+            });
+        },
         select: (res) => res.data || []
     });
 
     useEffect(() => {
-        if (olimpiadaSeleccionada) {
-            const found = olimpiadas.find(o => o.idOlimpiada === Number(olimpiadaSeleccionada));
-            setPeriodos(found?.eventos || []);
-        } else {
+        if (olimpiadaSeleccionada && olimpiadasConEventos) {
+            const found = olimpiadasConEventos.find(o => o.idOlimpiada === Number(olimpiadaSeleccionada));
+            const nuevosPeriodos = found?.eventos || [];
+
+            if (JSON.stringify(nuevosPeriodos) !== JSON.stringify(periodos)) {
+                setPeriodos(nuevosPeriodos);
+            }
+        } else if (periodos.length > 0) {
             setPeriodos([]);
         }
-    }, [olimpiadaSeleccionada, olimpiadas]);
+    }, [olimpiadaSeleccionada, olimpiadasConEventos, periodos]);
 
     const handleSubmit = async (values, { resetForm }) => {
         setIsSubmitting(true);
@@ -48,35 +67,42 @@ const PeriodosManagement = () => {
                 fechaFin: values.fechaFin
             };
 
-            const res = await savePeriodoOlimpiada(payload);
+            const response = await savePeriodoOlimpiada(payload);
+            const res = response.data; 
 
-            if (res.data.status === 'success') {
+            if (res.status === 'success') {
                 await Swal.fire({
                     icon: 'success',
                     title: 'Éxito',
-                    text: res.data.message,
+                    text: res.message,
                     timer: 3000
                 });
 
-                // Refetch y actualización local
-                const { data } = await refetch();
-                const updatedOlimpiada = data.find(o => o.idOlimpiada === Number(olimpiadaSeleccionada));
-                setPeriodos(updatedOlimpiada?.eventos || []);
+                await refetch();
+                const found = olimpiadasConEventos.find(o => o.idOlimpiada === Number(olimpiadaSeleccionada));
+                setPeriodos(found?.eventos || []);
 
                 resetForm();
                 setShowForm(false);
             } else {
-                throw new Error(res.data?.message || 'Error al registrar período');
+                throw new Error(res.message || 'Error al registrar período');
             }
         } catch (error) {
+            let errorMessage = 'Error al crear el período';
+
+            if (error.response?.data?.message) {
+                errorMessage = error.response.data.message;
+            } else if (error.message) {
+                errorMessage = error.message;
+            }
+
             await Swal.fire({
                 icon: 'error',
                 title: 'Error',
-                text: error.response?.data?.message ||
-                    error.message ||
-                    'Error al crear el período',
+                text: errorMessage,
                 timer: 3000
             });
+
             if (error.response?.data?.errors) {
                 console.error("Errores de validación:", error.response.data.errors);
             }
@@ -110,9 +136,10 @@ const PeriodosManagement = () => {
                             value={olimpiadaSeleccionada || ''}
                             onChange={(e) => setOlimpiadaSeleccionada(e.target.value || null)}
                             className="olimpiada-select"
+                            disabled={isLoadingOlimpiadas}
                         >
                             <option value="">-- Seleccione una olimpiada --</option>
-                            {olimpiadas.map(o => (
+                            {olimpiadas?.map(o => (
                                 <option key={o.idOlimpiada} value={o.idOlimpiada}>
                                     {o.nombreOlimpiada}
                                 </option>
@@ -130,6 +157,7 @@ const PeriodosManagement = () => {
                     )}
                 </div>
 
+                {/* Resto del código permanece igual... */}
                 {/* Contenido principal */}
                 <div className="main-content">
                     {/* Formulario de creación */}
@@ -204,7 +232,7 @@ const PeriodosManagement = () => {
                     <div className="periods-list">
                         <h3>Períodos Configurados</h3>
 
-                        {isLoading ? (
+                        {isLoadingPeriodos ? (
                             <div className="loading">Cargando...</div>
                         ) : periodos.length === 0 ? (
                             <div className="empty-state">
@@ -282,11 +310,9 @@ const PeriodCard = ({ periodo }) => {
                         <span>Obligatorio:</span>
                         <span>{periodo.obligatorio ? 'Sí' : 'No'}</span>
                     </div>
-
                 </div>
             )}
         </div>
     );
 };
-
 export default PeriodosManagement;

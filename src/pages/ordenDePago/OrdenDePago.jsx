@@ -41,11 +41,16 @@ const OrdenDePago = () => {
   const renderInfoSection = () => {
     if (!ordenData) return null;
 
-    const participantes = ordenData.participantes || [];
+    const participanteRaw = ordenData.participante?.value;
+    const tutoresRaw = ordenData.tutores?.value;
+    const olimpiadasRaw = ordenData.olimpiadas?.value;
     const areas = ordenData.areas || [];
-    const tutores = ordenData.tutores || [];
 
-    const totalParticipantes = participantes.length;
+    const participante = participanteRaw ? JSON.parse(participanteRaw) : null;
+    const tutores = tutoresRaw ? JSON.parse(tutoresRaw) : [];
+    const olimpiadas = olimpiadasRaw ? JSON.parse(olimpiadasRaw) : [];
+
+    const totalParticipantes = participante ? 1 : 0;
     const totalAreas = areas.length;
 
     const primerTutor = tutores.length > 0 ? tutores[0] : null;
@@ -54,16 +59,11 @@ const OrdenDePago = () => {
       : "No disponible";
     const correoResponsable = primerTutor?.email_tutor || "No disponible";
 
-    const costoPorArea = ordenData.olimpiadas[0]?.precio_olimpiada || 'Error';
+    const costoPorArea = olimpiadas[0]?.precio_olimpiada || 0;
     const totalAPagar = totalAreas * costoPorArea;
 
     return (
-      <motion.div
-        className="info-box"
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-      >
+      <motion.div className="info-box" variants={containerVariants} initial="hidden" animate="visible">
         <div className="resumen">
           <h3>Resumen de la inscripción</h3>
           <p>Total de participantes: <span className="bold-blue">{totalParticipantes}</span></p>
@@ -83,6 +83,7 @@ const OrdenDePago = () => {
       </motion.div>
     );
   };
+
   const showSuccessMessage = () => {
     Swal.fire({
       title: '¡Éxito!',
@@ -136,7 +137,7 @@ const OrdenDePago = () => {
           descripcion="Genera la orden de pago referente a la inscripción, introduciendo el código"
           placeholder="Introduce el código"
           codigoIntroducidoTexto="Código introducido:"
-         /*  codigoIntroducido={codigoIntroducido} */
+          /*  codigoIntroducido={codigoIntroducido} */
           inputValue={inputValue} // Pasando inputValue al componente
           onInputChange={(e) => {
             const value = e.target.value;
@@ -148,8 +149,6 @@ const OrdenDePago = () => {
           onSearch={handleSearch}
           error={null}
           containerVariants={containerVariants}
-          allowLetters={true} // Permite letras
-          maxLength={6} // Longitud máxima diferente
         />
       </motion.div>
       <motion.div

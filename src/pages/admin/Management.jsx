@@ -2,6 +2,7 @@ import React, { lazy, Suspense, useMemo } from "react";
 import Tabs from "../../components/tabs/Tabs";
 import Header from "../../components/header/Header";
 import "./Management.css";
+
 import {
   CalendarCheck,
   BookOpen,
@@ -16,6 +17,7 @@ const OlimpiadaManagement = lazy(() => import("../../components/management/olimp
 const PeriodosManagement = lazy(() => import("../../components/management/period/PeriodsManagement"));
 const CatalogoMangament = lazy(() => import("../../components/management/catalogo/CatalogoManagement"));
 const OrderSummaryDashboard = lazy(() => import("../../components/management/pagos/OrderSummaryDashboard"));
+const ReporteOrdenPago = lazy(() => import("../../components/management/pagos/ReporteOrdenPago"));
 
 const ManagementPage = () => {
   const tabs = useMemo(() => [
@@ -50,10 +52,15 @@ const ManagementPage = () => {
       description: "Administra niveles y categorías"
     },
     {
-      id: "pagos",
+      id: "reportepagos",
       icon: <Calculator className="tab-icon" />,
-      label: "Pagos",
-      description: "Gestiona los pagos de las olimpiadas"
+      label: "Reporte de Ordenes de Pagos",
+      description: "Genera reportes de pagos"
+    },{
+      id: "ordenespagos",
+      icon: <Calculator className="tab-icon" />,
+      label: "Reporte de Pagos",
+      description: "Generar reportes de estado de ordenes de pago"
     }
   ], []);
 
@@ -69,8 +76,10 @@ const ManagementPage = () => {
         return <OlimpiadaManagement />;
       case "catalogo":
         return <CatalogoMangament />;
-      case "pagos":
+        case "ordenespagos":
         return <OrderSummaryDashboard />;
+      case "reportepagos":
+        return <ReporteOrdenPago />;
       default:
         return null;
     }
