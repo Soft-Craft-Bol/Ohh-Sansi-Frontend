@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { FaMoon, FaSignOutAlt, FaSun, FaUserCircle } from 'react-icons/fa';
 import { Link, useNavigate } from 'react-router-dom';
 import { FaHome, FaUserEdit, FaUsers, FaClipboardCheck, FaFileInvoiceDollar, FaUpload, FaMoneyCheckAlt } from 'react-icons/fa';
@@ -10,6 +10,10 @@ import ScrollReveal from 'scrollreveal';
 const Navbar = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState(null);
+  const [openAdminDropdown, setOpenAdminDropdown] = useState(false);
+  const dropdownRef = useRef(null);
+  const adminDropdownRef = useRef(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
 
@@ -18,7 +22,7 @@ const Navbar = () => {
     setIsDarkMode(newMode);
     document.body.classList.toggle('dark', newMode);
     localStorage.setItem('darkMode', newMode);
-  };
+  };//coment
 
   useEffect(() => {
     const savedMode = localStorage.getItem('darkMode');
@@ -56,6 +60,33 @@ const Navbar = () => {
     navigate('/');
   };
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setOpenDropdown(null);
+      }
+      if (adminDropdownRef.current && !adminDropdownRef.current.contains(event.target)) {
+        setOpenAdminDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  const toggleDropdown = (dropdownName) => {
+    setOpenDropdown(openDropdown === dropdownName ? null : dropdownName);
+    setOpenAdminDropdown(false);
+  };
+
+  const toggleAdminDropdown = () => {
+    setOpenAdminDropdown(!openAdminDropdown);
+    setOpenDropdown(null);
+  };
+
+
   return (
     <nav className="navbar">
       <div className="nav-left">
@@ -73,12 +104,16 @@ const Navbar = () => {
             </Link>
           </li>
 
-          <li className="dropdown">
-            <span className="dropdown-toggle">
+          <li className="dropdown" ref={dropdownRef}>
+            <span
+              className="dropdown-toggle"
+              onClick={() => toggleDropdown('inscripciones')}
+              onMouseEnter={() => setOpenDropdown('inscripciones')}
+            >
               <FaClipboardCheck className="nav-icon" />
               Inscripciones
             </span>
-            <ul className="dropdown-menu">
+            <ul className={`dropdown-menu ${openDropdown === 'inscripciones' ? 'show' : ''}`}>
               <li><Link to="/inscripcion-individual" className="nav-item"><FaUserEdit className="nav-icon" /> Individual</Link></li>
               <li><Link to="/inscripcion-masiva" className="nav-item"><FaUsers className="nav-icon" /> Masiva</Link></li>
               <li><Link to="/estado-de-inscripcion" className="nav-item"><FaClipboardCheck className="nav-icon" /> Estado</Link></li>
@@ -103,9 +138,13 @@ const Navbar = () => {
         </label>
 
         {isAuthenticated && isAdmin && (
-          <div className="admin-dropdown">
-            <FaUserCircle className="admin-icon" />
-            <div className="admin-dropdown-menu">
+          <div className="admin-dropdown" ref={adminDropdownRef}>
+            <FaUserCircle
+              className="admin-icon"
+              onClick={toggleAdminDropdown}
+              onMouseEnter={() => setOpenAdminDropdown(true)}
+            />
+            <div className={`admin-dropdown-menu ${openAdminDropdown ? 'show' : ''}`}>
               <Link to="/admin" className="nav-item"><FaClipboardCheck className="nav-icon" /> Panel Admin</Link>
               <button onClick={handleLogout} className="nav-item"><FaSignOutAlt className="nav-icon" /> Cerrar Sesión</button>
             </div>

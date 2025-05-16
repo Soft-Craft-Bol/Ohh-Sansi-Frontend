@@ -25,9 +25,15 @@ export const saveUser = (userData) => {
 };
 
 export const getUser = () => {
-  const userDataString = Cookies.get('userData');
-  return userDataString ? JSON.parse(userDataString) : null;
+  try {
+    const user = localStorage.getItem("user");
+    return user ? JSON.parse(user) : null;
+  } catch (error) {
+    console.error("Error parsing user JSON:", error);
+    return null;
+  }
 };
+
 
 export const removeToken = () => {
     Cookies.remove('authToken');

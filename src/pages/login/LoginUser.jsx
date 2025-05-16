@@ -4,7 +4,6 @@ import { Formik, Form } from 'formik';
 import './LoginUser.css';
 import { loginUser } from '../../api/api';
 import { validationSchema } from '../../schemas/LoginValidate';
-import { saveToken, saveUser } from '../../utils/authFuntions';
 import { parseJwt } from '../../utils/authJson';
 import InputText from '../../components/inputs/InputText';
 import { ButtonPrimary } from '../../components/button/ButtonPrimary';
@@ -27,17 +26,17 @@ const useImageLoader = (imageName) => {
   return image;
 };
 
-
 const LoginUser = () => {
   const [loginError, setLoginError] = useState('');
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, login, isLoading } = useAuth();
   const ohSansi = useImageLoader("ohSansi");
+
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && !isLoading) {
       navigate('/admin');
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, isLoading, navigate]);
 
   const handleSubmit = useCallback(async (values, { setSubmitting }) => {
     setLoginError('');
@@ -46,25 +45,23 @@ const LoginUser = () => {
         correoUsuario: values.correoUsuario.trim(),
         password: values.password,
       });
+      
       if (result?.data?.token) {
         const token = result.data.token;
         const decodedToken = parseJwt(token);
         const roles = decodedToken?.authorities?.split(',') || [];
-
-        saveToken(token);
-        saveUser({
+        const userData = {
           correoUsuario: result.data.correoUsuario,
           roles: roles,
           photo: result.data.photo,
-        });
-
-        navigate('/admin');
-        window.location.reload();
+        };
+        
+        login(token, userData); // Usar el método login del AuthProvider
       } else {
         setLoginError('Usuario o contraseña incorrectos.');
       }
     } catch (error) {
-      console.error('Error en el login:', JSON.stringify(error));
+      console.error('Error en el login:', error);
       setLoginError(
         error.response?.status === 401
           ? 'Usuario o contraseña incorrectos.'
@@ -72,7 +69,11 @@ const LoginUser = () => {
       );
     }
     setSubmitting(false);
-  }, [navigate]);
+  }, [login, navigate]);
+
+  if (isLoading || isAuthenticated) {
+    return <div className="loading-container">Cargando...</div>;
+  }
 
   return (
     <div className="login-container">

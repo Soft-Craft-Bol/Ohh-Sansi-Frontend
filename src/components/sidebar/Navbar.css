@@ -121,9 +121,10 @@
 	margin-top: 5px;
   }
   
-  .dropdown:hover .dropdown-menu {
-	display: flex;
-  }
+.dropdown-menu.show {
+  display: flex;
+}
+
   
   .dropdown-menu li {
 	padding: 10px 20px;
@@ -170,10 +171,10 @@
 	margin-top: 5px;
   }
   
-  .admin-dropdown:hover .admin-dropdown-menu {
-	display: flex;
-  }
-  
+.admin-dropdown-menu.show {
+  display: flex;
+}
+
   .admin-dropdown-menu a,
   .admin-dropdown-menu button {
 	padding: 10px 20px;

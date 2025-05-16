@@ -209,3 +209,60 @@ progress::-webkit-progress-value {
   border-radius: 0.5rem;
   transition: width 0.3s ease;
 }
+
+/* Estilos para los botones de acción */
+.action-buttons {
+    margin: 20px 0;
+    text-align: center;
+}
+
+.action-buttons button {
+    padding: 12px 24px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    transition: background-color 0.3s;
+}
+
+.action-buttons button:hover:not(:disabled) {
+    background-color: #45a049;
+}
+
+.action-buttons button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+/* Estilos para los resultados del envío */
+.submit-result {
+    margin: 20px 0;
+    padding: 15px;
+    border-radius: 4px;
+}
+
+.submit-result.success {
+    background-color: #dff0d8;
+    border: 1px solid #d6e9c6;
+    color: #3c763d;
+}
+
+.submit-result.error {
+    background-color: #f2dede;
+    border: 1px solid #ebccd1;
+    color: #a94442;
+}
+
+.submit-result h3 {
+    margin-top: 0;
+}
+
+.submit-data pre {
+    background-color: white;
+    padding: 10px;
+    border-radius: 4px;
+    overflow-x: auto;
+}

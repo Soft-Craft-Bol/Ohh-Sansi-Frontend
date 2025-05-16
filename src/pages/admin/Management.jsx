@@ -1,19 +1,26 @@
-import React from "react";
+import React, { lazy, Suspense, useMemo } from "react";
 import Tabs from "../../components/tabs/Tabs";
-import FormArea from "../../components/management/formArea/FormArea";
-import CategoriesManagement from "../../components/management/categories/CategoriesManagement";
-import OlimpiadaManagement from "../../components/management/olimpiada/OlimpiadaManagement";
-import PeriodosManagement from "../../components/management/period/PeriodsManagement";
 import Header from "../../components/header/Header";
 import "./Management.css";
-import {CalendarCheck, BookOpen, FlaskConical, TestTube2, Calculator} from 'lucide-react';
-import CatalogoMangament from "../../components/management/catalogo/CatalogoManagement";
-import OrderSummaryDashboard from "../../components/management/pagos/OrderSummaryDashboard";
-import ReporteOrdenPago from "../../components/management/pagos/ReporteOrdenPago";
 
+import {
+  CalendarCheck,
+  BookOpen,
+  FlaskConical,
+  TestTube2,
+  Calculator
+} from 'lucide-react';
+
+const FormArea = lazy(() => import("../../components/management/formArea/FormArea"));
+const CategoriesManagement = lazy(() => import("../../components/management/categories/CategoriesManagement"));
+const OlimpiadaManagement = lazy(() => import("../../components/management/olimpiada/OlimpiadaManagement"));
+const PeriodosManagement = lazy(() => import("../../components/management/period/PeriodsManagement"));
+const CatalogoMangament = lazy(() => import("../../components/management/catalogo/CatalogoManagement"));
+const OrderSummaryDashboard = lazy(() => import("../../components/management/pagos/OrderSummaryDashboard"));
+const ReporteOrdenPago = lazy(() => import("../../components/management/pagos/ReporteOrdenPago"));
 
 const ManagementPage = () => {
-  const tabs = [
+  const tabs = useMemo(() => [
     {
       id: "olimpiadas",
       icon: <Calculator className="tab-icon" />,
@@ -55,7 +62,7 @@ const ManagementPage = () => {
       label: "Reporte de Pagos",
       description: "Generar reportes de estado de ordenes de pago"
     }
-  ];
+  ], []);
 
   const renderTabContent = (activeTab) => {
     switch (activeTab) {
@@ -91,11 +98,13 @@ const ManagementPage = () => {
       />
 
       <div className="management-content">
-        <Tabs
-          tabs={tabs}
-          renderTabContent={renderTabContent}
-          variant="science"
-        />
+        <Suspense fallback={<div>Cargando...</div>}>
+          <Tabs
+            tabs={tabs}
+            renderTabContent={renderTabContent}
+            variant="science"
+          />
+        </Suspense>
       </div>
     </div>
   );
