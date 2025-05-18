@@ -3,15 +3,14 @@ import ImageEditor from '../../components/imageEditor/ImageEditorKonva';
 import ImageScanner from '../../components/camScanner/ImageScanner';
 import Header from '../../components/header/Header';
 import './Comprobante.css';
-import ManualEntryForm from '../../components/formComprobante/ManualEntryForm';
 
 function Comprobante() {
   const [croppedImage, setCroppedImage] = useState(null);
   const [selectedImage, setSelectedImage] = useState(null);
   const [attempts, setAttempts] = useState(3);
   const [scanComplete, setScanComplete] = useState(false);
-  const [showManualForm, setShowManualForm] = useState(false);
   const [extractedText, setExtractedText] = useState('');
+  const [receiptData, setReceiptData] = useState(null);
 
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
@@ -19,7 +18,6 @@ function Comprobante() {
       const url = URL.createObjectURL(file);
       setSelectedImage(url);
       setScanComplete(false);
-      setShowManualForm(false);
     }
   };
 
@@ -32,21 +30,27 @@ function Comprobante() {
     if (attempts > 0) {
       setSelectedImage(null);
       setCroppedImage(null);
-    } else {
-      setShowManualForm(true);
     }
   };
 
-  const handleScanComplete = (text) => {
+  const handleScanComplete = (text, data) => {
     setExtractedText(text);
+    // Mapeamos los datos antiguos a los nuevos nombres
+    setReceiptData({
+      codTransaccion: data.numero || '',
+      nombreReceptor: data.recibidoDe || '',
+      notasAdicionales: data.concepto || '',
+      montoPagado: data.totalBs || '',
+      aclaracion: data.aclaracion || '',
+      carnetIdentidad: data.documento || '',
+      NumeroControl: data.NumeroControl || '',
+      fechaPago: data.fecha || '',
+      rawData: data
+    });
     setScanComplete(true);
   };
 
-  const handleManualSubmit = (formData) => {
-    // Aquí puedes manejar el envío de los datos manuales
-    console.log('Datos manuales:', formData);
-    setScanComplete(true);
-  };
+
 
   return (
     <div className="comprobante-container">
@@ -56,7 +60,7 @@ function Comprobante() {
       />
       
       <div className="comprobante-content">
-        {!selectedImage && !showManualForm ? (
+        {!selectedImage ? (
           <div className="upload-section">
             <label className="file-upload-label">
               <input 
@@ -77,14 +81,9 @@ function Comprobante() {
               </div>
             </label>
           </div>
-        ) : showManualForm ? (
-          <ManualEntryForm
-            onSubmit={handleManualSubmit}
-            onBack={() => setShowManualForm(false)}
-          />
         ) : (
           <div className="editor-section">
-            {!scanComplete && (
+            {!scanComplete ? (
               <>
                 <ImageEditor
                   imageSrc={selectedImage} 
@@ -97,21 +96,46 @@ function Comprobante() {
                       initialImage={croppedImage} 
                       onComplete={handleScanComplete}
                       onRetry={handleRetry}
+                      attemptsLeft={attempts}
                     />
                   </div>
                 )}
               </>
-            )}
-            {scanComplete && (
+            ) : (
               <div className="success-message">
                 <h3>¡Proceso completado!</h3>
                 <p>El comprobante ha sido procesado correctamente.</p>
-                {extractedText && (
-                  <div className="extracted-text">
-                    <h4>Texto extraído:</h4>
-                    <pre>{extractedText}</pre>
+                
+                {receiptData && (
+                  <div className="receipt-data">
+                    <h4>Datos del comprobante:</h4>
+                    <div className="data-grid">
+                      <div><strong>Documento:</strong> {receiptData.documento}</div>
+                      <div><strong>Nombre:</strong> {receiptData.recibidoDe}</div>
+                      <div><strong>Monto:</strong> {receiptData.totalBs} Bs.</div>
+                      <div><strong>Concepto:</strong> {receiptData.concepto}</div>
+                    </div>
                   </div>
                 )}
+
+                {extractedText && (
+                  <details className="extracted-text">
+                    <summary>Ver texto reconocido</summary>
+                    <pre>{extractedText}</pre>
+                  </details>
+                )}
+
+                <button 
+                  className="new-scan-button"
+                  onClick={() => {
+                    setSelectedImage(null);
+                    setCroppedImage(null);
+                    setScanComplete(false);
+                    setAttempts(3);
+                  }}
+                >
+                  Realizar nuevo escaneo
+                </button>
               </div>
             )}
           </div>
