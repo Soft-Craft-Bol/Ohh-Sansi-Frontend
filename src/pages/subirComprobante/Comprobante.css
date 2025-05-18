@@ -101,3 +101,34 @@
   }
 }
 
+/* Fase 1: verificación */
+.comprobante-verification {
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 1.5rem;
+  background: #fff;
+  border-radius: 1rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  text-align: center;
+}
+.verification-form {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  justify-content: center;
+}
+.carnet-input {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 0.75rem;
+}
+.carnet-btn {
+  background: #0d3b6c;
+  color: #fff;
+  border: none;
+  padding: 0 1rem;
+  border-radius: 0.75rem;
+  cursor: pointer;
+}
