@@ -81,6 +81,11 @@ const UpdateExcel = () => {
 
   const handleFileChange = (event) => {
     const file = event.currentTarget.files[0];
+    
+    // Limpiar datos anteriores y reiniciar estado del botón cuando se selecciona un nuevo archivo
+    setExcelData([]);
+    setButtonState('upload');
+    
     setSelectedFile(file);
     if (!file) return;
     // (3 MB = 3 * 1024 * 1024 bytes)
@@ -143,6 +148,7 @@ const UpdateExcel = () => {
 
   return errores;
 };
+
 const validarFilasAreas = async (filas) => {
   const errores = [];
 
@@ -165,6 +171,9 @@ const validarFilasAreas = async (filas) => {
     };
 
 const handleConfirm = (codigoGenerado) => {
+  // Limpiar la tabla después de una inscripción exitosa
+  setExcelData([]);
+  
   Swal.fire({
     title: '<h2 style="color:#003366;">Inscripción correctamente realizada</h2>',
     html: `
@@ -244,12 +253,11 @@ const handleConfirm = (codigoGenerado) => {
             const filasConHojaDatos = hojaDatos.map(fila => ({ ...convertirFechas(fila), _hoja: 'Datos' }));
             const filasConHojaAreas = hojaAreas.map(fila => ({ ...convertirFechas(fila), _hoja: 'Areas' }));
 
-        console.log(filasConHojaAreas);
-          const erroresDatos = await validarFilasDatos(filasConHojaDatos);
-          const erroresAreas = await validarFilasAreas(filasConHojaAreas);
-            console.log(erroresAreas)
-          const erroresTotales = [...erroresDatos, ...erroresAreas];
-          resolve(erroresTotales);
+            const erroresDatos = await validarFilasDatos(filasConHojaDatos);
+            const erroresAreas = await validarFilasAreas(filasConHojaAreas);
+            
+            const erroresTotales = [...erroresDatos, ...erroresAreas];
+            resolve(erroresTotales);
         } catch (error) {
           reject(error);
         }
@@ -264,34 +272,37 @@ const handleConfirm = (codigoGenerado) => {
     const errores = await leerExcel(selectedFile);
 
     if (errores.length > 0) {
+      // Limpiar la tabla si hay errores de validación
+      setExcelData([]);
+      
       const erroresPorHoja = errores.reduce((acc, error) => {
         const hoja = error.hoja || 'Desconocida';
         if (!acc[hoja]) acc[hoja] = [];
         acc[hoja].push(`Fila ${error.fila}, Columna "${error.columna}": ${error.mensaje}`);
         return acc;
-    }, {});
+      }, {});
 
-    let htmlErrores = '';
+      let htmlErrores = '';
 
-    for (const hoja in erroresPorHoja) {
-        htmlErrores += `<h3 style="margin-top: 10px; font-size: 16px;">Hoja: ${hoja}</h3><ul>`;
-        erroresPorHoja[hoja].forEach(err => {
-        htmlErrores += `<li style="text-align: left; font-size: 14px;">${err}</li>`;
-        });
-        htmlErrores += '</ul>';
-    }
+      for (const hoja in erroresPorHoja) {
+          htmlErrores += `<h3 style="margin-top: 10px; font-size: 16px;">Hoja: ${hoja}</h3><ul>`;
+          erroresPorHoja[hoja].forEach(err => {
+          htmlErrores += `<li style="text-align: left; font-size: 14px;">${err}</li>`;
+          });
+          htmlErrores += '</ul>';
+      }
 
-    Swal.fire({
-        title: 'Errores de validación en el archivo Excel',
-        html: htmlErrores,
-        icon: 'error',
-        width: 800,
-        customClass: {
-        htmlContainer: 'scrollable-swals',
-        },
-        showConfirmButton: true
-    });
-    return;
+      Swal.fire({
+          title: 'Errores de validación en el archivo Excel',
+          html: htmlErrores,
+          icon: 'error',
+          width: 800,
+          customClass: {
+            htmlContainer: 'scrollable-swals',
+          },
+          showConfirmButton: true
+      });
+      return;
     }
 
     const { value: formValues } = await Swal.fire({
@@ -334,62 +345,52 @@ const handleConfirm = (codigoGenerado) => {
       });
 
       
-  try {
-    const res = await postOnlyExcelFile(selectedFile);
-    const result = await res.data;
-    Swal.close();
-    
-    if (Array.isArray(result)) {
-      // Filtramos los errores que NO son de foreign key
-      const erroresFiltrados = result.filter(item => {
-        if (item.error && item.error.includes('violates foreign key constraint')) {
-          return false; // Excluimos este error específico
-        }
-        return true;
-      });
-
-      // Mostramos solo los errores no filtrados
-      const erroresHTML = erroresFiltrados
-        .filter(item => item.fila !== undefined)
-        .map(item => `
-          <div class="error-item" style="margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 8px;">
-            <p style="margin: 2px 0; font-weight: bold; color: #555;">Fila ${item.fila}</p>
-            <p style="margin: 2px 0; color: ${item.success ? 'green' : 'red'}">
-              <strong>Estado:</strong> ${item.success ? 'Éxito' : 'Error'}
-            </p>
-            ${item.error ? `<p style="margin: 2px 0; color: red;"><strong>Error:</strong> ${item.error}</p>` : ''}
-          </div>
-        `).join('');
-
-      await Swal.fire({
-        title: 'Resultados del Proceso',
-        html: `
-          <div style="max-height: 400px; overflow-y: auto; margin-bottom: 15px; text-align: left;">
-            ${erroresHTML}
-          </div>
-          <div style="background-color: #f5f5f5; padding: 10px; border-radius: 5px; margin-top: 10px;">
-            <p style="margin: 5px 0;"><strong>Registros exitosos:</strong> ${result.filter(e => e.success).length}</p>
-          </div>
-        `,
-        width: 800,
-        confirmButtonText: 'Continuar'
-      });
-
-
-          // flujo normal para el primer participante exitoso
-          for (const fila of result) {
-            if (fila.success) {
-              const ciParticipanteExcel = fila.ci_participante_excel;
-              await registerTutor(ciParticipanteExcel, tutorPayload);
-              const idInscripcion = fila.id_inscripcion;
-              const forModal = await getInscripcionByID(idInscripcion);
-              handleConfirm(forModal.data.data.codigoUnicoInscripcion);
-              break;
-            }
-          }
-        }
-
+      try {
+        const res = await postOnlyExcelFile(selectedFile);
+        const result = await res.data;
+        Swal.close();
+        
         if (Array.isArray(result)) {
+          // Filtramos los errores que NO son de foreign key
+          const erroresFiltrados = result.filter(item => {
+            if (item.error && item.error.includes('violates foreign key constraint')) {
+              return false; // Excluimos este error específico
+            }
+            return true;
+          });
+
+          // Mostramos solo los errores no filtrados
+          const erroresHTML = erroresFiltrados
+            .filter(item => item.fila !== undefined)
+            .map(item => `
+              <div class="error-item" style="margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 8px;">
+                <p style="margin: 2px 0; font-weight: bold; color: #555;">Fila ${item.fila}</p>
+                <p style="margin: 2px 0; color: ${item.success ? 'green' : 'red'}">
+                  <strong>Estado:</strong> ${item.success ? 'Éxito' : 'Error'}
+                </p>
+                ${item.error ? `<p style="margin: 2px 0; color: red;"><strong>Error:</strong> ${item.error}</p>` : ''}
+              </div>
+            `).join('');
+
+          // Si hay errores, limpiar la tabla
+          if (erroresFiltrados.some(item => !item.success)) {
+            setExcelData([]);
+          }
+
+          await Swal.fire({
+            title: 'Resultados del Proceso',
+            html: `
+              <div style="max-height: 400px; overflow-y: auto; margin-bottom: 15px; text-align: left;">
+                ${erroresHTML}
+              </div>
+              <div style="background-color: #f5f5f5; padding: 10px; border-radius: 5px; margin-top: 10px;">
+                <p style="margin: 5px 0;"><strong>Registros exitosos:</strong> ${result.filter(e => e.success).length}</p>
+              </div>
+            `,
+            width: 800,
+            confirmButtonText: 'Continuar'
+          });
+
           const tutorPayload = {
             idTutorParentesco: 2,
             tutors: [
@@ -405,26 +406,31 @@ const handleConfirm = (codigoGenerado) => {
             ]
           };
 
+          // flujo normal para el primer participante exitoso
           for (const fila of result) {
             if (fila.success) {
               const ciParticipanteExcel = fila.ci_participante_excel;
               await registerTutor(ciParticipanteExcel, tutorPayload);
               const idInscripcion = fila.id_inscripcion;
               const forModal = await getInscripcionByID(idInscripcion);
-              console.log(forModal)
               handleConfirm(forModal.data.data.codigoUnicoInscripcion);
               break;
             }
-          }}
+          }
+        }
       } catch (error) {
         console.error("Error al enviar archivo:", error);
         Swal.fire("Error", "No se pudo enviar el archivo", "error");
+        // Limpiar la tabla en caso de error
+        setExcelData([]);
       }
     }
 
   } catch (error) {
     console.error("Error al procesar el archivo Excel:", error);
     Swal.fire("Error", "Hubo un problema al leer o validar el archivo", "error");
+    // Limpiar la tabla en caso de error
+    setExcelData([]);
   }
 };
 
