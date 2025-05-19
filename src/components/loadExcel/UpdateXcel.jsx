@@ -123,6 +123,11 @@ const UpdateExcel = () => {
 
   for (let i = 0; i < filas.length; i++) {
     try {
+      // Si id_grado es 0, lo omitimos sin marcar error
+      if (filas[i].id_grado === 0 || filas[i].id_grado === '0') {
+        continue; // Saltamos este registro
+      }
+
       await excelRowSchemaDatos.validate(filas[i], { abortEarly: false });
     } catch (validationError) {
       validationError.inner.forEach(err => {
@@ -134,10 +139,10 @@ const UpdateExcel = () => {
         });
       });
     }
-    }
+  }
 
-    return errores;
-    };
+  return errores;
+};
 const validarFilasAreas = async (filas) => {
   const errores = [];
 
@@ -216,8 +221,11 @@ const handleConfirm = (codigoGenerado) => {
           const data = new Uint8Array(event.target.result);
           const workbook = XLSX.read(data, { type: 'array' });
 
-          const hojaDatosRaw = XLSX.utils.sheet_to_json(workbook.Sheets['Datos'] || {});
-          const hojaAreasRaw = XLSX.utils.sheet_to_json(workbook.Sheets['Areas'] || {});
+          const hojaDatosRaw = XLSX.utils.sheet_to_json(workbook.Sheets['Datos'] || {})
+            .filter(fila => fila['id_grado'] !== 0 && fila['id_grado'] !== '0');
+
+          const hojaAreasRaw = XLSX.utils.sheet_to_json(workbook.Sheets['Areas'] || {})
+            .filter(fila => fila['id_grado'] !== 0 && fila['id_grado'] !== '0');
 
           const hojaDatos = hojaDatosRaw.filter(fila => !esFilaInvalida(fila));
           const hojaAreas = hojaAreasRaw.filter(fila => !esFilaInvalida(fila));
@@ -324,51 +332,49 @@ const handleConfirm = (codigoGenerado) => {
           Swal.showLoading();
         }
       });
-      try {
-        const res = await postOnlyExcelFile(selectedFile);
-        const result = await res.data;
-        Swal.close();
-        console.log(result);
-        if (Array.isArray(result)) {
-          // Obtener el último elemento que contiene el resumen
-          const resumen = result.find(item => item.totalRegistros !== undefined) || {};
-          // Filtrar para excluir el elemento de resumen
-          const errores = result.filter(item => item.fila !== undefined);
-          
-          const erroresHTML = errores.map(item => {
-            return `
-              <div class="error-item" style="margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 8px;">
-                <p style="margin: 2px 0; font-weight: bold; color: #555;">Fila ${item.fila}</p>
-                <p style="margin: 2px 0; color: ${item.success ? 'green' : 'red'}">
-                  <strong>Estado:</strong> ${item.success ? 'Éxito' : 'Error'}
-                </p>
-                ${item.error ? `<p style="margin: 2px 0; color: red;"><strong>Error:</strong> ${item.error}</p>` : ''}
-              </div>
-            `;
-          }).join('');
 
-          await Swal.fire({
-            title: 'Resultados del Proceso',
-            html: `
-              <div style="max-height: 400px; overflow-y: auto; margin-bottom: 15px; text-align: left;">
-                ${erroresHTML}
-              </div>
-              <div style="background-color: #f5f5f5; padding: 10px; border-radius: 5px; margin-top: 10px;">
-                <p style="margin: 5px 0;"><strong>Total registros:</strong> ${resumen.totalRegistros || errores.length}</p>
-                <p style="margin: 5px 0;"><strong>Registros omitidos:</strong> ${resumen.registrosOmitidos || 0}</p>
-                <p style="margin: 5px 0;"><strong>Registros fallidos:</strong> ${resumen.registrosFallidos || errores.filter(e => !e.success).length}</p>
-                <p style="margin: 5px 0;"><strong>Registros exitosos:</strong> ${resumen.registrosExitosos || errores.filter(e => e.success).length}</p>
-              </div>
-            `,
-            width: 800,
-            confirmButtonText: 'Continuar',
-            showClass: {
-              popup: 'animate__animated animate__fadeInDown'
-            },
-            hideClass: {
-              popup: 'animate__animated animate__fadeOutUp'
-            }
-          });
+      
+  try {
+    const res = await postOnlyExcelFile(selectedFile);
+    const result = await res.data;
+    Swal.close();
+    
+    if (Array.isArray(result)) {
+      // Filtramos los errores que NO son de foreign key
+      const erroresFiltrados = result.filter(item => {
+        if (item.error && item.error.includes('violates foreign key constraint')) {
+          return false; // Excluimos este error específico
+        }
+        return true;
+      });
+
+      // Mostramos solo los errores no filtrados
+      const erroresHTML = erroresFiltrados
+        .filter(item => item.fila !== undefined)
+        .map(item => `
+          <div class="error-item" style="margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 8px;">
+            <p style="margin: 2px 0; font-weight: bold; color: #555;">Fila ${item.fila}</p>
+            <p style="margin: 2px 0; color: ${item.success ? 'green' : 'red'}">
+              <strong>Estado:</strong> ${item.success ? 'Éxito' : 'Error'}
+            </p>
+            ${item.error ? `<p style="margin: 2px 0; color: red;"><strong>Error:</strong> ${item.error}</p>` : ''}
+          </div>
+        `).join('');
+
+      await Swal.fire({
+        title: 'Resultados del Proceso',
+        html: `
+          <div style="max-height: 400px; overflow-y: auto; margin-bottom: 15px; text-align: left;">
+            ${erroresHTML}
+          </div>
+          <div style="background-color: #f5f5f5; padding: 10px; border-radius: 5px; margin-top: 10px;">
+            <p style="margin: 5px 0;"><strong>Registros exitosos:</strong> ${result.filter(e => e.success).length}</p>
+          </div>
+        `,
+        width: 800,
+        confirmButtonText: 'Continuar'
+      });
+
 
           // flujo normal para el primer participante exitoso
           for (const fila of result) {
