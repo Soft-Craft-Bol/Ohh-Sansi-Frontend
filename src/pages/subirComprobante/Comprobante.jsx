@@ -1,73 +1,147 @@
-import { useState } from 'react';
+// src/pages/subirComprobante/Comprobante.jsx
+
+import React, { useState, useCallback } from 'react';
+import { FaSearch } from 'react-icons/fa';
+import Swal from 'sweetalert2';
+import { getEstudianteByCarnet } from '../../api/api';
+import Header from '../../components/header/Header';
 import ImageEditor from '../../components/imageEditor/ImageEditorKonva';
 import ImageScanner from '../../components/camScanner/ImageScanner';
-import Header from '../../components/header/Header';
 import './Comprobante.css';
-import ManualEntryForm from '../../components/formComprobante/ManualEntryForm';
 
-function Comprobante() {
-  const [croppedImage, setCroppedImage] = useState(null);
+export default function Comprobante() {
+  // ─── FASE 1: Verificar carnet ───────────────────────────────────────────
+  const [carnet, setCarnet] = useState('');
+  const [isCarnetVerified, setIsCarnetVerified] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
+
+  const handleVerifyCarnet = useCallback(async () => {
+    if (!carnet.trim()) {
+      Swal.fire('Carnet vacío', 'Ingresa tu número de carnet.', 'warning');
+      return;
+    }
+    setIsVerifying(true);
+    try {
+      const { data } = await getEstudianteByCarnet(carnet);
+      // Si 200 OK, damos por válido el carnet
+      setIsCarnetVerified(true);
+    } catch (err) {
+      if (err.response?.status === 404) {
+        Swal.fire('No encontrado', 'El carnet no está registrado.', 'error');
+      } else {
+        Swal.fire(
+          'Error',
+          err.response?.data?.message || err.message || 'Error al verificar carnet',
+          'error'
+        );
+      }
+    } finally {
+      setIsVerifying(false);
+    }
+  }, [carnet]);
+
+  // ─── FASE 2: Estados para manejo de imagen y OCR ────────────────────────
   const [selectedImage, setSelectedImage] = useState(null);
+  const [croppedImage, setCroppedImage] = useState(null);
   const [attempts, setAttempts] = useState(3);
   const [scanComplete, setScanComplete] = useState(false);
-  const [showManualForm, setShowManualForm] = useState(false);
   const [extractedText, setExtractedText] = useState('');
+  const [receiptData, setReceiptData] = useState(null);
 
-  const handleImageUpload = (event) => {
+  const handleImageUpload = useCallback(event => {
     const file = event.target.files[0];
     if (file) {
       const url = URL.createObjectURL(file);
       setSelectedImage(url);
       setScanComplete(false);
-      setShowManualForm(false);
     }
-  };
+  }, []);
 
-  const handleImageCropped = (imageUrl) => {
+  const handleImageCropped = useCallback(imageUrl => {
     setCroppedImage(imageUrl);
     setAttempts(prev => prev - 1);
-  };
+  }, []);
 
-  const handleRetry = () => {
+  const handleRetry = useCallback(() => {
     if (attempts > 0) {
       setSelectedImage(null);
       setCroppedImage(null);
-    } else {
-      setShowManualForm(true);
     }
-  };
+  }, [attempts]);
 
-  const handleScanComplete = (text) => {
+  const handleScanComplete = useCallback((text, data) => {
     setExtractedText(text);
+    setReceiptData({
+      codTransaccion: data.numero || '',
+      nombreReceptor: data.recibidoDe || '',
+      notasAdicionales: data.concepto || '',
+      montoPagado: data.totalBs || '',
+      aclaracion: data.aclaracion || '',
+      carnetIdentidad: data.documento || '',
+      numeroControl: data.NumeroControl || '',
+      fechaPago: data.fecha || ''
+    });
     setScanComplete(true);
-  };
+  }, []);
 
-  const handleManualSubmit = (formData) => {
-    // Aquí puedes manejar el envío de los datos manuales
-    console.log('Datos manuales:', formData);
-    setScanComplete(true);
-  };
+  // ─── RENDER ───────────────────────────────────────────────────────────────
+  // 1) Si el carnet no está verificado, mostramos sólo el buscador
+  if (!isCarnetVerified) {
+    return (
+      <div className="comprobante-verification">
+        <Header
+          title="Verificar carnet"
+          description="Ingresa tu número de carnet para continuar"
+        />
+        <div className="verification-form">
+          <input
+              type="text"
+              className="carnet-input"
+              placeholder="Ej: 1234567"
+              value={carnet}
+              maxLength={10}                                // ← máximo 10 caracteres
+              onChange={e => {
+                // quitamos todo lo que no sea letra o número
+                const filtered = e.target.value
+                  .replace(/[^a-zA-Z0-9]/g, '')
+                  
+                setCarnet(filtered);
+              }}
+              disabled={isVerifying}
+          />
 
+          <button
+            className="carnet-btn"
+            onClick={handleVerifyCarnet}
+            disabled={isVerifying}
+          >
+            {isVerifying ? 'Verificando...' : <FaSearch />}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // 2) Una vez verificado, toda la UI de comprobante + OCR
   return (
     <div className="comprobante-container">
       <Header
         title="Comprobante de pago"
         description="Sube tu comprobante para verificar tu inscripción"
       />
-      
       <div className="comprobante-content">
-        {!selectedImage && !showManualForm ? (
+        {!selectedImage ? (
           <div className="upload-section">
             <label className="file-upload-label">
-              <input 
-                type="file" 
-                accept="image/*" 
-                onChange={handleImageUpload} 
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
                 className="file-input"
               />
               <div className="upload-box">
                 <svg className="upload-icon" viewBox="0 0 24 24">
-                  <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                  <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
                 </svg>
                 <p>Selecciona o arrastra tu comprobante</p>
                 <span className="file-types">Formatos aceptados: JPG, PNG</span>
@@ -77,41 +151,68 @@ function Comprobante() {
               </div>
             </label>
           </div>
-        ) : showManualForm ? (
-          <ManualEntryForm
-            onSubmit={handleManualSubmit}
-            onBack={() => setShowManualForm(false)}
-          />
         ) : (
           <div className="editor-section">
-            {!scanComplete && (
+            {!scanComplete ? (
               <>
                 <ImageEditor
-                  imageSrc={selectedImage} 
-                  onComplete={handleImageCropped} 
+                  imageSrc={selectedImage}
+                  onComplete={handleImageCropped}
                   onCancel={handleRetry}
                 />
                 {croppedImage && (
                   <div className="scanner-section">
-                    <ImageScanner 
-                      initialImage={croppedImage} 
+                    <ImageScanner
+                      initialImage={croppedImage}
                       onComplete={handleScanComplete}
                       onRetry={handleRetry}
+                      attemptsLeft={attempts}
                     />
                   </div>
                 )}
               </>
-            )}
-            {scanComplete && (
+            ) : (
               <div className="success-message">
                 <h3>¡Proceso completado!</h3>
                 <p>El comprobante ha sido procesado correctamente.</p>
-                {extractedText && (
-                  <div className="extracted-text">
-                    <h4>Texto extraído:</h4>
-                    <pre>{extractedText}</pre>
+                {receiptData && (
+                  <div className="receipt-data">
+                    <h4>Datos del comprobante:</h4>
+                    <div className="data-grid">
+                      <div>
+                        <strong>Documento:</strong> {receiptData.carnetIdentidad}
+                      </div>
+                      <div>
+                        <strong>Nombre:</strong> {receiptData.nombreReceptor}
+                      </div>
+                      <div>
+                        <strong>Monto:</strong> {receiptData.montoPagado} Bs.
+                      </div>
+                      <div>
+                        <strong>Concepto:</strong> {receiptData.notasAdicionales}
+                      </div>
+                    </div>
                   </div>
                 )}
+                {extractedText && (
+                  <details className="extracted-text">
+                    <summary>Ver texto reconocido</summary>
+                    <pre>{extractedText}</pre>
+                  </details>
+                )}
+                <button
+                  className="new-scan-button"
+                  onClick={() => {
+                    setSelectedImage(null);
+                    setCroppedImage(null);
+                    setScanComplete(false);
+                    setAttempts(3);
+                    setExtractedText('');
+                    setReceiptData(null);
+                  }}
+                >
+                  Realizar nuevo escaneo
+                </button>
               </div>
             )}
           </div>
@@ -120,5 +221,3 @@ function Comprobante() {
     </div>
   );
 }
-
-export default Comprobante;
