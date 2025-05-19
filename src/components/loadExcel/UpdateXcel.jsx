@@ -14,7 +14,7 @@ import { getInscripcionByID, postOnlyExcelFile, registerTutor } from '../../api/
 import { useNavigate } from 'react-router-dom';
 
 const validExtensions = ['.xlsx'];
-const columnasPermitidas = ['Nombres', 'Apellido Paterno', 'Apellido Materno', 'Departamento', 'Colegio', 'Carnet Identidad'];
+const columnasPermitidas = ['Nombres de Participante', 'Carnet Identidad', 'Grado', 'Departamento', 'Colegio'];
 const columnas = columnasPermitidas.map((col) => ({
   header: col,
   accessor: col
@@ -48,7 +48,7 @@ const UpdateExcel = () => {
         const hoja1 = workbook.Sheets['Datos'];
         const jsonHoja1 = XLSX.utils.sheet_to_json(hoja1);
       
-        const columnasHoja1 = ['Nombres', 'Apellido Paterno', 'Apellido Materno', 'Departamento', 'Colegio', 'Carnet Identidad'];
+        const columnasHoja1 = ['Nombres de Participante', 'Carnet Identidad', 'Grado', 'Departamento', 'Colegio'];
         const participantes = jsonHoja1.map((row) => {
           const nuevo = {};
           columnasHoja1.forEach((col) => {
@@ -217,7 +217,7 @@ const handleConfirm = (codigoGenerado) => {
           const workbook = XLSX.read(data, { type: 'array' });
 
           const hojaDatosRaw = XLSX.utils.sheet_to_json(workbook.Sheets['Datos'] || {});
-          const hojaAreasRaw = XLSX.utils.sheet_to_json(workbook.Sheets['Areas'] || {});
+          const hojaAreasRaw = XLSX.utils.sheet_to_json(workbook.Sheets['Datos'] || {});
 
           const hojaDatos = hojaDatosRaw.filter(fila => !esFilaInvalida(fila));
           const hojaAreas = hojaAreasRaw.filter(fila => !esFilaInvalida(fila));
@@ -234,7 +234,7 @@ const handleConfirm = (codigoGenerado) => {
             };
 
             const filasConHojaDatos = hojaDatos.map(fila => ({ ...convertirFechas(fila), _hoja: 'Datos' }));
-            const filasConHojaAreas = hojaAreas.map(fila => ({ ...convertirFechas(fila), _hoja: 'Areas' }));
+            const filasConHojaAreas = hojaAreas.map(fila => ({ ...convertirFechas(fila), _hoja: 'Datos' }));
 
         console.log(filasConHojaAreas);
           const erroresDatos = await validarFilasDatos(filasConHojaDatos);
