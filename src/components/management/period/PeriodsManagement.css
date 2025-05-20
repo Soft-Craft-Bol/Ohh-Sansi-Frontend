@@ -166,7 +166,7 @@ body.dark {
 }
 
 .period-type.CONFIGURACION { background: #0c2c8db3; color: white; }
-.period-type.PRE_INSCRIPCION { background: #20c997; color: white; }
+.period-type.PRE-INSCRIPCION { background: #20c997; color: white; }
 .period-type.INSCRIPCION { background: #fd7e14; color: white; }
 .period-type.EVALUACION { background: #17a2b8; color: white; }
 .period-type.FINAL { background: #dc3545; color: white; }
