@@ -157,8 +157,6 @@ const PeriodosManagement = () => {
                     )}
                 </div>
 
-                {/* Resto del código permanece igual... */}
-                {/* Contenido principal */}
                 <div className="main-content">
                     {/* Formulario de creación */}
                     {showForm && olimpiadaSeleccionada && (

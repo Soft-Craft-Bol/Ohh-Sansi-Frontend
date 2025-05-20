@@ -1,6 +1,8 @@
 import React, { useState, useCallback, useEffect, memo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Formik, Form } from 'formik';
+import { FaEnvelope, FaLock, FaUserShield } from 'react-icons/fa';
+import { motion } from 'framer-motion';
 import './LoginUser.css';
 import { loginUser } from '../../api/api';
 import { validationSchema } from '../../schemas/LoginValidate';
@@ -8,29 +10,17 @@ import { parseJwt } from '../../utils/authJson';
 import InputText from '../../components/inputs/InputText';
 import { ButtonPrimary } from '../../components/button/ButtonPrimary';
 import { useAuth } from '../../context/AuthProvider';
-import { FaEnvelope, FaLock } from "react-icons/fa";
-import loadImage from '../../assets/ImagesApp';
+import logo from '../../assets/img/logo.png';
 
 const initialValues = {
   correoUsuario: '',
   password: '',
 };
 
-const useImageLoader = (imageName) => {
-  const [image, setImage] = useState(null);
-
-  useEffect(() => {
-    loadImage(imageName).then((img) => setImage(img.default));
-  }, [imageName]);
-
-  return image;
-};
-
 const LoginUser = () => {
   const [loginError, setLoginError] = useState('');
   const navigate = useNavigate();
   const { isAuthenticated, login, isLoading } = useAuth();
-  const ohSansi = useImageLoader("ohSansi");
 
   useEffect(() => {
     if (isAuthenticated && !isLoading) {
@@ -56,7 +46,7 @@ const LoginUser = () => {
           photo: result.data.photo,
         };
         
-        login(token, userData); // Usar el método login del AuthProvider
+        login(token, userData);
       } else {
         setLoginError('Usuario o contraseña incorrectos.');
       }
@@ -72,14 +62,29 @@ const LoginUser = () => {
   }, [login, navigate]);
 
   if (isLoading || isAuthenticated) {
-    return <div className="loading-container">Cargando...</div>;
+    return (
+      <div className="login-loading">
+        <div className="loading-spinner"></div>
+      </div>
+    );
   }
 
   return (
     <div className="login-container">
-      <div className="glassy-card animate__animated animate__fadeInDown">
-        <h1 className="title">Olimpiadas Científicas UMSS</h1>
-        {ohSansi && <img className="logo-fesa" src={ohSansi} alt="ohSansi" height="200px"/>}
+      {/* Fondo con partículas científicas */}
+      <div className="login-background-pattern"></div>
+      
+      <motion.div 
+        className="login-card"
+        initial={{ opacity: 0, y: -50 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+      >
+        <div className="login-header">
+          <img src={logo} alt="Logo Olimpiadas" className="login-logo" />
+          <h1 className="login-title">ohSansi</h1>
+          <p className="login-subtitle">Olimpiadas Científicas UMSS</p>
+        </div>
 
         <Formik
           initialValues={initialValues}
@@ -88,31 +93,55 @@ const LoginUser = () => {
         >
           {({ isSubmitting }) => (
             <Form className="login-form">
+              <div className="login-form-icon">
+                <FaUserShield />
+              </div>
+
               <InputText
                 name="correoUsuario"
-                placeholder="Introduzca su correo electrónico"
+                placeholder="Correo electrónico"
                 label="Correo electrónico"
                 icon={FaEnvelope}
               />
               <InputText
                 name="password"
                 type="password"
-                placeholder="Introduzca su contraseña"
+                placeholder="Contraseña"
                 label="Contraseña"
                 icon={FaLock}
               />
 
-              <div className="actions">
-                {loginError && <span className="error-message">{loginError}</span>}
-                <ButtonPrimary type="submit" disabled={isSubmitting} className="btn-general">
-                  {isSubmitting ? 'Ingresando...' : 'Ingresar'}
+              <div className="login-actions">
+                {loginError && (
+                  <motion.div 
+                    className="login-error"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                  >
+                    {loginError}
+                  </motion.div>
+                )}
+                <ButtonPrimary 
+                  type="submit" 
+                  disabled={isSubmitting} 
+                  className="login-button"
+                >
+                  {isSubmitting ? (
+                    <span className="login-button-loading">
+                      <span className="spinner-dot"></span>
+                      <span className="spinner-dot"></span>
+                      <span className="spinner-dot"></span>
+                    </span>
+                  ) : 'Ingresar'}
                 </ButtonPrimary>
-                <Link to="/reset">¿Olvidaste la contraseña?</Link>
+                <Link to="/reset" className="login-forgot">
+                  ¿Olvidaste la contraseña?
+                </Link>
               </div>
             </Form>
           )}
         </Formik>
-      </div>
+      </motion.div>
     </div>
   );
 };
