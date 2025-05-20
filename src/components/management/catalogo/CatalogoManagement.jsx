@@ -9,6 +9,7 @@ import {
   getOlimpiadas,
   saveCatalogoOlimpiada
 } from '../../../api/api';
+import { ordenarGrados } from '../../../utils/GradesOrder';
 import './CatalogoManagement.css';
 import Swal from 'sweetalert2';
 
@@ -20,21 +21,26 @@ const CatalogoManagement = () => {
     catalogo: [],
     selectedOlimpiada: null,
     loading: true,
-    modalOpen: false
+    modalOpen: false,
+    error: null
   });
 
-  const showToast = (type, message) => {
-    Swal.fire({
-      icon: type,
-      title: type === 'error' ? 'Error' : 'Éxito',
-      text: message,
-      timer: 3000
-    });
-  };
+  const showAlert = (type, title, message) => {
+  Swal.fire({
+    icon: type,
+    title: title,
+    html: `<div style="max-height: 200px; overflow-y: auto;">${message}</div>`,
+    timer: type === 'error' ? 5000 : 3000,
+    showConfirmButton: type === 'error',
+    background: 'var(--light)',
+    color: 'var(--dark)',
+    width: '600px'
+  });
+};
 
   const fetchData = async () => {
     try {
-      setState(prev => ({ ...prev, loading: true }));
+      setState(prev => ({ ...prev, loading: true, error: null }));
       
       const [olimpiadasRes, areasRes, categoriesRes, catalogoRes] = await Promise.all([
         getOlimpiadas(),
@@ -43,35 +49,42 @@ const CatalogoManagement = () => {
         getCatalogoOlimpiada(),
       ]);
 
-      const olimpiadasData = Array.isArray(olimpiadasRes.data?.data) ? olimpiadasRes.data.data : [];
-      const areasData = Array.isArray(areasRes.data?.areas) ? areasRes.data.areas : [];
-      const categoriesData = Array.isArray(categoriesRes.data) ? categoriesRes.data : [];
-      const catalogoData = Array.isArray(catalogoRes.data) ? catalogoRes.data : [];
+      const processCatalogoData = (data) => {
+        if (!Array.isArray(data)) return [];
+        
+        return data.map(item => ({
+          ...item,
+          grados: Array.isArray(item.grados) 
+            ? item.grados.map(grado => (typeof grado === 'string' ? { nombreGrado: grado } : grado))
+            : []
+        }));
+      };
 
-      console.log("Datos recibidos:", {
-        olimpiadas: olimpiadasData,
-        areas: areasData,
-        categories: categoriesData,
-        catalogo: catalogoData
-      });
-
-      // Selecciona la primera olimpiada por defecto
-      const defaultOlimpiada = olimpiadasData[0] || null;
+      const olimpiadasData = Array.isArray(olimpiadasRes?.data?.data) ? olimpiadasRes.data.data : [];
+      const areasData = Array.isArray(areasRes?.data?.areas) ? areasRes.data.areas : [];
+      const categoriesData = Array.isArray(categoriesRes?.data) ? categoriesRes.data : [];
+      const catalogoData = processCatalogoData(catalogoRes?.data || []);
+      const sortedOlimpiadas = [...olimpiadasData].sort((a, b) => b.anio - a.anio);
 
       setState({
         areas: areasData,
         categories: categoriesData,
-        olimpiadas: olimpiadasData,
+        olimpiadas: sortedOlimpiadas,
         catalogo: catalogoData,
-        selectedOlimpiada: defaultOlimpiada ? defaultOlimpiada.idOlimpiada : null,
+        selectedOlimpiada: sortedOlimpiadas[0]?.idOlimpiada || null,
         loading: false,
-        modalOpen: false
+        modalOpen: false,
+        error: null
       });
 
     } catch (error) {
       console.error("Error fetching data:", error);
-      setState(prev => ({ ...prev, loading: false }));
-      showToast('error', 'Error al cargar los datos');
+      setState(prev => ({
+        ...prev,
+        loading: false,
+        error: error.message
+      }));
+      showAlert('error', 'Error', 'No se pudieron cargar los datos');
     }
   };
 
@@ -80,35 +93,57 @@ const CatalogoManagement = () => {
   }, []);
 
   const handleAddItem = async (formData) => {
-    try {
-      const payload = {
-        ...formData,
-        idOlimpiada: state.selectedOlimpiada
-      };
-
-      const response = await saveCatalogoOlimpiada(payload);
-      
-      if (response?.data?.status === 'success') {
-        showToast('success', response.data.message);
-        await fetchData();
-      } else {
-        throw new Error(response?.data?.message || 'Error al guardar');
-      }
-    } catch (error) {
-      console.error("Error saving catalog item:", error);
-      showToast('error', error.message);
+  try {
+    if (!state.selectedOlimpiada) {
+      throw new Error('No se ha seleccionado una olimpiada');
     }
+
+    const currentOlimpiada = state.olimpiadas.find(o => o.idOlimpiada === state.selectedOlimpiada);
+    
+    if (currentOlimpiada.nombreEstado !== 'PLANIFICACION') {
+      throw new Error('Solo se puede modificar el catálogo cuando la olimpiada está en estado "PLANIFICACION"');
+    }
+
+    const payload = {
+      ...formData,
+      idOlimpiada: currentOlimpiada.idOlimpiada,
+    };
+
+    const response = await saveCatalogoOlimpiada(payload);
+    
+    if (response?.data?.status === 'success') {
+      showAlert('success', 'Éxito', response.data.message || 'Ítem guardado correctamente');
+      await fetchData();
+    } else {
+      throw new Error(response?.data?.message || 'Error al guardar el ítem');
+    }
+  } catch (error) {
+    console.error("Error saving catalog item:", error);
+    showAlert(
+      'error', 
+      'Error', 
+      error.response?.data?.message || error.message || 'Error al procesar la solicitud'
+    );
+  }
+};
+
+  const getFilteredCatalogo = () => {
+    if (!state.selectedOlimpiada) return [];
+    
+    const currentOlimpiada = state.olimpiadas.find(o => o.idOlimpiada === state.selectedOlimpiada);
+    if (!currentOlimpiada) return [];
+
+    return state.catalogo
+      .filter(item => item.nombreOlimpiada === currentOlimpiada.nombreOlimpiada)
+      .map(item => ({
+        ...item,
+        grados: ordenarGrados(item.grados)
+      }));
   };
 
-  // Obtener la olimpiada seleccionada actual
+  const filteredCatalogo = getFilteredCatalogo();
   const currentOlimpiada = state.olimpiadas.find(o => 
     o.idOlimpiada === state.selectedOlimpiada
-  );
-
-  // Filtrar catálogo por nombre de olimpiada (ya que los datos muestran nombreOlimpiada)
-  const filteredCatalogo = state.catalogo.filter(item => 
-    item.nombreOlimpiada && currentOlimpiada?.nombreOlimpiada &&
-    item.nombreOlimpiada === currentOlimpiada.nombreOlimpiada
   );
 
   return (
@@ -132,7 +167,6 @@ const CatalogoManagement = () => {
                 }))}
               >
                 {olimpiada.nombreOlimpiada}
-                {olimpiada.estadoOlimpiada && <span className="active-indicator" />}
               </button>
             ))}
           </div>
@@ -183,6 +217,7 @@ const CatalogoManagement = () => {
                 <button 
                   className="primary-btn"
                   onClick={() => setState(prev => ({ ...prev, modalOpen: true }))}
+                  disabled={!state.selectedOlimpiada}
                 >
                   <FiPlus /> Crear primera configuración
                 </button>
