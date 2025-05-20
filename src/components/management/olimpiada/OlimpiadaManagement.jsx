@@ -9,6 +9,9 @@ import "./OlimpiadaManagement.css";
 import ManagementCard from "../../cards/ManagementCard";
 import { FaCalendarAlt, FaCoins, FaSpinner } from "react-icons/fa";
 import "react-datepicker/dist/react-datepicker.css";
+import DatePicker from "react-datepicker";
+import { es } from "date-fns/locale";
+import formatDate from "../../../utils/formatDate";
 
 const OlimpiadaManagement = () => {
   const [olimpiadas, setOlimpiadas] = useState([]);
@@ -20,6 +23,8 @@ const OlimpiadaManagement = () => {
     anio: new Date().getFullYear(),
     nombreOlimpiada: "",
     precioOlimpiada: "",
+    fechaInicio: new Date(),
+    fechaFin: new Date(),
   };
 
   useEffect(() => {
@@ -81,8 +86,8 @@ const OlimpiadaManagement = () => {
     } catch (error) {
       console.error(error);
 
-      const errorMessage = 
-      error?.response?.data?.message ||error?.response?.data?.Error?.Error || error?.message ||"Error al procesar la solicitud. Intenta nuevamente.";
+      const errorMessage =
+        error?.response?.data?.message || error?.response?.data?.Error?.Error || error?.message || "Error al procesar la solicitud. Intenta nuevamente.";
 
       await Swal.fire({
         icon: 'error',
@@ -116,7 +121,7 @@ const OlimpiadaManagement = () => {
           onSubmit={handleSubmit}
           enableReinitialize
         >
-          {({ values, handleChange, errors, touched }) => (
+          {({ values, handleChange, errors, touched, setFieldValue }) => (
             <Form className="olimpiada-form">
               <div className="form-group">
                 <InputText
@@ -163,7 +168,38 @@ const OlimpiadaManagement = () => {
                   icon={FaCoins}
                 />
               </div>
-
+              <div className="form-group date-picker-group">
+                <div className="date-picker-row">
+                  <div className="date-picker-container">
+                    <label>Fecha Inicio:</label>
+                    <DatePicker
+                      selected={values.fechaInicio}
+                      onChange={(date) => setFieldValue("fechaInicio", date)}
+                      dateFormat="dd/MM/yyyy"
+                      locale={es}
+                      className="date-picker-input"
+                      minDate={new Date()}
+                    />
+                    {touched.fechaInicio && errors.fechaInicio && (
+                      <div className="error-message">{errors.fechaInicio}</div>
+                    )}
+                  </div>
+                  <div className="date-picker-container">
+                    <label>Fecha Fin:</label>
+                    <DatePicker
+                      selected={values.fechaFin}
+                      onChange={(date) => setFieldValue("fechaFin", date)}
+                      dateFormat="dd/MM/yyyy"
+                      locale={es}
+                      className="date-picker-input"
+                      minDate={values.fechaInicio}
+                    />
+                    {touched.fechaFin && errors.fechaFin && (
+                      <div className="error-message">{errors.fechaFin}</div>
+                    )}
+                  </div>
+                </div>
+              </div>
               <div className="form-actions">
                 <ButtonPrimary type="submit" className="register-btn">
                   {editMode ? 'Actualizar Olimpiada' : 'Crear Olimpiada'}
@@ -219,6 +255,14 @@ const OlimpiadaManagement = () => {
                     {
                       label: "Períodos",
                       value: olimpiada.periodos?.length || 0
+                    },
+                    {
+                      label: "Fecha Inicio",
+                      value: formatDate(olimpiada.fechaInicio) || 0
+                    },
+                    {
+                      label: "Fecha Fin",
+                      value: formatDate(olimpiada.fechaFin)
                     }
                   ]}
                 />
