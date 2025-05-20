@@ -13,6 +13,7 @@ const OrdenDePago = () => {
     setInputValue,
     codigoIntroducido,
     ordenData,
+    ordenExel,
     mostrarDetalle,
     ordenGenerada,
     error,
@@ -39,29 +40,42 @@ const OrdenDePago = () => {
   };
 
   const renderInfoSection = () => {
-    if (!ordenData) return null;
+    let participanteRaw,tutoresRaw,olimpiadasRaw,areas,participante,tutores,olimpiadas,totalParticipantes,
+    totalAreas,primerTutor,nombreResponsable,correoResponsable, costoPorArea, totalAPagar;
+    if(ordenExel){
+      participante = 'Participantes registrados por Excel'
+      totalParticipantes = 2 //pending add
+      totalAreas = ordenExel.Responsable?.cantAreas
+      nombreResponsable = `${ordenExel.Responsable.nombreTut || ""} ${ordenExel.Responsable.apellidoTut || ""}`.trim()
+      correoResponsable = ordenExel.Responsable.correoTut
+      costoPorArea = 15 //static meanwhile
+      totalAPagar = totalAreas * costoPorArea;
 
-    const participanteRaw = ordenData.participante?.value;
-    const tutoresRaw = ordenData.tutores?.value;
-    const olimpiadasRaw = ordenData.olimpiadas?.value;
-    const areas = ordenData.areas || [];
+    }else{
+      if (!ordenData) return null;
 
-    const participante = participanteRaw ? JSON.parse(participanteRaw) : null;
-    const tutores = tutoresRaw ? JSON.parse(tutoresRaw) : [];
-    const olimpiadas = olimpiadasRaw ? JSON.parse(olimpiadasRaw) : [];
+          participanteRaw = ordenData.participante?.value;
+          tutoresRaw = ordenData.tutores?.value;
+          olimpiadasRaw = ordenData.olimpiadas?.value;
+          areas = ordenData.areas || [];
 
-    const totalParticipantes = participante ? 1 : 0;
-    const totalAreas = areas.length;
+          participante = participanteRaw ? JSON.parse(participanteRaw) : null;
+          tutores = tutoresRaw ? JSON.parse(tutoresRaw) : [];
+          olimpiadas = olimpiadasRaw ? JSON.parse(olimpiadasRaw) : [];
 
-    const primerTutor = tutores.length > 0 ? tutores[0] : null;
-    const nombreResponsable = primerTutor
-      ? `${primerTutor.nombres_tutor || ""} ${primerTutor.apellidos_tutor || ""}`.trim()
-      : "No disponible";
-    const correoResponsable = primerTutor?.email_tutor || "No disponible";
+          totalParticipantes = participante ? 1 : 0;
+          totalAreas = areas.length;
 
-    const costoPorArea = olimpiadas[0]?.precio_olimpiada || 0;
-    const totalAPagar = totalAreas * costoPorArea;
+          primerTutor = tutores.length > 0 ? tutores[0] : null;
+          nombreResponsable = primerTutor
+            ? `${primerTutor.nombres_tutor || ""} ${primerTutor.apellidos_tutor || ""}`.trim()
+            : "No disponible";
+          correoResponsable = primerTutor?.email_tutor || "No disponible";
 
+          costoPorArea = olimpiadas[0]?.precio_olimpiada || 0;
+          totalAPagar = totalAreas * costoPorArea;
+    }
+    
     return (
       <motion.div className="info-box" variants={containerVariants} initial="hidden" animate="visible">
         <div className="resumen">

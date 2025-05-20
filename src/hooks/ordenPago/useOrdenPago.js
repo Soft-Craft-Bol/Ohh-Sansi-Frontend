@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
-import { getOrdenPagoDetailInfo, createOrdenPago } from '../../api/api';
+import { getOrdenPagoDetailInfo, createOrdenPago, getOrdenPagoExcel } from '../../api/api';
 import { convertirNumeroAPalabras } from '../../utils/numberUtils';
 
 const useOrdenPago = () => {
   const [inputValue, setInputValue] = useState("");
   const [codigoIntroducido, setCodigoIntroducido] = useState("");
   const [ordenData, setOrdenData] = useState(null);
+  const [ordenExel, setOrdenExcel] = useState(null);
   const [mostrarDetalle, setMostrarDetalle] = useState(false);
   const [ordenGenerada, setOrdenGenerada] = useState(null);
   const [error, setError] = useState(null);
@@ -34,31 +35,55 @@ const useOrdenPago = () => {
 
   useEffect(() => {
     const fetchOrdenData = async () => {
-      if (!codigoIntroducido) return;
+        if (!codigoIntroducido) return;
 
-      setIsLoading(true);
-      try {
-        const response = await getOrdenPagoDetailInfo(codigoIntroducido);
-        setOrdenData(response.data);
-        setMostrarDetalle(false);
-        setOrdenGenerada(null);
-        console.log("Datos recibidos:", response.data);
-      } catch (error) {
-        console.error("Error al obtener los datos:", error.response?.data || error.message);
-        if (!error.response) {
-          setError("Error de conexión. Por favor verifica tu conexión a internet e intenta nuevamente.");
-        } else {
-          setError("No se encontró la inscripción con el código proporcionado");
+        setIsLoading(true);
+        setError(null);
+        try {
+            const excelResponse = await getOrdenPagoExcel(codigoIntroducido);
+            setOrdenExcel(excelResponse.data);
+            setMostrarDetalle(false);
+            setOrdenGenerada(null);
+            console.log("Datos recibidos de getOrdenPagoExcel:", excelResponse.data);
+            return;
+        } catch (excelError) {
+            // Verificamos si el error es el específico que indica que debemos intentar con getOrdenPagoDetailInfo
+            if (excelError.response?.data?.message === "Error al obtener los detalles de inscripcion" &&
+                excelError.response?.data?.details === "Incorrect result size: expected 1, actual 0") {
+                console.log("Error específico detectado, intentando con getOrdenPagoDetailInfo...");
+                try {
+                    const detailResponse = await getOrdenPagoDetailInfo(codigoIntroducido);
+                    setOrdenData(detailResponse.data);
+                    setMostrarDetalle(true); // o false, según tu lógica
+                    setOrdenGenerada(null);
+                    console.log("Datos recibidos de getOrdenPagoDetailInfo:", detailResponse.data);
+                } catch (detailError) {
+                    // Manejo de error para getOrdenPagoDetailInfo
+                    console.error("Error al obtener los datos con getOrdenPagoDetailInfo:", detailError.response?.data || detailError.message);
+                    if (!detailError.response) {
+                        setError("Error de conexión. Por favor verifica tu conexión a internet e intenta nuevamente.");
+                    } else {
+                        setError("No se encontró la inscripción con el código proporcionado"); // Este mensaje podría ser más genérico
+                    }
+                    setOrdenData(null);
+                }
+            } else {
+                // Manejo de otros errores de getOrdenPagoExcel
+                console.error("Error al obtener los datos con getOrdenPagoExcel:", excelError.response?.data || excelError.message);
+                if (!excelError.response) {
+                    setError("Error de conexión. Por favor verifica tu conexión a internet e intenta nuevamente.");
+                } else {
+                    setError("Error al obtener los datos de la inscripción");
+                }
+                setOrdenData(null);
+            }
+        } finally {
+            setIsLoading(false);
         }
-        
-        setOrdenData(null);
-      } finally {
-        setIsLoading(false);
-      }
     };
 
     fetchOrdenData();
-  }, [codigoIntroducido]);
+}, [codigoIntroducido]);
 
   const handleGenerarOrden = async () => {
     if (!ordenData) return;
@@ -126,6 +151,7 @@ const useOrdenPago = () => {
     setInputValue,
     codigoIntroducido,
     ordenData,
+    ordenExel,
     mostrarDetalle,
     ordenGenerada,
     error,

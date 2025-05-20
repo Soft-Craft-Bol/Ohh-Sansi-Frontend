@@ -93,6 +93,7 @@ export const sendEmail = (data) => api.post('/email/send', data);
 //OrdenPAGO
 export const getOrdenPagoDetailInfo = (codigoUnico) => api.get(`/inscripcion/details/${codigoUnico}`);
 export const createOrdenPago = (data) => api.post('/orden-pago', data);
+export const getOrdenPagoExcel = (codigoUnico) => api.get(`inscripcion/masivo/details/${codigoUnico}`)
 
 //estado orden de pago
 export const getEstadoOrdenPago = () => api.get(`/api/estadisticas/ordenes-pago`);
