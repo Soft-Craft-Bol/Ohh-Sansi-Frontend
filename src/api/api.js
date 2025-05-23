@@ -79,6 +79,7 @@ export const parentescoTutor = () => api.get('/parentesco/findAllParentescos');
 export const getOlimpiadas = () => api.get('/olimpiada');
 export const saveOlimpiada = (data) => api.post('/olimpiada/register', data);
 export const savePrecioOlimpiada = (data) => api.put('/olimpiada/update-precio', data);
+export const getOlimpiadaPreinscripcion = () => api.get(`/fecha-olimpiada/periodo-inscripcion-actual`);
 
 //CatalogoOlimpiada
 export const saveCatalogoOlimpiada = (data) => api.post('/catalogo-olimpiada/save', data);
@@ -107,6 +108,8 @@ export const getCatalogoAreasCategorias = (ciParticipante) => api.get(`/catalogo
 export const setCatalogoAreasParticipante = (ciParticipante, data) => 
   api.post(`/participante/register-participant-catalogo/${ciParticipante}`, data);
 
+//reporte de inscritos
+export const getReporteInscritos = (idArea) => api.get(`/inscripcion/reporte-por-area/${idArea}`);
 
 
 //areaTutor participante

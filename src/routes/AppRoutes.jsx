@@ -58,9 +58,7 @@ const AppRoutes = () => {
         path="/admin"
         element={
           <PrivateRoute>
-            <Layout>
               <ManagementPage />
-            </Layout>
           </PrivateRoute>
         }
       />
