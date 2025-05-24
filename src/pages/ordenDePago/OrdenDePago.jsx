@@ -40,40 +40,35 @@ const OrdenDePago = () => {
   };
 
   const renderInfoSection = () => {
-    let participanteRaw,tutoresRaw,olimpiadasRaw,areas,participante,tutores,olimpiadas,totalParticipantes,
+    let areas,participante,tutores,olimpiadas,totalParticipantes,
     totalAreas,primerTutor,nombreResponsable,correoResponsable, costoPorArea, totalAPagar;
     if(ordenExel){
       participante = 'Participantes registrados por Excel'
-      totalParticipantes = 2 //pending add
+      totalParticipantes = ordenExel.Responsable?.cantPaticipantes
       totalAreas = ordenExel.Responsable?.cantAreas
       nombreResponsable = `${ordenExel.Responsable.nombreTut || ""} ${ordenExel.Responsable.apellidoTut || ""}`.trim()
       correoResponsable = ordenExel.Responsable.correoTut
-      costoPorArea = 15 //static meanwhile
+      costoPorArea = ordenExel.olimpiadas[0]?.precio_olimpiada || 0;
       totalAPagar = totalAreas * costoPorArea;
 
     }else{
       if (!ordenData) return null;
+      const participantes = ordenData.participantes || [];
+      tutores = ordenData.tutores || [];
+      olimpiadas = ordenData.olimpiadas || [];
+      areas = ordenData.areas || [];
 
-          participanteRaw = ordenData.participante?.value;
-          tutoresRaw = ordenData.tutores?.value;
-          olimpiadasRaw = ordenData.olimpiadas?.value;
-          areas = ordenData.areas || [];
+      totalParticipantes = participantes.length;
+      totalAreas = areas.length;
 
-          participante = participanteRaw ? JSON.parse(participanteRaw) : null;
-          tutores = tutoresRaw ? JSON.parse(tutoresRaw) : [];
-          olimpiadas = olimpiadasRaw ? JSON.parse(olimpiadasRaw) : [];
+      primerTutor = tutores.length > 0 ? tutores[0] : null;
+      nombreResponsable = primerTutor
+        ? `${primerTutor.nombres_tutor || ""} ${primerTutor.apellidos_tutor || ""}`.trim()
+        : "No disponible";
+      correoResponsable = primerTutor?.email_tutor || "No disponible";
 
-          totalParticipantes = participante ? 1 : 0;
-          totalAreas = areas.length;
-
-          primerTutor = tutores.length > 0 ? tutores[0] : null;
-          nombreResponsable = primerTutor
-            ? `${primerTutor.nombres_tutor || ""} ${primerTutor.apellidos_tutor || ""}`.trim()
-            : "No disponible";
-          correoResponsable = primerTutor?.email_tutor || "No disponible";
-
-          costoPorArea = olimpiadas[0]?.precio_olimpiada || 0;
-          totalAPagar = totalAreas * costoPorArea;
+      costoPorArea = olimpiadas[0]?.precio_olimpiada || 0;
+      totalAPagar = totalAreas * costoPorArea;
     }
     
     return (

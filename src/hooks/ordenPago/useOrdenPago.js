@@ -54,7 +54,7 @@ const useOrdenPago = () => {
                 try {
                     const detailResponse = await getOrdenPagoDetailInfo(codigoIntroducido);
                     setOrdenData(detailResponse.data);
-                    setMostrarDetalle(true); // o false, según tu lógica
+                    setMostrarDetalle(false);
                     setOrdenGenerada(null);
                     console.log("Datos recibidos de getOrdenPagoDetailInfo:", detailResponse.data);
                 } catch (detailError) {

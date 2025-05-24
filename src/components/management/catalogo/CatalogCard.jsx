@@ -1,17 +1,21 @@
 import './CatalogCard.css';
+import { ordenarGrados } from '../../../utils/GradesOrder'; 
 
 const CatalogCard = ({ area, category, grades }) => {
   const formatGrades = () => {
     if (!grades || grades.length === 0) return 'Sin grados especificados';
     
-    const sortedGrades = [...grades].sort((a, b) => {
-      const getNumber = (grade) => parseInt(grade.match(/\d+/)?.[0] || 0);
-      return getNumber(a) - getNumber(b);
-    });
-
-    if (sortedGrades.length === 1) return sortedGrades[0];
+    const normalizedGrades = grades.map(grade => 
+      typeof grade === 'string' ? { nombreGrado: grade } : grade
+    );
     
-    return `${sortedGrades[0]} - ${sortedGrades[sortedGrades.length - 1]}`;
+    const sortedGrades = ordenarGrados(normalizedGrades);
+    
+    const gradeNames = sortedGrades.map(g => g.nombreGrado || g);
+
+    if (gradeNames.length === 1) return gradeNames[0];
+    
+    return `${gradeNames[0]} - ${gradeNames[gradeNames.length - 1]}`;
   };
 
   return (
