@@ -1,12 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, memo } from "react";
 import "./Tabs.css";
 
-const Tabs = ({ tabs, onTabChange, renderTabContent, variant = "default" }) => {
+const Tabs = memo(({ tabs, onTabChange, renderTabContent, variant = "default" }) => {
   const [activeTab, setActiveTab] = useState(tabs[0].id);
 
   const handleTabClick = (tabId) => {
-    setActiveTab(tabId);
-    onTabChange && onTabChange(tabId);
+    if (tabId !== activeTab) {
+      setActiveTab(tabId);
+      onTabChange && onTabChange(tabId);
+    }
   };
 
   return (
@@ -34,6 +36,6 @@ const Tabs = ({ tabs, onTabChange, renderTabContent, variant = "default" }) => {
       </div>
     </div>
   );
-};
+});
 
 export default Tabs;

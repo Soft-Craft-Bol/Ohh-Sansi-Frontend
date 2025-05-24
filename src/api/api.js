@@ -121,4 +121,4 @@ export const postOnlyExcelFile = (file) => {
 
 //OCR43
 export const sendImageForOCR = (data) => api.post('/ocr', data);
-export const verificarPago = (data) => api.post('/ocr/verificar', data);
+export const verificarPago = (data) => api.post('/comprobante-pago', data);

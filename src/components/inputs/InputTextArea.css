@@ -85,8 +85,8 @@
 .char-count {
   font-size: 0.875rem;
   color: #666;
-  position: relative;
-  right: 0;
+  position: absolute;
+  right: 1.5rem;
 }
 
 /* Modo oscuro */

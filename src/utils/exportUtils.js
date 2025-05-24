@@ -1,6 +1,6 @@
 // src/utils/exportUtils.js
 import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from'jspdf-autotable';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import { format, parseISO } from 'date-fns';
@@ -40,7 +40,7 @@ export const exportToPDF = (data, title, fechaInicio, fechaFin) => {
     'Vigente'
   ]);
   
-  doc.autoTable({
+  autoTable(doc, {  // Cambio en la sintaxis para usar autoTable
     head: [headers],
     body: tableData,
     startY: 25,
@@ -58,7 +58,7 @@ export const exportToPDF = (data, title, fechaInicio, fechaFin) => {
       fillColor: [240, 240, 240]
     }
   });
-  
+
   const pageCount = doc.internal.getNumberOfPages();
   for(let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
