@@ -4,10 +4,10 @@ import Swal from "sweetalert2";
 import InputText from "../../inputs/InputText";
 import { ButtonPrimary } from "../../button/ButtonPrimary";
 import olimpiadaValidationSchema from "../../../schemas/olimpiadaValidate";
-import { getOlimpiadas, saveOlimpiada } from "../../../api/api";
+import { getOlimpiadas, saveOlimpiada, updateOlimpiada } from "../../../api/api";
 import "./OlimpiadaManagement.css";
 import ManagementCard from "../../cards/ManagementCard";
-import { FaCalendarAlt, FaCoins, FaSpinner } from "react-icons/fa";
+import { FaCalendarAlt, FaCoins, FaSpinner, FaTimes } from "react-icons/fa";
 import "react-datepicker/dist/react-datepicker.css";
 import DatePicker from "react-datepicker";
 import { es } from "date-fns/locale";
@@ -53,14 +53,38 @@ const OlimpiadaManagement = () => {
   };
 
   const handleEdit = (olimpiada) => {
+    // Convertir las fechas de string a objetos Date para el DatePicker
+    const olimpiadaToEdit = {
+      ...olimpiada,
+      fechaInicio: olimpiada.fechaInicio ? new Date(olimpiada.fechaInicio) : new Date(),
+      fechaFin: olimpiada.fechaFin ? new Date(olimpiada.fechaFin) : new Date(),
+    };
+    
     setEditMode(true);
-    setCurrentOlimpiada(olimpiada);
+    setCurrentOlimpiada(olimpiadaToEdit);
   };
 
+  const handleCancelEdit = () => {
+    setEditMode(false);
+    setCurrentOlimpiada(null);
+  };
 
-  const handleSubmit = async (values, { resetForm }) => {
+  const handleSubmit = async (values, { resetForm, setSubmitting }) => {
     try {
-      const response = await saveOlimpiada(values);
+      setSubmitting(true);
+      let response;
+      
+      if (editMode && currentOlimpiada) {
+        // Modo edición - usar updateOlimpiada
+        const updateData = {
+          ...values,
+          idOlimpiada: currentOlimpiada.idOlimpiada, // Incluir el ID para la actualización
+        };
+        response = await updateOlimpiada(updateData);
+      } else {
+        // Modo creación - usar saveOlimpiada
+        response = await saveOlimpiada(values);
+      }
 
       if (response.data?.status === "success") {
         const message = response.data?.message ||
@@ -78,8 +102,7 @@ const OlimpiadaManagement = () => {
 
         await fetchData();
         resetForm();
-        setEditMode(false);
-        setCurrentOlimpiada(null);
+        handleCancelEdit(); // Limpiar el modo de edición
         return;
       }
       throw new Error(response.data?.message || "Error desconocido");
@@ -87,7 +110,10 @@ const OlimpiadaManagement = () => {
       console.error(error);
 
       const errorMessage =
-        error?.response?.data?.message || error?.response?.data?.Error?.Error || error?.message || "Error al procesar la solicitud. Intenta nuevamente.";
+        error?.response?.data?.message || 
+        error?.response?.data?.Error?.Error || 
+        error?.message || 
+        `Error al ${editMode ? 'actualizar' : 'crear'} la olimpiada. Intenta nuevamente.`;
 
       await Swal.fire({
         icon: 'error',
@@ -103,7 +129,17 @@ const OlimpiadaManagement = () => {
           popup: 'animate__animated animate__fadeOutUp',
         }
       });
+    } finally {
+      setSubmitting(false);
     }
+  };
+
+  // Función para obtener los valores iniciales del formulario
+  const getInitialValues = () => {
+    if (editMode && currentOlimpiada) {
+      return currentOlimpiada;
+    }
+    return initialValues;
   };
 
   return (
@@ -111,17 +147,35 @@ const OlimpiadaManagement = () => {
       <div className="form-container">
         <div className="form-header">
           <FaCalendarAlt className="header-icon" />
-          <h2>{editMode ? 'Editar Olimpiada' : 'Crear Nueva Olimpiada'}</h2>
-          <p>Define los datos básicos de la olimpiada científica</p>
+          <div className="header-content">
+            <h2>{editMode ? 'Editar Olimpiada' : 'Crear Nueva Olimpiada'}</h2>
+            <p>
+              {editMode 
+                ? `Modificando: ${currentOlimpiada?.nombreOlimpiada || ''}`
+                : 'Define los datos básicos de la olimpiada científica'
+              }
+            </p>
+          </div>
+          {editMode && (
+            <button 
+              type="button" 
+              className="cancel-edit-btn"
+              onClick={handleCancelEdit}
+              title="Cancelar edición"
+            >
+              <FaTimes />
+            </button>
+          )}
         </div>
 
         <Formik
-          initialValues={editMode ? currentOlimpiada : initialValues}
+          initialValues={getInitialValues()}
           validationSchema={olimpiadaValidationSchema}
           onSubmit={handleSubmit}
-          enableReinitialize
+          enableReinitialize={true}
+          key={editMode ? currentOlimpiada?.idOlimpiada : 'new'}
         >
-          {({ values, handleChange, errors, touched, setFieldValue }) => (
+          {({ values, handleChange, errors, touched, setFieldValue, isSubmitting }) => (
             <Form className="olimpiada-form">
               <div className="form-group">
                 <InputText
@@ -134,7 +188,7 @@ const OlimpiadaManagement = () => {
                   maxLength={5}
                   min={new Date().getFullYear()}
                   error={touched.anio && errors.anio}
-
+                  disabled={editMode} 
                 />
               </div>
 
@@ -154,7 +208,7 @@ const OlimpiadaManagement = () => {
 
               <div className="form-group">
                 <InputText
-                  label="Precio  (BOB)"
+                  label="Precio (BOB)"
                   name="precioOlimpiada"
                   decimal={true}
                   decimalPlaces={2}
@@ -168,6 +222,7 @@ const OlimpiadaManagement = () => {
                   icon={FaCoins}
                 />
               </div>
+
               <div className="form-group date-picker-group">
                 <div className="date-picker-row">
                   <div className="date-picker-container">
@@ -178,7 +233,7 @@ const OlimpiadaManagement = () => {
                       dateFormat="dd/MM/yyyy"
                       locale={es}
                       className="date-picker-input"
-                      minDate={new Date()}
+                      minDate={editMode ? null : new Date()} // En edición permitir fechas pasadas
                     />
                     {touched.fechaInicio && errors.fechaInicio && (
                       <div className="error-message">{errors.fechaInicio}</div>
@@ -200,9 +255,31 @@ const OlimpiadaManagement = () => {
                   </div>
                 </div>
               </div>
+
               <div className="form-actions">
-                <ButtonPrimary type="submit" className="register-btn">
-                  {editMode ? 'Actualizar Olimpiada' : 'Crear Olimpiada'}
+                {editMode && (
+                  <button 
+                    type="button" 
+                    className="cancel-btn"
+                    onClick={handleCancelEdit}
+                    disabled={isSubmitting}
+                  >
+                    Cancelar
+                  </button>
+                )}
+                <ButtonPrimary 
+                  type="submit" 
+                  className="register-btn"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <FaSpinner className="spinner" />
+                      {editMode ? 'Actualizando...' : 'Creando...'}
+                    </>
+                  ) : (
+                    editMode ? 'Actualizar Olimpiada' : 'Crear Olimpiada'
+                  )}
                 </ButtonPrimary>
               </div>
             </Form>
@@ -237,6 +314,7 @@ const OlimpiadaManagement = () => {
                   status={olimpiada.nombreEstado}
                   onEdit={() => handleEdit(olimpiada)}
                   editable={olimpiada.nombreEstado === 'PLANIFICACION'}
+                  isEditing={editMode && currentOlimpiada?.idOlimpiada === olimpiada.idOlimpiada}
                   info={[
                     {
                       label: "Año",
@@ -244,7 +322,7 @@ const OlimpiadaManagement = () => {
                       highlight: true
                     },
                     {
-                      label: "Precio base",
+                      label: "Precio ",
                       value: olimpiada.precioOlimpiada != null ?
                         `${olimpiada.precioOlimpiada} BOB` : "No definido"
                     },
@@ -253,16 +331,12 @@ const OlimpiadaManagement = () => {
                       value: olimpiada.nombreEstado
                     },
                     {
-                      label: "Períodos",
-                      value: olimpiada.periodos?.length || 0
-                    },
-                    {
                       label: "Fecha Inicio",
-                      value: formatDate(olimpiada.fechaInicio) || 0
+                      value: formatDate(olimpiada.fechaInicio) || "No definida"
                     },
                     {
                       label: "Fecha Fin",
-                      value: formatDate(olimpiada.fechaFin)
+                      value: formatDate(olimpiada.fechaFin) || "No definida"
                     }
                   ]}
                 />

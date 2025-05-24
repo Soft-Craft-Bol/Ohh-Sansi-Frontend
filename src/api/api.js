@@ -78,7 +78,7 @@ export const parentescoTutor = () => api.get('/parentesco/findAllParentescos');
 //OLIMPIADA
 export const getOlimpiadas = () => api.get('/olimpiada');
 export const saveOlimpiada = (data) => api.post('/olimpiada/register', data);
-export const savePrecioOlimpiada = (data) => api.put('/olimpiada/update-precio', data);
+export const updateOlimpiada = (data) => api.put('/olimpiada/update-olimpiada', data);
 export const getOlimpiadaPreinscripcion = () => api.get(`/fecha-olimpiada/periodo-inscripcion-actual`);
 
 //CatalogoOlimpiada

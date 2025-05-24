@@ -1,30 +1,64 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 
 const ThemeContext = createContext();
 
-export const useTheme = () => useContext(ThemeContext);
-
 export const ThemeProvider = ({ children }) => {
-  // Inicializa el tema con el valor guardado en localStorage o 'light' por defecto
-  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    // Verificar si hay preferencia guardada
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+      return savedTheme === 'dark';
+    }
+    // Si no hay preferencia guardada, usar la preferencia del sistema
+    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+  });
 
   const toggleTheme = () => {
-    const newTheme = theme === 'light' ? 'dark' : 'light';
-    setTheme(newTheme);
-    document.body.classList.toggle('dark', newTheme === 'dark');
+    setIsDarkMode(prev => !prev);
   };
 
   useEffect(() => {
-    document.body.classList.toggle('dark', theme === 'dark');
-  }, [theme]);
+    // Guardar preferencia en localStorage
+    localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+    
+    // Aplicar clase al body
+    if (isDarkMode) {
+      document.body.classList.add('dark-theme');
+    } else {
+      document.body.classList.remove('dark-theme');
+    }
+  }, [isDarkMode]);
 
+  // Escuchar cambios en la preferencia del sistema
   useEffect(() => {
-    localStorage.setItem('theme', theme);
-  }, [theme]);
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    
+    const handleChange = (e) => {
+      // Solo cambiar si no hay preferencia manual guardada
+      const savedTheme = localStorage.getItem('theme');
+      if (!savedTheme) {
+        setIsDarkMode(e.matches);
+      }
+    };
+
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+    <ThemeContext.Provider value={{
+      isDarkMode,
+      toggleTheme
+    }}>
       {children}
     </ThemeContext.Provider>
   );
+};
+
+export const useTheme = () => {
+  const context = useContext(ThemeContext);
+  if (!context) {
+    throw new Error('useTheme debe ser usado dentro de un ThemeProvider');
+  }
+  return context;
 };
