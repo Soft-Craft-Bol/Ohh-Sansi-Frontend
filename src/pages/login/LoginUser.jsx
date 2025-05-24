@@ -1,12 +1,12 @@
 import React, { useState, useCallback, useEffect, memo } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Formik, Form } from 'formik';
 import { FaEnvelope, FaLock, FaUserShield } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import './LoginUser.css';
 import { loginUser } from '../../api/api';
 import { validationSchema } from '../../schemas/LoginValidate';
-import { parseJwt } from '../../utils/authJson';
+import { parseJwt } from '../../utils/AuthUtils';
 import InputText from '../../components/inputs/InputText';
 import { ButtonPrimary } from '../../components/button/ButtonPrimary';
 import { useAuth } from '../../context/AuthProvider';
@@ -20,13 +20,18 @@ const initialValues = {
 const LoginUser = () => {
   const [loginError, setLoginError] = useState('');
   const navigate = useNavigate();
+  const location = useLocation();
   const { isAuthenticated, login, isLoading } = useAuth();
 
+  // Obtener la ruta a la que se quería acceder originalmente
+  const from = location.state?.from?.pathname || '/admin';
+
   useEffect(() => {
+    // Solo redirigir si ya está autenticado Y el componente se está cargando explícitamente
     if (isAuthenticated && !isLoading) {
-      navigate('/admin');
+      navigate(from, { replace: true });
     }
-  }, [isAuthenticated, isLoading, navigate]);
+  }, [isAuthenticated, isLoading, navigate, from]);
 
   const handleSubmit = useCallback(async (values, { setSubmitting }) => {
     setLoginError('');
@@ -47,6 +52,8 @@ const LoginUser = () => {
         };
         
         login(token, userData);
+        // Redirigir después del login exitoso
+        navigate(from, { replace: true });
       } else {
         setLoginError('Usuario o contraseña incorrectos.');
       }
@@ -59,9 +66,9 @@ const LoginUser = () => {
       );
     }
     setSubmitting(false);
-  }, [login, navigate]);
+  }, [login, navigate, from]);
 
-  if (isLoading || isAuthenticated) {
+  if (isLoading) {
     return (
       <div className="login-loading">
         <div className="loading-spinner"></div>

@@ -1,13 +1,18 @@
-import React from 'react';
+import { useTheme } from '../context/ThemeProvider'; 
 import Navbar from '../components/sidebar/Navbar';
+import Footer from '../components/sidebar/Footer';
 
 const Layout = ({ children }) => {
+  const { theme} = useTheme();
+
   return (
-    <div>
+    <div className={`app-layout ${theme}`}>
+   
       <Navbar />
-      <section id="content" style={{ paddingTop: '60px' }}>
+      <section id="content">
         {children}
       </section>
+      <Footer />
     </div>
   );
 };
