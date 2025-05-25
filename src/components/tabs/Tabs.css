@@ -184,6 +184,10 @@ body.dark .tabs-content {
   .tab-description {
     display: block;
   }
+
+  .tab-label{
+    display: block;
+  }
 }
 
 @media (max-width: 768px) {
@@ -206,6 +210,9 @@ body.dark .tabs-content {
     padding: 1rem;
     min-height: 250px;
   }
+  .tab-label{
+    display: block;
+  }
 }
 
 @media (max-width: 576px) {
@@ -227,6 +234,9 @@ body.dark .tabs-content {
   .tabs-content {
     padding: 0.8rem;
   }
+  .tab-label{
+    display: none;
+  }
 }
 
 @media (max-width: 480px) {
@@ -243,5 +253,9 @@ body.dark .tabs-content {
   .tabs-content {
     padding: 0.6rem;
     min-height: 200px;
+    display: none;
+  }
+  .tab-label{
+    display: none;
   }
 }

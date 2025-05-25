@@ -3,6 +3,7 @@ import { FileText, Download, Filter, Users, MapPin, GraduationCap } from 'lucide
 import { getCatalogoOlimpiada, getReporteInscritos } from '../../../api/api';
 import { exportToPDFInscritos, exportToExcelInscritos, exportToCSVInscritos } from '../../../utils/exportUtils';
 import './ListaInscritos.css';
+import Swal from 'sweetalert2';
 
 const ListaInscritos = () => {
   const [selectedOlimpiada, setSelectedOlimpiada] = useState('');
@@ -10,32 +11,34 @@ const ListaInscritos = () => {
   const [inscritos, setInscritos] = useState([]);
   const [loading, setLoading] = useState(false);
   const [loadingCatalogo, setLoadingCatalogo] = useState(true);
-  
-  // Estados para los datos del catálogo
   const [olimpiadas, setOlimpiadas] = useState([]);
   const [areas, setAreas] = useState([]);
   const [catalogoCompleto, setCatalogoCompleto] = useState([]);
 
-  // Cargar catálogo al montar el componente
   useEffect(() => {
     cargarCatalogo();
   }, []);
 
-  // Actualizar áreas cuando cambie la olimpiada seleccionada
   useEffect(() => {
     if (selectedOlimpiada && catalogoCompleto.length > 0) {
-      console.log('Olimpiada seleccionada:', selectedOlimpiada);
-      console.log('Catálogo completo:', catalogoCompleto);
+      const olimpiadaSeleccionada = catalogoCompleto.find(
+        item => item.nombreOlimpiada === selectedOlimpiada
+      );
       
-      // Extraer áreas únicas de la olimpiada seleccionada
-      const areasOlimpiada = catalogoCompleto
-        .filter(item => item.nombreOlimpiada === selectedOlimpiada)
-        .map(item => item.nombreArea)
-        .filter((area, index, self) => self.indexOf(area) === index); // Remover duplicados
-      
-      console.log('Áreas encontradas:', areasOlimpiada);
-      setAreas(areasOlimpiada);
-      setSelectedArea(''); // Resetear área seleccionada
+      if (olimpiadaSeleccionada) {
+        const areasOlimpiada = catalogoCompleto
+          .filter(item => 
+            item.nombreOlimpiada === selectedOlimpiada && 
+            item.idOlimpiada === olimpiadaSeleccionada.idOlimpiada
+          )
+          .map(item => ({
+            nombre: item.nombreArea,
+            id: item.idArea
+          }));
+        
+        setAreas(areasOlimpiada);
+      }
+      setSelectedArea('');
     } else {
       setAreas([]);
       setSelectedArea('');
@@ -45,31 +48,29 @@ const ListaInscritos = () => {
   const cargarCatalogo = async () => {
     try {
       setLoadingCatalogo(true);
-      const response = await getCatalogoOlimpiada();
-      
-      console.log('Respuesta completa:', response);
-      
-      // La respuesta de Axios viene en response.data
+      const response = await getCatalogoOlimpiada();  
       const data = response?.data || response;
       
-      console.log('Data extraída:', data);
       
       if (data && Array.isArray(data)) {
         setCatalogoCompleto(data);
         
-        // Extraer olimpiadas únicas
-        const olimpiadasUnicas = data
-          .map(item => item.nombreOlimpiada)
-          .filter((olimpiada, index, self) => self.indexOf(olimpiada) === index);
-        
-        console.log('Olimpiadas únicas:', olimpiadasUnicas);
+        const olimpiadasUnicas = data.reduce((acc, item) => {
+          if (!acc.some(olim => olim.id === item.idOlimpiada)) {
+            acc.push({
+              id: item.idOlimpiada,
+              nombre: item.nombreOlimpiada
+            });
+          }
+          return acc;
+        }, []);
         setOlimpiadas(olimpiadasUnicas);
       } else {
         console.error('Los datos no son un array válido:', data);
       }
     } catch (error) {
       console.error('Error al cargar catálogo:', error);
-      alert('Error al cargar el catálogo de olimpiadas');
+      Swal.fire('Error al cargar el catálogo de olimpiadas');
     } finally {
       setLoadingCatalogo(false);
     }
@@ -77,59 +78,34 @@ const ListaInscritos = () => {
 
   const handleGenerarReporte = async () => {
     if (!selectedOlimpiada) {
-      alert('Por favor selecciona una olimpiada');
+      Swal.fire('Por favor selecciona una olimpiada');
       return;
     }
 
     setLoading(true);
     
     try {
-      // Preparar parámetros para la API
-      const params = {
-        olimpiada: selectedOlimpiada,
-        ...(selectedArea && { area: selectedArea })
-      };
+      const olimpiadaSeleccionada = catalogoCompleto.find(
+        item => item.nombreOlimpiada === selectedOlimpiada
+      );
       
-      const response = await getReporteInscritos(params);
+      const areaSeleccionada = areas.find(
+        area => area.nombre === selectedArea
+      );
       
-      if (response && Array.isArray(response)) {
-        setInscritos(response);
-      } else {
-        // Si no hay datos, usar datos de ejemplo para prueba
-        const datosEjemplo = [
-          {
-            apellido_paterno: "Coria",
-            apellido_materno: "Pereddo", 
-            nombre_participante: "Jorge",
-            id_inscripcion: 2105,
-            nombre_colegio: "NUEVA ESTRELLA IRPA GRANDE",
-            nombre_municipio: "TEOPONTE",
-            nombre_departamento: "LA PAZ"
-          },
-          {
-            apellido_paterno: "Rolon",
-            apellido_materno: "Martinez",
-            nombre_participante: "Sofia",
-            id_inscripcion: 2106,
-            nombre_colegio: "KANATA",
-            nombre_municipio: "Cochabamba",
-            nombre_departamento: "COCHABAMBA"
-          },
-          {
-            apellido_paterno: "DIAZ CASTRO",
-            apellido_materno: "",
-            nombre_participante: "ADRIANA CAMILA",
-            id_inscripcion: 2107,
-            nombre_colegio: "KANATA",
-            nombre_municipio: "Cochabamba", 
-            nombre_departamento: "SACABA"
-          }
-        ];
-        setInscritos(datosEjemplo);
+       if (!olimpiadaSeleccionada) {
+        throw new Error('No se encontró la olimpiada seleccionada');
       }
+      
+       const response = await getReporteInscritos(
+        areaSeleccionada?.id || null,
+        olimpiadaSeleccionada.idOlimpiada
+      );
+            setInscritos(response.data || response);
+
     } catch (error) {
       console.error('Error al generar reporte:', error);
-      alert('Error al generar el reporte');
+      Swal.fire('Error al generar el reporte');
       setInscritos([]);
     } finally {
       setLoading(false);
@@ -138,7 +114,7 @@ const ListaInscritos = () => {
 
   const handleExportarPDF = () => {
     if (inscritos.length === 0) {
-      alert('No hay datos para exportar');
+      Swal.fire('No hay datos para exportar');
       return;
     }
     
@@ -148,7 +124,7 @@ const ListaInscritos = () => {
 
   const handleExportarExcel = () => {
     if (inscritos.length === 0) {
-      alert('No hay datos para exportar');
+      Swal.fire('No hay datos para exportar');
       return;
     }
     
@@ -158,7 +134,7 @@ const ListaInscritos = () => {
 
   const handleExportarCSV = () => {
     if (inscritos.length === 0) {
-      alert('No hay datos para exportar');
+      Swal.fire('No hay datos para exportar');
       return;
     }
     
@@ -202,8 +178,8 @@ const ListaInscritos = () => {
               >
                 <option value="">Seleccionar olimpiada</option>
                 {olimpiadas.map((olimpiada, index) => (
-                  <option key={index} value={olimpiada}>
-                    {olimpiada}
+                  <option key={index} value={olimpiada.nombre}>
+                    {olimpiada.nombre}
                   </option>
                 ))}
               </select>
@@ -221,8 +197,8 @@ const ListaInscritos = () => {
               >
                 <option value="">Todas las áreas</option>
                 {areas.map((area, index) => (
-                  <option key={index} value={area}>
-                    {area}
+                  <option key={index} value={area.nombre}>
+                    {area.nombre}
                   </option>
                 ))}
               </select>

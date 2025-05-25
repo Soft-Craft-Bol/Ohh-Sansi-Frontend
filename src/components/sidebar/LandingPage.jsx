@@ -94,7 +94,6 @@ const LandingPage = () => {
     { icon: <FaUserGraduate />, title: "Inscripción Individual", link: "/inscripcion-individual" },
     { icon: <FaUsers />, title: "Inscripción Masiva", link: "/inscripcion-masiva" },
     { icon: <FaSearch />, title: "Consultar Estado", link: "/estado-de-inscripcion" },
-    { icon: <FaMoneyCheckAlt />, title: "Métodos de Pago", link: "/metodo-pago" },
     { icon: <FaFileInvoice />, title: "Generar Orden", link: "/orden-de-pago" },
     { icon: <FaUpload />, title: "Subir Comprobante", link: "/subir-boleta" }
   ];

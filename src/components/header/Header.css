@@ -7,7 +7,7 @@
   box-shadow: 0 4px 20px rgba(30, 144, 255, 0.3);
   font-family: 'Poppins', sans-serif;
   position: relative;
-  z-index: 2;
+  margin-top: 50px;
   transition: all 0.3s ease;
 }
 

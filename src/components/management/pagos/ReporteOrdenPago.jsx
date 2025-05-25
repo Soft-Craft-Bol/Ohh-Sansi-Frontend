@@ -7,8 +7,9 @@ import { getReporteOrdenPago } from '../../../api/api';
 import Swal from 'sweetalert2';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { exportToPDF, exportToExcel, exportToCSV, mapDataForTable } from '../../../utils/exportUtils';
+import { mapDataForTable } from '../../../utils/exportUtils';
 import './ReporteOrdenPago.css';
+import ExportButtons from './ExportButtons';
 
 const ReporteOrdenPago = () => {
   const [fechaInicio, setFechaInicio] = useState(new Date());
@@ -50,18 +51,6 @@ const ReporteOrdenPago = () => {
     }
   };
 
-  const handleExportPDF = () => {
-    exportToPDF(reportData, 'Reporte de Órdenes de Pago', fechaInicio, fechaFin);
-  };
-
-  const handleExportExcel = () => {
-    exportToExcel(reportData, 'Reporte de Órdenes de Pago');
-  };
-
-  const handleExportCSV = () => {
-    exportToCSV(reportData, 'Reporte de Órdenes de Pago');
-  };
-
   const tableData = mapDataForTable(reportData);
 
   return (
@@ -100,18 +89,15 @@ const ReporteOrdenPago = () => {
       {reportData.length > 0 && (
         <div className="reporte-actions">
           <h3>Resultados: {reportData.length} órdenes encontradas</h3>
-          <div className="export-buttons">
-            <ButtonPrimary onClick={handleExportPDF}>
-              Exportar a PDF
-            </ButtonPrimary>
-            <ButtonPrimary onClick={handleExportExcel}>
-              Exportar a Excel
-            </ButtonPrimary>
-            <ButtonPrimary onClick={handleExportCSV}>
-              Exportar a CSV
-            </ButtonPrimary>
-          </div>
-          
+          <ExportButtons 
+            reportData={reportData}
+            dateRange={{
+              start: fechaInicio,
+              end: fechaFin
+            }}
+            title="Reporte de Órdenes de Pago"
+          />
+
           <div className="reporte-table-container">
             <table className="reporte-table">
               <thead>
