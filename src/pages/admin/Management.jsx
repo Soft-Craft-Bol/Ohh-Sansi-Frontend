@@ -20,7 +20,7 @@ const OlimpiadasDashboard = lazy(() => import("../../components/management/dashb
 const FormArea = lazy(() => import("../../components/management/formArea/FormArea"));
 const CategoriesManagement = lazy(() => import("../../components/management/categories/CategoriesManagement"));
 const OlimpiadaManagement = lazy(() => import("../../components/management/olimpiada/OlimpiadaManagement"));
-const PeriodosManagement = lazy(() => import("../../components/management/period/PeriodsManagementSlider"));
+const PeriodosManagement = lazy(() => import("../../components/management/period/PeriodsManagement"));
 const CatalogoMangament = lazy(() => import("../../components/management/catalogo/CatalogoManagement"));
 const OrderSummaryDashboard = lazy(() => import("../../components/management/pagos/OrderSummaryDashboard"));
 const ReporteOrdenPago = lazy(() => import("../../components/management/pagos/ReporteOrdenPago"));
