@@ -2,7 +2,7 @@ import React, { useRef, useState } from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import * as XLSX from 'xlsx';
-import { FaUpload, FaDownload, FaCheck, FaTimes, FaCheckCircle, FaExclamationTriangle } from 'react-icons/fa';
+import { FaUpload, FaDownload, FaCheck } from 'react-icons/fa';
 import { RiFileExcel2Line } from 'react-icons/ri';
 import { ButtonPrimary } from '../button/ButtonPrimary';
 import './LoadExcel.css';
@@ -10,7 +10,7 @@ import Swal from 'sweetalert2';
 import plantilla from '../../assets/Plantilla-De-Inscipción-v1.xlsx';
 import Table from '../table/Table';
 import { excelRowSchemaAreas, excelRowSchemaDatos } from '../../schemas/ExcelValidation';
-import { getInscripcionByID, postOnlyExcelFile, registerTutor, verificarParticipante } from '../../api/api';
+import { getInscripcionByID, postOnlyExcelFile, registerTutor } from '../../api/api';
 import { useNavigate } from 'react-router-dom';
 import { verificarTutor } from '../../hooks/loaderInfo/LoaderInfo';
 
@@ -26,31 +26,31 @@ const UpdateExcel = () => {
   const [excelData, setExcelData] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
   const [buttonState, setButtonState] = useState('upload');
-  const navigate = useNavigate();
-
-  // Función para convertir fechas de Excel
+  const navigate = useNavigate(); 
   const convertirFechaExcel = (value) => {
     if (!value) return null;
     
     if (typeof value === 'number') {
-      const utc_days = Math.floor(value - 25569);
-      const utc_value = utc_days * 86400;
-      return new Date(utc_value * 1000);
+        const utc_days = Math.floor(value - 25569);
+        const utc_value = utc_days * 86400;
+        return new Date(utc_value * 1000);
     }
     
+    // Si es string (formato de texto)
     if (typeof value === 'string') {
-      const parsedDate = new Date(value);
-      return isNaN(parsedDate.getTime()) ? null : parsedDate;
+        // Intentar parsear diferentes formatos
+        const parsedDate = new Date(value);
+        return isNaN(parsedDate.getTime()) ? null : parsedDate;
     }
     
+    // Si ya es un objeto Date
     if (value instanceof Date) {
-      return value;
+        return value;
     }
     
     return null;
-  };
-
-  // Función para validar la edad (4-20 años)
+    }; 
+  
   const validarEdad = (fechaNacimiento) => {
     const fechaNac = convertirFechaExcel(fechaNacimiento);
     if (!fechaNac) return false;
@@ -60,22 +60,11 @@ const UpdateExcel = () => {
     const mes = hoy.getMonth() - fechaNac.getMonth();
     
     if (mes < 0 || (mes === 0 && hoy.getDate() < fechaNac.getDate())) {
-      edad--;
+        edad--;
     }
     
     return edad >= 4 && edad <= 20;
-  };
-
-  // Función para verificar si un participante ya está registrado
-  const verificarParticipanteRegistrado = async (ci) => {
-    try {
-      const response = await verificarParticipante(ci);
-      return response.data?.fechaNacimiento ? true : false;
-    } catch (error) {
-      console.error('Error al verificar participante:', error);
-      return false;
-    }
-  };
+};
 
   const formik = useFormik({
     initialValues: {
@@ -91,10 +80,10 @@ const UpdateExcel = () => {
     
       reader.onload = (event) => {
         const data = new Uint8Array(event.target.result);
-        const workbook = XLSX.read(data, { type: 'array', cellDates: true });
+        const workbook = XLSX.read(data, { type: 'array' });
       
         const hoja1 = workbook.Sheets['Datos'];
-        const jsonHoja1 = XLSX.utils.sheet_to_json(hoja1, { raw: false, dateNF: 'yyyy-mm-dd' });
+        const jsonHoja1 = XLSX.utils.sheet_to_json(hoja1);
       
         const columnasHoja1 = ['Nombres', 'Apellido Paterno', 'Apellido Materno', 'Departamento', 'Colegio', 'Carnet Identidad'];
         const participantes = jsonHoja1.map((row) => {
@@ -169,7 +158,17 @@ const UpdateExcel = () => {
     formik.setFieldTouched('file', false);
   };
 
-  const validarFilasDatos = async (filas) => {
+    const verificarParticipanteRegistrado = async (ci) => {
+    try {
+      const response = await verificarParticipante(ci);
+      return response.data?.fechaNacimiento ? true : false;
+    } catch (error) {
+      console.error('Error al verificar participante:', error);
+      return false;
+    }
+    };
+
+    const validarFilasDatos = async (filas) => {
     const errores = [];
     for (let i = 0; i < filas.length; i++) {
       try {
@@ -215,6 +214,48 @@ const UpdateExcel = () => {
     return errores;
   };
 
+   const mostrarResultados = (resultados) => {
+    const exitosos = resultados.filter(item => item.success);
+    const fallidos = resultados.filter(item => !item.success);
+
+    Swal.fire({
+      title: 'Resultado del Registro',
+      html: `
+        <div style="text-align: left; max-height: 60vh; overflow-y: auto;">
+          <div style="margin-bottom: 20px;">
+            <h3 style="color: #4CAF50;">Registros Exitosos: ${exitosos.length}</h3>
+            ${exitosos.slice(0, 5).map(item => `
+              <div style="display: flex; align-items: center; margin: 5px 0; color: #4CAF50;">
+                <span style="margin-right: 10px;"><FaCheckCircle /></span>
+                <span>Fila ${item.fila}: ${item.nombre || 'Participante'} (CI: ${item.ci_participante_excel})</span>
+              </div>
+            `).join('')}
+            ${exitosos.length > 5 ? `<p>...y ${exitosos.length - 5} más</p>` : ''}
+          </div>
+          
+          <div>
+            <h3 style="color: #F44336;">Registros Fallidos: ${fallidos.length}</h3>
+            ${fallidos.slice(0, 5).map(item => `
+              <div style="margin: 5px 0; color: #F44336;">
+                <div style="display: flex; align-items: center;">
+                  <span style="margin-right: 10px;"><FaTimes /></span>
+                  <span>Fila ${item.fila}: ${item.error || 'Error desconocido'}</span>
+                </div>
+                ${item.ci_participante_excel ? `<div style="font-size: 0.9em; margin-left: 24px;">CI: ${item.ci_participante_excel}</div>` : ''}
+              </div>
+            `).join('')}
+            ${fallidos.length > 5 ? `<p>...y ${fallidos.length - 5} más</p>` : ''}
+          </div>
+        </div>
+      `,
+      width: '800px',
+      confirmButtonText: 'Continuar',
+      customClass: {
+        popup: 'resultados-popup'
+      }
+    });
+    };
+
   const validarFilasAreas = async (filas) => {
     const errores = [];
     for (let i = 0; i < filas.length; i++) {
@@ -223,7 +264,7 @@ const UpdateExcel = () => {
       } catch (validationError) {
         validationError.inner.forEach(err => {
           errores.push({
-            hoja: filas[i]._hoja || 'Areas',
+            hoja: filas[i]._hoja || 'Desconocida',
             fila: i + 2,
             columna: err.path,
             mensaje: err.message
@@ -275,66 +316,13 @@ const UpdateExcel = () => {
             <div style="margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #eee;">
               <p><strong>Hoja ${error.hoja}, Fila ${error.fila}</strong></p>
               <p><strong>Campo:</strong> ${error.columna}</p>
-              <p style="color: #F44336; display: flex; align-items: center;">
-                <span style="margin-right: 8px;"><FaExclamationTriangle /></span>
-                ${error.mensaje}
-              </p>
-              ${error.columna === 'FechaNacimiento' ? 
-                '<p style="font-size: 0.9em; color: #666;">Formato esperado: DD/MM/AAAA o AAAA-MM-DD</p>' : ''}
+              <p style="color: red;">${error.mensaje}</p>
             </div>
           `).join('')}
         </div>
       `,
       confirmButtonText: 'Entendido',
       width: '800px'
-    });
-  };
-
-  const mostrarResultados = (resultados) => {
-    const exitosos = resultados.filter(item => item.success);
-    const fallidos = resultados.filter(item => !item.success);
-
-    Swal.fire({
-      title: 'Resultado del Registro',
-      html: `
-        <div style="text-align: left; max-height: 60vh; overflow-y: auto;">
-          <div style="margin-bottom: 20px;">
-            <h3 style="color: #4CAF50; display: flex; align-items: center;">
-              <FaCheckCircle style="margin-right: 8px;" />
-              Registros Exitosos: ${exitosos.length}
-            </h3>
-            ${exitosos.slice(0, 5).map(item => `
-              <div style="display: flex; align-items: center; margin: 5px 0; color: #4CAF50;">
-                <span style="margin-right: 10px;"><FaCheck /></span>
-                <span>Fila ${item.fila}: ${item.nombre || 'Participante'} (CI: ${item.ci_participante_excel})</span>
-              </div>
-            `).join('')}
-            ${exitosos.length > 5 ? `<p style="color: #4CAF50;">...y ${exitosos.length - 5} registros más</p>` : ''}
-          </div>
-          
-          <div>
-            <h3 style="color: #F44336; display: flex; align-items: center;">
-              <FaTimes style="margin-right: 8px;" />
-              Registros Fallidos: ${fallidos.length}
-            </h3>
-            ${fallidos.slice(0, 5).map(item => `
-              <div style="margin: 5px 0; color: #F44336;">
-                <div style="display: flex; align-items: center;">
-                  <span style="margin-right: 10px;"><FaTimes /></span>
-                  <span>Fila ${item.fila}: ${item.error || 'Error desconocido'}</span>
-                </div>
-                ${item.ci_participante_excel ? `<div style="font-size: 0.9em; margin-left: 24px;">CI: ${item.ci_participante_excel}</div>` : ''}
-              </div>
-            `).join('')}
-            ${fallidos.length > 5 ? `<p style="color: #F44336;">...y ${fallidos.length - 5} registros más</p>` : ''}
-          </div>
-        </div>
-      `,
-      width: '800px',
-      confirmButtonText: 'Continuar',
-      customClass: {
-        popup: 'resultados-popup'
-      }
     });
   };
 
@@ -347,41 +335,45 @@ const UpdateExcel = () => {
         showConfirmButton: true
       });
       return;
-    }
+    } 
 
     const leerExcel = (file) => {
-      return new Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = async (event) => {
-          try {
-            const data = new Uint8Array(event.target.result);
-            const workbook = XLSX.read(data, { type: 'array', cellDates: true });
-            
-            const hojaDatos = XLSX.utils.sheet_to_json(workbook.Sheets['Datos'] || {}, {
-              raw: false,
-              dateNF: 'yyyy-mm-dd'
-            }).filter(fila => fila['id_grado'] !== 0 && fila['id_grado'] !== '0' && fila['Carnet tutor']);
-
-            const hojaAreas = XLSX.utils.sheet_to_json(workbook.Sheets['Areas'] || {}, {
-              raw: false,
-              dateNF: 'yyyy-mm-dd'
-            }).filter(fila => fila['id_grado'] !== 0 && fila['id_grado'] !== '0' && fila['Carnet tutor']);
-
-            const filasConHojaDatos = hojaDatos.map(fila => ({ ...fila, _hoja: 'Datos' }));
-            const filasConHojaAreas = hojaAreas.map(fila => ({ ...fila, _hoja: 'Areas' }));
-
-            const erroresDatos = await validarFilasDatos(filasConHojaDatos);
-            const erroresAreas = await validarFilasAreas(filasConHojaAreas);
-            
-            resolve([...erroresDatos, ...erroresAreas]);
-          } catch (error) {
-            reject(error);
-          }
+            try {
+                const data = new Uint8Array(event.target.result);
+                const workbook = XLSX.read(data, { type: 'array', cellDates: true });
+                
+                // Procesar hoja Datos
+                const hojaDatos = XLSX.utils.sheet_to_json(workbook.Sheets['Datos'] || {}, {
+                    raw: false, // Para obtener fechas como objetos Date
+                    dateNF: 'yyyy-mm-dd' // Formato esperado
+                }).filter(fila => fila['id_grado'] !== 0 && fila['id_grado'] !== '0' && fila['Carnet tutor']);
+                
+                // Procesar hoja Areas
+                const hojaAreas = XLSX.utils.sheet_to_json(workbook.Sheets['Areas'] || {}, {
+                    raw: false,
+                    dateNF: 'yyyy-mm-dd'
+                }).filter(fila => fila['id_grado'] !== 0 && fila['id_grado'] !== '0' && fila['Carnet tutor']);
+                
+                // Asignar hoja de origen
+                const filasConHojaDatos = hojaDatos.map(fila => ({ ...fila, _hoja: 'Datos' }));
+                const filasConHojaAreas = hojaAreas.map(fila => ({ ...fila, _hoja: 'Areas' }));
+                
+                // Validar
+                const erroresDatos = await validarFilasDatos(filasConHojaDatos);
+                const erroresAreas = await validarFilasAreas(filasConHojaAreas);
+                
+                resolve([...erroresDatos, ...erroresAreas]);
+            } catch (error) {
+                reject(error);
+            }
         };
         reader.onerror = (error) => reject(error);
         reader.readAsArrayBuffer(file);
-      });
-    };
+    });
+  };
 
     try {
       const errores = await leerExcel(selectedFile);
@@ -417,7 +409,7 @@ const UpdateExcel = () => {
           
           ciInput.addEventListener('input', async (e) => {
             const ci = e.target.value.trim();
-            if (ci.length >= 5) {
+            if (ci.length >= 6n) {
               try {
                 ciInput.disabled = true;
                 Swal.showLoading();
@@ -493,55 +485,78 @@ const UpdateExcel = () => {
       });
 
       if (!formValues) return;
-
+      try {
       Swal.fire({
-        title: "Procesando archivo...",
-        text: "Estamos registrando los participantes",
+        title: "Subiendo archivo...",
+        text: "Espere un momento mientras se procesa",
         allowOutsideClick: false,
         didOpen: () => Swal.showLoading()
       });
-
-      try {
+      
         const res = await postOnlyExcelFile(selectedFile);
         const result = await res.data;
+        Swal.close();
         
         if (Array.isArray(result)) {
-          const resultadosFiltrados = result.filter(item => 
-            !(item.error && item.error.includes('violates foreign key constraint'))
-          );
+          const erroresFiltrados = result.filter(item => !(item.error && item.error.includes('violates foreign key constraint')));
+          
+          if (erroresFiltrados.some(item => !item.success)) {
+            setExcelData([]);
+          }
 
-          mostrarResultados(resultadosFiltrados);
+          await Swal.fire({
+            title: 'Resultados del Proceso',
+            html: `
+              <div style="max-height: 400px; overflow-y: auto; margin-bottom: 15px; text-align: left;">
+                ${erroresFiltrados.filter(item => item.fila !== undefined).map(item => `
+                  <div style="margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 8px;">
+                    <p style="margin: 2px 0; font-weight: bold; color: #555;">Fila ${item.fila}</p>
+                    <p style="margin: 2px 0; color: ${item.success ? 'green' : 'red'}">
+                      <strong>Estado:</strong> ${item.success ? 'Éxito' : 'Error'}
+                    </p>
+                    ${item.error ? `<p style="margin: 2px 0; color: red;"><strong>Error:</strong> ${item.error}</p>` : ''}
+                  </div>
+                `).join('')}
+              </div>
+              <div style="background-color: #f5f5f5; padding: 10px; border-radius: 5px; margin-top: 10px;">
+                <p style="margin: 5px 0;"><strong>Registros exitosos:</strong> ${result.filter(e => e.success).length}</p>
+              </div>
+            `,
+            width: 800,
+            confirmButtonText: 'Continuar'
+          });
 
-          const primerExitoso = resultadosFiltrados.find(item => item.success);
-          if (primerExitoso) {
-            const tutorPayload = {
-              idTutorParentesco: 2,
-              tutors: [{
-                idTipoTutor: 3,
-                emailTutor: formValues.correo,
-                nombresTutor: formValues.nombres,
-                apellidosTutor: formValues.apellidos,
-                telefono: Number(formValues.telefono),
-                carnetIdentidadTutor: Number(formValues.ci),
-                complementoCiTutor: formValues.comp
-              }]
-            };
+          const tutorPayload = {
+            idTutorParentesco: 2,
+            tutors: [{
+              idTipoTutor: 3,
+              emailTutor: formValues.correo,
+              nombresTutor: formValues.nombres,
+              apellidosTutor: formValues.apellidos,
+              telefono: Number(formValues.telefono),
+              carnetIdentidadTutor: Number(formValues.ci),
+              complementoCiTutor: formValues.comp
+            }]
+          };
 
-            await registerTutor(primerExitoso.ci_participante_excel, tutorPayload);
-            const forModal = await getInscripcionByID(primerExitoso.id_inscripcion);
-            handleConfirm(forModal.data.data.codigoUnicoInscripcion);
+          for (const fila of result) {
+            if (fila.success) {
+              await registerTutor(fila.ci_participante_excel, tutorPayload);
+              const forModal = await getInscripcionByID(fila.id_inscripcion);
+              handleConfirm(forModal.data.data.codigoUnicoInscripcion);
+              break;
+            }
           }
         }
       } catch (error) {
-        console.error("Error al procesar el archivo:", error);
+        console.error("Error al enviar archivo:", error);
         Swal.fire({
           icon: 'error',
-          title: 'Error en el proceso',
-          text: error.message || 'Ocurrió un error al procesar el archivo',
+          title: 'Error al procesar archivo',
+          text: error.message || 'Ocurrió un error al enviar el archivo',
           confirmButtonText: 'Entendido'
         });
-      } finally {
-        Swal.hideLoading();
+        setExcelData([]);
       }
     } catch (error) {
       console.error("Error al procesar el archivo Excel:", error);
