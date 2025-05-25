@@ -100,23 +100,16 @@ const CatalogoManagement = () => {
     }
     const currentOlimpiada = state.olimpiadas.find(o => o.idOlimpiada === state.selectedOlimpiada);
     
-    if (currentOlimpiada.nombreEstado !== 'PLANIFICACION') {
+    if (/*currentOlimpiada.nombreEstado !== 'PLANIFICACION'*/ false) {
       showAlert('error', 'Error al editar', 'Solo se puede modificar el catálogo cuando la olimpiada está en estado "PLANIFICACION"');
       throw new Error('Solo se puede modificar el catálogo cuando la olimpiada está en estado "PLANIFICACION"');
-    }else if (olimpiadaEstaActiva) {
+    }else {
       setState(prev => ({
         ...prev,
         modalOpen: true,
         isEditing: true,
         itemToEdit: item,
       }));
-    } else {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error de Edición',
-        text: 'No se pueden editar configuraciones para una olimpiada que no está activa.',
-        confirmButtonText: 'Aceptar'
-      });
     }
   };
 
@@ -278,8 +271,10 @@ const CatalogoManagement = () => {
         <CatalogModal
           areas={state.areas}
           categories={state.categories}
-          onClose={() => setState(prev => ({ ...prev, modalOpen: false }))}
+          onClose={closeModal}
           onSubmit={handleAddItem}
+          isEditing={state.isEditing}
+          itemData={state.itemToEdit}
         />
       )}
     </div>

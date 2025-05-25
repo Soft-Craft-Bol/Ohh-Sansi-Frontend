@@ -1,29 +1,56 @@
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
+import React, { useEffect } from 'react';
 import './CatalogModal.css';
 
-const CatalogModal = ({ areas, categories, onClose, onSubmit }) => {
+const CatalogModal = ({ areas, categories, onClose, onSubmit, isEditing, itemData }) => {
+
+  //POR QUE NO AGREGARON idCategoria dentro del Object en vez del nombreCategoria hdlgpt, toca mappear
+  // Obtener el idCategoria de una categoría dado su nombre
+  const getCategoryIdByName = (categoryName, categoriesList) => {
+    const category = categoriesList.find(cat => cat.nombreCategoria === categoryName);
+    return category ? category.idCategoria : '';
+  };
+
+  // si estamos en modo edición
+  const initialCategoryId = isEditing && itemData
+    ? getCategoryIdByName(itemData.nombreCategoria, categories)
+    : '';
+
   const formik = useFormik({
     initialValues: {
-      idArea: '',
-      idCategoria: ''
+      idArea: itemData?.idArea || '',
+      idCategoria: initialCategoryId,
     },
     validationSchema: Yup.object({
       idArea: Yup.string().required('Selecciona un área'),
-      idCategoria: Yup.string().required('Selecciona una categoría')
+      idCategoria: Yup.string().required('Selecciona una categoría'),
     }),
-    onSubmit: (values, { resetForm }) => {
+    onSubmit: (values) => { 
       onSubmit(values);
-      resetForm();
-      onClose();
     }
   });
+
+  // Usamos useEffect para actualizar los valores de Formik cuando itemData cambie
+  useEffect(() => {
+    if (isEditing && itemData) {
+      const categoryId = getCategoryIdByName(itemData.nombreCategoria, categories);
+      formik.setValues({
+        idArea: itemData.idArea || '',
+        idCategoria: categoryId,
+      });
+      formik.setTouched({});
+      formik.setErrors({});
+    } else {
+      formik.resetForm();
+    }
+  }, [isEditing, itemData, categories]);
 
   return (
     <div className="modal-overlay">
       <div className="modal-container">
         <div className="modal-header">
-          <h3>Agregar al Catálogo</h3>
+          <h3>{isEditing ? "Editar Configuración" : "Agregar al Catálogo"}</h3>
           <button className="close-btn" onClick={onClose}>×</button>
         </div>
 
@@ -75,7 +102,7 @@ const CatalogModal = ({ areas, categories, onClose, onSubmit }) => {
               Cancelar
             </button>
             <button type="submit" className="submit-btn">
-              Guardar
+              {isEditing ? "Guardar Cambios" : "Guardar"}
             </button>
           </div>
         </form>
