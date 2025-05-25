@@ -1,5 +1,6 @@
 import './CatalogCard.css';
 import { ordenarGrados } from '../../../utils/GradesOrder'; 
+import { FaEdit } from 'react-icons/fa';
 
 const CatalogCard = ({ area, category, grades }) => {
   const formatGrades = () => {
@@ -22,7 +23,13 @@ const CatalogCard = ({ area, category, grades }) => {
     <div className="catalog-card">
       <div className="card-badge">{area}</div>
       <div className="card-content">
-        <h3>{category}</h3>
+        <div className="card-header">
+          <h3>{category}</h3>
+        <button class="edit-button">
+        <FaEdit class="edit-icon"/>
+        </button> 
+        </div>
+        
         <div className="grades-info">
           <span>Grados:</span>
           <strong>{formatGrades()}</strong>
