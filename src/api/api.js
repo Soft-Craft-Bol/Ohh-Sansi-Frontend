@@ -104,6 +104,8 @@ export const getReporteOrdenPago = (fechaInicio, fechaFin) =>
 //estado de inscripcoin
 export const getEstadoInscripcion = (ciParticipante) => api.get(`/estado-inscripcion/${ciParticipante}`);
 
+//verificacion de pagos
+export const getVerificacionComprobantePagos = () => api.get('/comprobante-pago/all');
 
 //catalogo
 export const getCatalogoAreasCategorias = (ciParticipante) => api.get(`/catalogo/ci-participante/${ciParticipante}`);
