@@ -89,7 +89,7 @@ const useOrdenPago = () => {
     let  id_inscripcion, cantidadAreas, precioPorArea, montoTotalPago,
      fechaEmision,  fechaVencimientoStr,montoLiteral, centavos, nombreResponsable;
     if(ordenExel){
-      id_inscripcion = 2106//ordenExel.Responsable?.id_inscripcion; //pending backend
+      id_inscripcion = ordenExel.Responsable?.idInscripcion;
 
       cantidadAreas = ordenExel.Responsable?.cantAreas;
       precioPorArea = ordenExel.olimpiadas[0]?.precio_olimpiada || 0;
