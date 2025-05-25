@@ -86,33 +86,54 @@ const useOrdenPago = () => {
 }, [codigoIntroducido]);
 
   const handleGenerarOrden = async () => {
-    if (!ordenData) return;
+    let  id_inscripcion, cantidadAreas, precioPorArea, montoTotalPago,
+     fechaEmision,  fechaVencimientoStr,montoLiteral, centavos, nombreResponsable;
+    if(ordenExel){
+      id_inscripcion = 2106//ordenExel.Responsable?.id_inscripcion; //pending backend
 
-    setIsLoading(true);
-    try {
+      cantidadAreas = ordenExel.Responsable?.cantAreas;
+      precioPorArea = ordenExel.olimpiadas[0]?.precio_olimpiada || 0;
+      montoTotalPago = cantidadAreas * precioPorArea;
+
+      const fechaActual = new Date();
+      fechaEmision = fechaActual.toISOString().split("T")[0];
+      const fechaVencimiento = new Date(fechaActual);
+      fechaVencimiento.setDate(fechaVencimiento.getDate() + 14);
+      fechaVencimientoStr = fechaVencimiento.toISOString().split("T")[0];
+      nombreResponsable = `${ordenExel.Responsable.nombreTut || ""} ${ordenExel.Responsable.apellidoTut || ""}`.trim();
+
+      montoLiteral = convertirNumeroAPalabras(montoTotalPago);
+      centavos = (montoTotalPago % 1).toFixed(2).split('.')[1];
+    }else{
+
+      if (!ordenData) return;
+
+      setIsLoading(true);
+    
       const primeraInscripcion = ordenData.inscripcion?.[0];
       if (!primeraInscripcion) {
         throw new Error("No se encontró información de inscripción");
       }
-
+      id_inscripcion = primeraInscripcion.id_inscripcion;
       const areas = ordenData.areas || [];
       const primerTutor = ordenData.tutores?.[0] || {};
+      nombreResponsable = `${primerTutor.nombres_tutor || ""} ${primerTutor.apellidos_tutor || ""}`.trim();
 
-      const cantidadAreas = areas.length;
-      const precioPorArea = ordenData.olimpiadas[0]?.precio_olimpiada || 0;
-      const montoTotalPago = cantidadAreas * precioPorArea;
+      cantidadAreas = areas.length;
+      precioPorArea = ordenData.olimpiadas[0]?.precio_olimpiada || 0;
+      montoTotalPago = cantidadAreas * precioPorArea;
 
       const fechaActual = new Date();
-      const fechaEmision = fechaActual.toISOString().split("T")[0];
+      fechaEmision = fechaActual.toISOString().split("T")[0];
       const fechaVencimiento = new Date(fechaActual);
       fechaVencimiento.setDate(fechaVencimiento.getDate() + 14);
-      const fechaVencimientoStr = fechaVencimiento.toISOString().split("T")[0];
-
-      const montoLiteral = convertirNumeroAPalabras(montoTotalPago);
-      const centavos = (montoTotalPago % 1).toFixed(2).split('.')[1];
-
+      fechaVencimientoStr = fechaVencimiento.toISOString().split("T")[0];
+      montoLiteral = convertirNumeroAPalabras(montoTotalPago);
+      centavos = (montoTotalPago % 1).toFixed(2).split('.')[1];
+    }
+      try {
       const nuevaOrden = {
-        idInscripcion: primeraInscripcion.id_inscripcion,
+        idInscripcion: id_inscripcion,
         idMetodoPago: 1,
         idEstado: 1,
         fechaEmisionOrdenPago: fechaEmision,
@@ -121,7 +142,7 @@ const useOrdenPago = () => {
         codOrdenPago: `N°${Math.floor(1000000 + Math.random() * 9000000)}`,
         emisor: "FACULTAD CIENCIAS Y TECNOLOGIA",
         precioLiteral: `${montoLiteral} ${centavos}/100`,
-        responsablePago: `${primerTutor.nombres_tutor || ""} ${primerTutor.apellidos_tutor || ""}`.trim(),
+        responsablePago: nombreResponsable,
         cantidad: cantidadAreas,
         concepto: "Pago de matrícula",
         precio_unitario: precioPorArea,

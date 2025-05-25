@@ -167,7 +167,7 @@ const OrdenDePago = () => {
         animate="visible"
       >
         {renderInfoSection()}
-        {ordenData && !mostrarDetalle && (
+        {(ordenData || ordenExel) && !mostrarDetalle && (
           <motion.div
             className="boton-generar"
             variants={containerVariants}
@@ -193,7 +193,11 @@ const OrdenDePago = () => {
         >
           <OrdenPagoDetalle
             data={ordenGenerada}
-            nit_tutor={ordenData.tutores[0]?.carnet_identidad_tutor || '000000000'}
+            nit_tutor={
+              ordenExel 
+                ? (ordenExel.Responsable?.ciTut || '000000000')
+                : (ordenData?.tutores?.[0]?.carnet_identidad_tutor || '000000000')
+            }
           />
         </motion.div>
       )}
