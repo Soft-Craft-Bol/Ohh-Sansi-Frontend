@@ -16,14 +16,6 @@ const olimpiadaValidationSchema = Yup.object().shape({
     .required('Ingrese el costo')
     .min(0.01, 'Debe ser mayor a 0')
     .max(999.99, 'El precio no puede ser mayor a 999.99'),
-  fechaInicio: Yup.date()
-    .required("La fecha de inicio es obligatoria")
-    .typeError("La fecha de inicio debe ser una fecha válida")
-    .min(new Date(), "La fecha de inicio no puede ser menor a la actual"),
-  fechaFin: Yup.date()
-    .required("La fecha de fin es obligatoria")
-    .typeError("La fecha de fin debe ser una fecha válida")
-    .min(Yup.ref('fechaInicio'), "La fecha de fin no puede ser menor a la fecha de inicio"),
 });
 
 export default olimpiadaValidationSchema;

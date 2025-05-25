@@ -8,10 +8,7 @@ import { getOlimpiadas, saveOlimpiada, updateOlimpiada } from "../../../api/api"
 import "./OlimpiadaManagement.css";
 import ManagementCard from "../../cards/ManagementCard";
 import { FaCalendarAlt, FaCoins, FaSpinner, FaTimes } from "react-icons/fa";
-import "react-datepicker/dist/react-datepicker.css";
-import DatePicker from "react-datepicker";
-import { es } from "date-fns/locale";
-import formatDate from "../../../utils/formatDate";
+
 
 const OlimpiadaManagement = () => {
   const [olimpiadas, setOlimpiadas] = useState([]);
@@ -23,8 +20,6 @@ const OlimpiadaManagement = () => {
     anio: new Date().getFullYear(),
     nombreOlimpiada: "",
     precioOlimpiada: "",
-    fechaInicio: new Date(),
-    fechaFin: new Date(),
   };
 
   useEffect(() => {
@@ -43,8 +38,6 @@ const OlimpiadaManagement = () => {
         icon: 'error',
         title: 'Error',
         text: 'Error al cargar las olimpiadas',
-        background: 'var(--light)',
-        color: 'var(--dark)'
       });
       setOlimpiadas([]);
     } finally {
@@ -53,11 +46,8 @@ const OlimpiadaManagement = () => {
   };
 
   const handleEdit = (olimpiada) => {
-    // Convertir las fechas de string a objetos Date para el DatePicker
     const olimpiadaToEdit = {
       ...olimpiada,
-      fechaInicio: olimpiada.fechaInicio ? new Date(olimpiada.fechaInicio) : new Date(),
-      fechaFin: olimpiada.fechaFin ? new Date(olimpiada.fechaFin) : new Date(),
     };
     
     setEditMode(true);
@@ -75,14 +65,12 @@ const OlimpiadaManagement = () => {
       let response;
       
       if (editMode && currentOlimpiada) {
-        // Modo edición - usar updateOlimpiada
         const updateData = {
           ...values,
-          idOlimpiada: currentOlimpiada.idOlimpiada, // Incluir el ID para la actualización
+          idOlimpiada: currentOlimpiada.idOlimpiada,
         };
         response = await updateOlimpiada(updateData);
       } else {
-        // Modo creación - usar saveOlimpiada
         response = await saveOlimpiada(values);
       }
 
@@ -96,13 +84,11 @@ const OlimpiadaManagement = () => {
           text: message,
           timer: 3000,
           showConfirmButton: false,
-          background: 'var(--light)',
-          color: 'var(--dark)'
         });
 
         await fetchData();
         resetForm();
-        handleCancelEdit(); // Limpiar el modo de edición
+        handleCancelEdit();
         return;
       }
       throw new Error(response.data?.message || "Error desconocido");
@@ -120,21 +106,12 @@ const OlimpiadaManagement = () => {
         title: 'Error',
         text: errorMessage,
         showCloseButton: true,
-        background: 'var(--light)',
-        color: 'var(--dark)',
-        showClass: {
-          popup: 'animate__animated animate__fadeInDown',
-        },
-        hideClass: {
-          popup: 'animate__animated animate__fadeOutUp',
-        }
       });
     } finally {
       setSubmitting(false);
     }
   };
 
-  // Función para obtener los valores iniciales del formulario
   const getInitialValues = () => {
     if (editMode && currentOlimpiada) {
       return currentOlimpiada;
@@ -223,39 +200,6 @@ const OlimpiadaManagement = () => {
                 />
               </div>
 
-              <div className="form-group date-picker-group">
-                <div className="date-picker-row">
-                  <div className="date-picker-container">
-                    <label>Fecha Inicio:</label>
-                    <DatePicker
-                      selected={values.fechaInicio}
-                      onChange={(date) => setFieldValue("fechaInicio", date)}
-                      dateFormat="dd/MM/yyyy"
-                      locale={es}
-                      className="date-picker-input"
-                      minDate={editMode ? null : new Date()} // En edición permitir fechas pasadas
-                    />
-                    {touched.fechaInicio && errors.fechaInicio && (
-                      <div className="error-message">{errors.fechaInicio}</div>
-                    )}
-                  </div>
-                  <div className="date-picker-container">
-                    <label>Fecha Fin:</label>
-                    <DatePicker
-                      selected={values.fechaFin}
-                      onChange={(date) => setFieldValue("fechaFin", date)}
-                      dateFormat="dd/MM/yyyy"
-                      locale={es}
-                      className="date-picker-input"
-                      minDate={values.fechaInicio}
-                    />
-                    {touched.fechaFin && errors.fechaFin && (
-                      <div className="error-message">{errors.fechaFin}</div>
-                    )}
-                  </div>
-                </div>
-              </div>
-
               <div className="form-actions">
                 {editMode && (
                   <button 
@@ -329,14 +273,6 @@ const OlimpiadaManagement = () => {
                     {
                       label: "Estado",
                       value: olimpiada.nombreEstado
-                    },
-                    {
-                      label: "Fecha Inicio",
-                      value: formatDate(olimpiada.fechaInicio) || "No definida"
-                    },
-                    {
-                      label: "Fecha Fin",
-                      value: formatDate(olimpiada.fechaFin) || "No definida"
                     }
                   ]}
                 />

@@ -5,7 +5,7 @@ import * as yup from 'yup';
 import Swal from 'sweetalert2';
 import { FiPlus, FiCalendar, FiChevronDown, FiChevronUp } from 'react-icons/fi';
 import { getOlimpiadasConEventos, savePeriodoOlimpiada, getOlimpiadas } from '../../../api/api';
-import { PERIOD_TYPES, PERIOD_ORDER } from '../../../schemas/PeriodValidationSchema';
+import { PERIOD_TYPES} from '../../../schemas/PeriodValidationSchema';
 import './PeriodsManagement.css';
 
 const PeriodosManagement = () => {
@@ -303,10 +303,6 @@ const PeriodCard = ({ periodo }) => {
                         <span className={`status ${periodo.estadoPeriodo?.toLowerCase() || 'planificacion'}`}>
                             {periodo.estadoPeriodo || 'PLANIFICACION'}
                         </span>
-                    </div>
-                    <div className="detail-row">
-                        <span>Obligatorio:</span>
-                        <span>{periodo.obligatorio ? 'Sí' : 'No'}</span>
                     </div>
                 </div>
             )}
