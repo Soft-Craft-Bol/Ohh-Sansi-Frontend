@@ -106,7 +106,7 @@ export const getEstadoInscripcion = (ciParticipante) => api.get(`/estado-inscrip
 
 //verificacion de pagos
 export const getVerificacionComprobantePagos = () => api.get('/comprobante-pago/all');
-
+export const VerificacionComprobantePagos = (idComprobante, idEstado) => api.put(`/comprobante-pago/${idComprobante}/estado?nuevoEstado=${idEstado}`,);
 //catalogo
 export const getCatalogoAreasCategorias = (ciParticipante) => api.get(`/catalogo/ci-participante/${ciParticipante}`);
 export const setCatalogoAreasParticipante = (ciParticipante, data) => 

@@ -1,26 +1,32 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { Eye, Check, X, FileText, Clock, CheckCircle, XCircle, ArrowLeft, Download } from 'lucide-react';
-import { getVerificacionComprobantePagos } from '../../../api/api';
+import Swal from 'sweetalert2';
+import { getVerificacionComprobantePagos, VerificacionComprobantePagos } from '../../../api/api';
 import "./PaymentVerification.css";
 
 const PaymentVerification = () => {
-  const [activeTab, setActiveTab] = useState("pendientes");
+  const [activeTab, setActiveTab] = useState("todos");
   const [apiData, setApiData] = useState([]);
   const [selectedPayment, setSelectedPayment] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const fetchPaymentData = async () => {
+    setIsLoading(true);
+    try {
+      const response = await getVerificacionComprobantePagos();
+      setApiData(response.data || []);
+    } catch (error) {
+      console.error("Error fetching payment data:", error);
+      showErrorAlert("Error al cargar los comprobantes");
+      setApiData([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await getVerificacionComprobantePagos();
-        setApiData(response.data || []);
-      } catch (error) {
-        console.error("Error fetching payment data:", error);
-        setApiData([]);
-      }
-    };
-    
-    fetchData();
+    fetchPaymentData();
   }, []);
 
   const transformApiData = (data) => {
@@ -37,6 +43,7 @@ const PaymentVerification = () => {
       notas: item.notas_adicionales || "Sin notas adicionales"
     }));
   };
+
 
   const getEstadoLabel = (estadoId) => {
     switch (estadoId) {
@@ -58,10 +65,10 @@ const PaymentVerification = () => {
   }, [apiData]);
 
   const tabs = [
+    { id: "todos", label: "Todos", icon: <FileText size={18} />, count: apiData.length },
     { id: "pendientes", label: "Pendientes", icon: <Clock size={18} />, count: paymentsData.pendientes.length },
     { id: "verificados", label: "Verificados", icon: <CheckCircle size={18} />, count: paymentsData.verificados.length },
-    { id: "rechazados", label: "Rechazados", icon: <XCircle size={18} />, count: paymentsData.rechazados.length },
-    { id: "todos", label: "Todos", icon: <FileText size={18} />, count: apiData.length }
+    { id: "rechazados", label: "Rechazados", icon: <XCircle size={18} />, count: paymentsData.rechazados.length }
   ];
 
   const getCurrentData = () => {
@@ -69,14 +76,76 @@ const PaymentVerification = () => {
     return paymentsData[activeTab] || [];
   };
 
-  const handleVerificar = (paymentId) => {
-    console.log(`Verificando pago: ${paymentId}`);
-    // Implement verification logic here
+  const showErrorAlert = (message) => {
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: message,
+      confirmButtonColor: 'var(--veo-primary)'
+    });
   };
 
-  const handleRechazar = (paymentId) => {
-    console.log(`Rechazando pago: ${paymentId}`);
-    // Implement rejection logic here
+  const showSuccessAlert = (message) => {
+    Swal.fire({
+      icon: 'success',
+      title: 'Éxito',
+      text: message,
+      confirmButtonColor: 'var(--veo-primary)'
+    });
+  };
+
+  const handleVerificar = async (paymentId) => {
+    const result = await Swal.fire({
+      title: '¿Confirmar verificación?',
+      text: "¿Estás seguro de que deseas verificar este pago?",
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: 'var(--veo-success)',
+      cancelButtonColor: 'var(--veo-danger)',
+      confirmButtonText: 'Sí, verificar',
+      cancelButtonText: 'Cancelar'
+    });
+
+    if (result.isConfirmed) {
+      try {
+        setIsLoading(true);
+        await VerificacionComprobantePagos(paymentId, 1); 
+        showSuccessAlert('El pago ha sido verificado correctamente');
+        fetchPaymentData(); 
+      } catch (error) {
+        console.error('Error verifying payment:', error);
+        showErrorAlert('Error al verificar el pago');
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
+
+  const handleRechazar = async (paymentId) => {
+    const result = await Swal.fire({
+      title: '¿Confirmar rechazo?',
+      text: "¿Estás seguro de que deseas rechazar este pago?",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: 'var(--veo-danger)',
+      cancelButtonColor: 'var(--veo-gray)',
+      confirmButtonText: 'Sí, rechazar',
+      cancelButtonText: 'Cancelar'
+    });
+
+    if (result.isConfirmed) {
+      try {
+        setIsLoading(true);
+        await VerificacionComprobantePagos(paymentId, 3);
+        showSuccessAlert('El pago ha sido rechazado correctamente');
+        fetchPaymentData();
+      } catch (error) {
+        console.error('Error rejecting payment:', error);
+        showErrorAlert('Error al rechazar el pago');
+      } finally {
+        setIsLoading(false);
+      }
+    }
   };
 
   const handleVerComprobante = (payment) => {
@@ -84,14 +153,17 @@ const PaymentVerification = () => {
     setIsModalOpen(true);
   };
 
+
   const closeModal = () => {
     setIsModalOpen(false);
     setSelectedPayment(null);
   };
 
-
   const downloadComprobante = () => {
-    if (!selectedPayment?.imagen_comprobante) return;
+    if (!selectedPayment?.imagen_comprobante) {
+      showErrorAlert('No hay comprobante disponible para descargar');
+      return;
+    }
     
     const link = document.createElement('a');
     link.href = selectedPayment.imagen_comprobante;
@@ -111,6 +183,13 @@ const PaymentVerification = () => {
         <p className="veo-subtitle">Sistema de gestión de comprobantes de pago</p>
       </div>
 
+      {/* Loading indicator */}
+      {isLoading && (
+        <div className="veo-loading-overlay">
+          <div className="veo-loading-spinner"></div>
+        </div>
+      )}
+
       {/* Tabs */}
       <div className="veo-tabs">
         {tabs.map((tab) => (
@@ -118,6 +197,7 @@ const PaymentVerification = () => {
             key={tab.id}
             className={`veo-tab ${activeTab === tab.id ? 'veo-tab-active' : ''}`}
             onClick={() => setActiveTab(tab.id)}
+            disabled={isLoading}
           >
             <span className="veo-tab-icon">{tab.icon}</span>
             {tab.label}
@@ -130,7 +210,7 @@ const PaymentVerification = () => {
 
       {/* Content */}
       <div className="veo-content">  
-      {/* Table */}
+        {/* Table */}
         <div className="veo-table-container">
           {currentData.length > 0 ? (
             <table className="veo-table">
@@ -164,6 +244,7 @@ const PaymentVerification = () => {
                           <button 
                             className="veo-btn veo-btn-view" 
                             onClick={() => handleVerComprobante(payment)}
+                            disabled={isLoading}
                           >
                             <Eye size={16} /> Ver Comprobante
                           </button>
@@ -172,12 +253,14 @@ const PaymentVerification = () => {
                               <button 
                                 className="veo-btn veo-btn-verify" 
                                 onClick={() => handleVerificar(payment.id)}
+                                disabled={isLoading}
                               >
                                 <Check size={16} /> Aprobar
                               </button>
                               <button 
                                 className="veo-btn veo-btn-reject" 
                                 onClick={() => handleRechazar(payment.id)}
+                                disabled={isLoading}
                               >
                                 <X size={16} /> Rechazar
                               </button>
@@ -283,6 +366,7 @@ const PaymentVerification = () => {
                     handleVerificar(selectedPayment.id);
                     closeModal();
                   }}
+                  disabled={isLoading}
                 >
                   <Check size={18} /> Aprobar Pago
                 </button>
@@ -292,6 +376,7 @@ const PaymentVerification = () => {
                     handleRechazar(selectedPayment.id);
                     closeModal();
                   }}
+                  disabled={isLoading}
                 >
                   <X size={18} /> Rechazar Pago
                 </button>
