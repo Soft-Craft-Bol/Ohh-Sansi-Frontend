@@ -27,7 +27,7 @@ const emailSchema= Yup.string()
         .required('El correo electrónico es requerido');
 
 export const excelRowSchemaDatos = Yup.object().shape({
-    'Nombres': nombreSchema,
+    'Nombres de Participante': nombreSchema,
 
     'Apellido Paterno': Yup.string()
         .min(2, 'Debe tener al menos 2 caracteres')
@@ -57,21 +57,44 @@ export const excelRowSchemaDatos = Yup.object().shape({
     'Correo': emailSchema,
     'Carnet Identidad': CIschema,
     'ComplementoCi': complementoSchema,
-    
+
+    'Nombre Tutor': nombreSchema,
     'Apellidos Tutor': nombreSchema,
     'Carnet tutor': CIschema,
     'Complemento tut': complementoSchema,
     'email tutor': emailSchema,
     'num Telefono': telfSchema,
 
-    'Nombre Tutor': nombreSchema,
+    
 });
 
 export const excelRowSchemaAreas = Yup.object().shape({
-    'Apellidos Tutor': nombreSchema,
-    'Carnet tutor': CIschema,
-    'Complemento tut': complementoSchema,
-    'email tutor': emailSchema,
-    'telefono': telfSchema,
-    'Nombre Tutor': nombreSchema,
+  'Nombre Profesor': nombreSchema,
+  'Apellidos Profesor': nombreSchema,
+  'Carnet Profesor': CIschema,
+  'Complemento ci prof': complementoSchema,
+  'email profesor': emailSchema,
+  'telefono profesor': telfSchema,
+  'Nombre Tutor': nombreSchema,
+
+  // Campos de Profesor2: opcionales pero todos requeridos si alguno se llena
+  'Nombre Profesor2': Yup.string()
+    .notRequired()
+    .test('completo-si-alguno', 'Completa todos los campos del Profesor2', function (value) {
+      const { path, parent } = this;
+      const otros = [
+        parent['Apellidos Profesor2'],
+        parent['Carnet profesor2'],
+        parent['email profesor2'],
+        parent['telefono profesor2'],
+      ];
+      const algunoLleno = [value, ...otros].some(v => !!v && String(v).trim() !== '');
+      const todosLlenos = [value, ...otros].every(v => !!v && String(v).trim() !== '');
+      return !algunoLleno || todosLlenos; // válido si todo está vacío, o todo está lleno
+    }),
+
+  'Apellidos Profesor2': Yup.string().notRequired(),
+  'Carnet profesor2': Yup.string().notRequired(),
+  'email profesor2': Yup.string().notRequired(),
+  'telefono profesor2': Yup.string().notRequired(),
 });

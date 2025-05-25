@@ -1,55 +1,52 @@
 .management-card {
-  position: relative;
-  background-color: var(--light);
   border-radius: 12px;
-  padding: 1.5rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   overflow: hidden;
-  border: 1px solid rgba(30, 144, 255, 0.1);
-}
-
-body.dark .management-card {
-  background-color: #2d3748;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  border-color: rgba(0, 180, 216, 0.2);
+  transition: all 0.3s ease;
+  position: relative;
+  border: 2px solid transparent;
 }
 
 .management-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 20px rgba(30, 144, 255, 0.15);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
 }
 
-body.dark .management-card:hover {
-  box-shadow: 0 8px 20px rgba(0, 180, 216, 0.25);
+/* Estado de edición */
+.management-card.editing {
+  border-color: var(--blue-color, #3b82f6);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  transform: scale(1.02);
 }
 
-/* Card Decoration */
-.card-decoration {
+.management-card.editing::before {
+  content: "EDITANDO";
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 5px;
-  height: 100%;
-  background: linear-gradient(to bottom, var(--blue-color), var(--science-blue));
+  top: 8px;
+  right: 8px;
+  background: var(--blue-color, #3b82f6);
+  color: white;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: bold;
+  z-index: 2;
 }
 
-body.dark .card-decoration {
-  background: linear-gradient(to bottom, var(--science-blue), var(--science-purple));
+.card-decoration {
+  height: 4px;
+  background: linear-gradient(90deg, var(--blue-color, #3b82f6), var(--light-blue, #60a5fa));
 }
 
-/* Card Body */
 .management-card-body {
-  position: relative;
-  z-index: 1;
+  padding: 1.25rem;
 }
 
-/* Card Header */
 .management-card-header {
-  margin-bottom: 1rem;
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  margin-bottom: 1rem;
   gap: 1rem;
 }
 
@@ -57,144 +54,204 @@ body.dark .card-decoration {
   margin: 0;
   font-size: 1.1rem;
   font-weight: 600;
-  color: var(--blue-color);
-  display: flex;
-  align-items: center;
-  gap: 0.8rem;
-  flex-wrap: wrap;
-}
-
-body.dark .management-card-title {
-  color: var(--science-blue);
+  color: var(--dark, #1f2937);
+  line-height: 1.3;
+  flex: 1;
 }
 
 /* Status Indicator */
 .status-indicator {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
   font-size: 0.8rem;
   font-weight: 500;
-  padding: 0.2rem 0.5rem;
-  border-radius: 20px;
-  background: rgba(40, 167, 69, 0.1);
-}
-
-.status-indicator.active {
-  color: var(--success);
-}
-
-.status-indicator.inactive {
-  background: rgba(220, 53, 69, 0.1);
-  color: var(--danger);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .status-icon {
-  font-size: 0.5rem;
+  font-size: 0.6rem;
 }
 
-/* Info List */
+/* Estados específicos */
+.status-indicator.planificacion {
+  color: var(--orange-color, #f59e0b);
+}
+
+.status-indicator.planificacion .status-icon {
+  color: var(--orange-color, #f59e0b);
+}
+
+.status-indicator.en-curso {
+  color: var(--green-color, #10b981);
+}
+
+.status-indicator.en-curso .status-icon {
+  color: var(--green-color, #10b981);
+}
+
+.status-indicator.finalizada {
+  color: var(--gray-color, #6b7280);
+}
+
+.status-indicator.finalizada .status-icon {
+  color: var(--gray-color, #6b7280);
+}
+
+/* Botones de Acción */
+.management-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.edit-btn {
+  background: var(--blue-color, #3b82f6);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  min-width: 40px;
+  justify-content: center;
+}
+
+.edit-btn:hover:not(:disabled) {
+  background: var(--blue-dark, #2563eb);
+  transform: scale(1.05);
+}
+
+.edit-btn:disabled {
+  background: var(--blue-light, #93c5fd);
+  cursor: not-allowed;
+  transform: none;
+}
+
+.edit-btn.editing {
+  background: var(--green-color, #10b981);
+  cursor: default;
+  min-width: auto;
+  padding: 0.5rem 0.75rem;
+}
+
+.editing-text {
+  font-size: 0.75rem;
+  margin-left: 0.25rem;
+}
+
+.non-editable-indicator {
+  color: var(--gray-color, #6b7280);
+  font-size: 1rem;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  opacity: 0.6;
+}
+
+/* Lista de Información */
 .management-info-list {
   list-style: none;
   padding: 0;
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.8rem;
+  gap: 0.75rem;
 }
 
 .management-info-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.95rem;
   padding: 0.5rem 0;
-  border-bottom: 1px dashed rgba(30, 144, 255, 0.2);
+  border-bottom: 1px solid var(--light-gray, #f3f4f6);
 }
 
-body.dark .management-info-item {
-  border-bottom-color: rgba(0, 180, 216, 0.3);
-}
-
-.management-info-item.highlight {
-  padding: 0.7rem;
-  background: rgba(30, 144, 255, 0.05);
-  border-radius: 8px;
+.management-info-item:last-child {
   border-bottom: none;
 }
 
-body.dark .management-info-item.highlight {
-  background: rgba(0, 180, 216, 0.1);
+.management-info-item.highlight {
+  background: linear-gradient(90deg, rgba(59, 130, 246, 0.05), transparent);
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  border-bottom: 1px solid rgba(59, 130, 246, 0.1);
 }
 
 .management-label {
+  font-size: 0.85rem;
+  color: var(--blue-color, #b2b7c1);
   font-weight: 500;
-  color: var(--dark);
-  opacity: 0.8;
-}
-
-body.dark .management-label {
-  color: #e2e8f0;
 }
 
 .management-value {
+  font-size: 0.9rem;
+  color: var(--dark, #1f2937);
   font-weight: 600;
-  color: var(--blue-color);
   text-align: right;
 }
 
-body.dark .management-value {
-  color: var(--science-blue);
-}
-
 .management-info-item.highlight .management-value {
-  color: var(--blue-dark);
-  font-size: 1.1rem;
+  color: var(--blue-color, #3b82f6);
 }
 
-body.dark .management-info-item.highlight .management-value {
-  color: var(--science-blue);
-}
-
-/* Extra Content */
+/* Contenido Extra */
 .management-extra {
-  margin-top: 0.5rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--light-gray, #f3f4f6);
 }
 
-/* Responsive Design */
+/* Responsive */
 @media (max-width: 768px) {
-  .management-card {
-    padding: 1.2rem;
-  }
-  
-  .management-card-title {
-    font-size: 1rem;
+  .management-card-header {
     flex-direction: column;
     align-items: flex-start;
-    gap: 0.5rem;
+    gap: 0.75rem;
+  }
+  
+  .management-card-actions {
+    align-self: flex-end;
   }
   
   .management-info-item {
     flex-direction: column;
     align-items: flex-start;
-    gap: 0.3rem;
+    gap: 0.25rem;
   }
   
   .management-value {
     text-align: left;
+    font-size: 1rem;
+  }
+  
+  .edit-btn {
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
   }
 }
 
 @media (max-width: 480px) {
-  .management-card {
+  .management-card-body {
     padding: 1rem;
   }
   
-  .management-info-item {
-    font-size: 0.9rem;
+  .management-card-title {
+    font-size: 1rem;
   }
   
-  .management-info-item.highlight .management-value {
-    font-size: 1rem;
+  .management-info-list {
+    gap: 0.5rem;
+  }
+  
+  .management-info-item {
+    padding: 0.4rem 0;
   }
 }

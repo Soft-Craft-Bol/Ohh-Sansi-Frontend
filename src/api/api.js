@@ -78,7 +78,8 @@ export const parentescoTutor = () => api.get('/parentesco/findAllParentescos');
 //OLIMPIADA
 export const getOlimpiadas = () => api.get('/olimpiada');
 export const saveOlimpiada = (data) => api.post('/olimpiada/register', data);
-export const savePrecioOlimpiada = (data) => api.put('/olimpiada/update-precio', data);
+export const updateOlimpiada = (data) => api.put('/olimpiada/update-olimpiada', data);
+export const getOlimpiadaPreinscripcion = () => api.get(`/fecha-olimpiada/periodo-inscripcion-actual`);
 
 //CatalogoOlimpiada
 export const saveCatalogoOlimpiada = (data) => api.post('/catalogo-olimpiada/save', data);
@@ -93,6 +94,7 @@ export const sendEmail = (data) => api.post('/email/send', data);
 //OrdenPAGO
 export const getOrdenPagoDetailInfo = (codigoUnico) => api.get(`/inscripcion/details/${codigoUnico}`);
 export const createOrdenPago = (data) => api.post('/orden-pago', data);
+export const getOrdenPagoExcel = (codigoUnico) => api.get(`inscripcion/masivo/details/${codigoUnico}`)
 
 //estado orden de pago
 export const getEstadoOrdenPago = () => api.get(`/api/estadisticas/ordenes-pago`);
@@ -107,6 +109,8 @@ export const getCatalogoAreasCategorias = (ciParticipante) => api.get(`/catalogo
 export const setCatalogoAreasParticipante = (ciParticipante, data) => 
   api.post(`/participante/register-participant-catalogo/${ciParticipante}`, data);
 
+//reporte de inscritos
+export const getReporteInscritos = (idArea) => api.get(`/inscripcion/reporte-por-area/${idArea}`);
 
 
 //areaTutor participante

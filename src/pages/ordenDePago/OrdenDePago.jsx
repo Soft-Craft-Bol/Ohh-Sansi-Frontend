@@ -13,6 +13,7 @@ const OrdenDePago = () => {
     setInputValue,
     codigoIntroducido,
     ordenData,
+    ordenExel,
     mostrarDetalle,
     ordenGenerada,
     error,
@@ -39,45 +40,58 @@ const OrdenDePago = () => {
   };
 
   const renderInfoSection = () => {
-  if (!ordenData) return null;
-  const participantes = ordenData.participantes || [];
-  const tutores = ordenData.tutores || [];
-  const olimpiadas = ordenData.olimpiadas || [];
-  const areas = ordenData.areas || [];
+    let areas,participante,tutores,olimpiadas,totalParticipantes,
+    totalAreas,primerTutor,nombreResponsable,correoResponsable, costoPorArea, totalAPagar;
+    if(ordenExel){
+      participante = 'Participantes registrados por Excel'
+      totalParticipantes = ordenExel.Responsable?.cantPaticipantes
+      totalAreas = ordenExel.Responsable?.cantAreas
+      nombreResponsable = `${ordenExel.Responsable.nombreTut || ""} ${ordenExel.Responsable.apellidoTut || ""}`.trim()
+      correoResponsable = ordenExel.Responsable.correoTut
+      costoPorArea = ordenExel.olimpiadas[0]?.precio_olimpiada || 0;
+      totalAPagar = totalAreas * costoPorArea;
 
-  const totalParticipantes = participantes.length;
-  const totalAreas = areas.length;
+    }else{
+      if (!ordenData) return null;
+      const participantes = ordenData.participantes || [];
+      tutores = ordenData.tutores || [];
+      olimpiadas = ordenData.olimpiadas || [];
+      areas = ordenData.areas || [];
 
-  const primerTutor = tutores.length > 0 ? tutores[0] : null;
-  const nombreResponsable = primerTutor
-    ? `${primerTutor.nombres_tutor || ""} ${primerTutor.apellidos_tutor || ""}`.trim()
-    : "No disponible";
-  const correoResponsable = primerTutor?.email_tutor || "No disponible";
+      totalParticipantes = participantes.length;
+      totalAreas = areas.length;
 
-  const costoPorArea = olimpiadas[0]?.precio_olimpiada || 0;
-  const totalAPagar = totalAreas * costoPorArea;
+      primerTutor = tutores.length > 0 ? tutores[0] : null;
+      nombreResponsable = primerTutor
+        ? `${primerTutor.nombres_tutor || ""} ${primerTutor.apellidos_tutor || ""}`.trim()
+        : "No disponible";
+      correoResponsable = primerTutor?.email_tutor || "No disponible";
 
-  return (
-    <motion.div className="info-box" variants={containerVariants} initial="hidden" animate="visible">
-      <div className="resumen">
-        <h3>Resumen de la inscripción</h3>
-        <p>Total de participantes: <span className="bold-blue">{totalParticipantes}</span></p>
-        <p>Total áreas inscritas: <span className="bold-blue">{totalAreas}</span></p>
-        <p>Nombre del responsable: <span className="bold-blue">{nombreResponsable}</span></p>
-        <p>Correo del responsable: <span className="bold-blue">{correoResponsable}</span></p>
-      </div>
-      <div className="divider"></div>
-      <div className="pago">
-        <h3>Detalles del pago</h3>
-        <p>Costo por área: <span className="bold-blue">{costoPorArea} bs.</span></p>
-        <div className="total-container">
-          <p className="total-pagar">Total a pagar: </p>
-          <span className="big-bold-blue">{totalAPagar} bs.</span>
+      costoPorArea = olimpiadas[0]?.precio_olimpiada || 0;
+      totalAPagar = totalAreas * costoPorArea;
+    }
+    
+    return (
+      <motion.div className="info-box" variants={containerVariants} initial="hidden" animate="visible">
+        <div className="resumen">
+          <h3>Resumen de la inscripción</h3>
+          <p>Total de participantes: <span className="bold-blue">{totalParticipantes}</span></p>
+          <p>Total áreas inscritas: <span className="bold-blue">{totalAreas}</span></p>
+          <p>Nombre del responsable: <span className="bold-blue">{nombreResponsable}</span></p>
+          <p>Correo del responsable: <span className="bold-blue">{correoResponsable}</span></p>
         </div>
-      </div>
-    </motion.div>
-  );
-};
+        <div className="divider"></div>
+        <div className="pago">
+          <h3>Detalles del pago</h3>
+          <p>Costo por área: <span className="bold-blue">{costoPorArea} bs.</span></p>
+          <div className="total-container">
+            <p className="total-pagar">Total a pagar: </p>
+            <span className="big-bold-blue">{totalAPagar} bs.</span>
+          </div>
+        </div>
+      </motion.div>
+    );
+  };
 
   const showSuccessMessage = () => {
     Swal.fire({
@@ -153,7 +167,7 @@ const OrdenDePago = () => {
         animate="visible"
       >
         {renderInfoSection()}
-        {ordenData && !mostrarDetalle && (
+        {(ordenData || ordenExel) && !mostrarDetalle && (
           <motion.div
             className="boton-generar"
             variants={containerVariants}
@@ -179,7 +193,11 @@ const OrdenDePago = () => {
         >
           <OrdenPagoDetalle
             data={ordenGenerada}
-            nit_tutor={ordenData.tutores[0]?.carnet_identidad_tutor || '000000000'}
+            nit_tutor={
+              ordenExel 
+                ? (ordenExel.Responsable?.ciTut || '000000000')
+                : (ordenData?.tutores?.[0]?.carnet_identidad_tutor || '000000000')
+            }
           />
         </motion.div>
       )}
