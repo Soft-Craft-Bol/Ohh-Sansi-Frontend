@@ -88,6 +88,8 @@ export const getCatalogoOlimpiada = () => api.get('/catalogo-olimpiada');
 //FechaOlimpiada
 export const getOlimpiadasConEventos = () => api.get('/fecha-olimpiada/olimpiadas-con-eventos');
 export const savePeriodoOlimpiada = (data) => api.post('/fecha-olimpiada/register', data);
+export const updatePeriodoOlimpiada = (data) => api.put('/fecha-olimpiada/update', data);
+export const deletePeriodoOlimpiada = (id) => api.delete(`/fecha-olimpiada/${id}`);
 //EMAILS
 export const sendEmail = (data) => api.post('/email/send', data);
 
@@ -103,14 +105,16 @@ export const getReporteOrdenPago = (fechaInicio, fechaFin) =>
 //estado de inscripcoin
 export const getEstadoInscripcion = (ciParticipante) => api.get(`/estado-inscripcion/${ciParticipante}`);
 
-
+//verificacion de pagos
+export const getVerificacionComprobantePagos = () => api.get('/comprobante-pago/all');
+export const VerificacionComprobantePagos = (idComprobante, idEstado) => api.put(`/comprobante-pago/${idComprobante}/estado?nuevoEstado=${idEstado}`,);
 //catalogo
 export const getCatalogoAreasCategorias = (ciParticipante) => api.get(`/catalogo/ci-participante/${ciParticipante}`);
 export const setCatalogoAreasParticipante = (ciParticipante, data) => 
   api.post(`/participante/register-participant-catalogo/${ciParticipante}`, data);
 
 //reporte de inscritos
-export const getReporteInscritos = (idArea) => api.get(`/inscripcion/reporte-por-area/${idArea}`);
+export const getReporteInscritos = (idArea, idOlimpiada) => api.get(`/inscripcion/reporte-por-area/${idArea}/${idOlimpiada}`);
 
 
 //areaTutor participante

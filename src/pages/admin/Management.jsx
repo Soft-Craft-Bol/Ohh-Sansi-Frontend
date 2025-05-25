@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import "./Management.css";
 
+const OlimpiadasDashboard = lazy(() => import("../../components/management/dashboard/OlimpiadasDashboard"));
 const FormArea = lazy(() => import("../../components/management/formArea/FormArea"));
 const CategoriesManagement = lazy(() => import("../../components/management/categories/CategoriesManagement"));
 const OlimpiadaManagement = lazy(() => import("../../components/management/olimpiada/OlimpiadaManagement"));
@@ -97,12 +98,7 @@ const ManagementPage = () => {
   const renderTabContent = (activeTab) => {
     switch (activeTab) {
       case "dashboard":
-        return (
-          <div className="admin-dashboard-content">
-            <h2>Dashboard Principal</h2>
-            <p>Bienvenido al panel de administración de Olimpiadas Científicas</p>
-          </div>
-        );
+        return <OlimpiadasDashboard />;
       case "areas":
         return <FormArea />;
       case "categories":
@@ -182,7 +178,7 @@ const ManagementPage = () => {
               <p className="admin-sidebar-subtitle">Olimpiadas Científicas</p>
             </div>
           )}
-          <button 
+          <button
             className="admin-sidebar-toggle"
             onClick={toggleSidebar}
             aria-label="Toggle sidebar"
@@ -216,7 +212,7 @@ const ManagementPage = () => {
 
         {/* Sidebar Footer */}
         <div className="admin-sidebar-footer">
-          <button 
+          <button
             className="admin-dark-mode-toggle"
             onClick={toggleDarkMode}
             title={darkMode ? 'Modo claro' : 'Modo oscuro'}
@@ -237,7 +233,7 @@ const ManagementPage = () => {
         <header className="admin-header">
           <div className="admin-header-left">
             {!sidebarOpen && (
-              <button 
+              <button
                 className="admin-mobile-menu-toggle"
                 onClick={toggleSidebar}
                 aria-label="Abrir menú"
@@ -255,7 +251,7 @@ const ManagementPage = () => {
             </div>
           </div>
           <div className="admin-header-right">
-            <button 
+            <button
               className="admin-header-dark-toggle"
               onClick={toggleDarkMode}
               title={darkMode ? 'Modo claro' : 'Modo oscuro'}
@@ -263,18 +259,16 @@ const ManagementPage = () => {
               {darkMode ? <Sun size={20} /> : <Moon size={20} />}
             </button>
           </div>
-        </header>
-
-        {/* Content Area */}
+        </header>        {/* Content Area */}
         <main className="admin-content">
-          <Suspense fallback={
-            <div className="admin-loading">
-              <div className="admin-loading-spinner"></div>
-              <p>Cargando...</p>
-            </div>
-          }>
-            {renderTabContent(activeTab)}
-          </Suspense>
+            <Suspense fallback={
+              <div className="admin-loading">
+                <div className="admin-loading-spinner"></div>
+                <p>Cargando...</p>
+              </div>
+            }>
+              {renderTabContent(activeTab)}
+            </Suspense>
         </main>
       </div>
     </div>
