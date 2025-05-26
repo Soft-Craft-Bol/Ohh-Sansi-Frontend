@@ -1,4 +1,15 @@
+import { getCatalogoOlimpiada } from '../api/api';
 import * as Yup from 'yup';
+const response = await getCatalogoOlimpiada();
+  const catalogo = response?.data || [];
+
+  const gradosCatalogo = new Set(
+    catalogo.flatMap(item => item.grados)
+  );
+
+  const areasCatalogo = new Set(
+    catalogo.map(item => item.nombreArea.toLowerCase())
+  );
 const nombreSchema = Yup.string()
     .required('el Nombre es requerido')
     .min(2, 'Debe tener al menos 2 caracteres')
@@ -25,7 +36,6 @@ const telfSchema= Yup.string()
 const emailSchema= Yup.string()
         .email('Correo electrónico inválido')  
         .required('El correo electrónico es requerido');
-
 export const excelRowSchemaDatos = Yup.object().shape({
     'Nombres de Participante': nombreSchema,
 
@@ -57,18 +67,35 @@ export const excelRowSchemaDatos = Yup.object().shape({
     'Correo': emailSchema,
     'Carnet Identidad': CIschema,
     'ComplementoCi': complementoSchema,
-
+    
     'Nombre Tutor': nombreSchema,
     'Apellidos Tutor': nombreSchema,
     'Carnet tutor': CIschema,
     'Complemento tut': complementoSchema,
     'email tutor': emailSchema,
     'num Telefono': telfSchema,
-
-    
 });
 
+const validarArea = (campo) =>
+    Yup.string()
+      .required('Debe estar inscrito en un área')
+      .test(`${campo}-valido`, 'El área que intenta inscribirse no está habilitada para su grado, o está mal escrita', function (value) {
+        return areasCatalogo.has(value?.trim().toLowerCase());
+      });
+
 export const excelRowSchemaAreas = Yup.object().shape({
+  '1er Area': validarArea('1er Area'),
+  'Grado': Yup.string()
+      .required('El grado es obligatorio')
+      .test('grado-existe', 'El grado no está habilitado o está mal escrito', value =>
+        gradosCatalogo.has(value?.trim())
+      ),
+  '2do Area (si desea)': Yup.string()
+      .notRequired()
+      .test('area2-valida', 'El área que intenta inscribirse no está habilitada o está mal escrita', function (value) {
+        if (!value || value.trim() === '') return true;
+        return areasCatalogo.has(value?.trim().toLowerCase());
+      }),
   'Nombre Profesor': nombreSchema,
   'Apellidos Profesor': nombreSchema,
   'Carnet Profesor': CIschema,
@@ -76,6 +103,7 @@ export const excelRowSchemaAreas = Yup.object().shape({
   'email profesor': emailSchema,
   'telefono profesor': telfSchema,
   'Nombre Tutor': nombreSchema,
+  
 
   // Campos de Profesor2: opcionales pero todos requeridos si alguno se llena
   'Nombre Profesor2': Yup.string()
@@ -87,12 +115,14 @@ export const excelRowSchemaAreas = Yup.object().shape({
         parent['Carnet profesor2'],
         parent['email profesor2'],
         parent['telefono profesor2'],
+        parent['2do Area (si desea)'],
       ];
       const algunoLleno = [value, ...otros].some(v => !!v && String(v).trim() !== '');
       const todosLlenos = [value, ...otros].every(v => !!v && String(v).trim() !== '');
       return !algunoLleno || todosLlenos; // válido si todo está vacío, o todo está lleno
     }),
-
+  '2do Area (si desea)': Yup.string()
+        .notRequired(),
   'Apellidos Profesor2': Yup.string().notRequired(),
   'Carnet profesor2': Yup.string().notRequired(),
   'email profesor2': Yup.string().notRequired(),
