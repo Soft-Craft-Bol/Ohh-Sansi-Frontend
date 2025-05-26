@@ -121,6 +121,54 @@ const TablaInscripcion = ({
           </div>
         </div>
       )}
+      {datosInscripcion.comprobantePagoStatus && (
+        <div className="table-row">
+          <div className="col-etapa">Comprobante de pago</div>
+          <div className="col-estado">
+            <span className={`status-chip ${datosInscripcion.comprobantePagoStatus.estado === 'APROBADO' ? 'complete' : datosInscripcion.comprobantePagoStatus.estado === 'PENDIENTE' ? 'pending' : 'rejected'}`}>
+              {datosInscripcion.comprobantePagoStatus.estado === 'APROBADO'
+                ? '✓ Aprobado'
+                : datosInscripcion.comprobantePagoStatus.estado === 'PENDIENTE'
+                ? '⟳ Pendiente'
+                : '✗ Rechazado'}
+            </span>
+          </div>
+          <div className="col-fecha">
+            {datosInscripcion.comprobantePagoStatus.comprobantePago
+              ? `Monto: Bs ${datosInscripcion.comprobantePagoStatus.comprobantePago.montoPagado}`
+              : 'No disponible'}
+          </div>
+          <div className="col-comentarios">
+            {datosInscripcion.comprobantePagoStatus.comentarios || 'Sin comentarios'}
+          </div>
+          <div className="col-acciones">
+            <a
+              href="#"
+              className="ver-detalles"
+              onClick={() =>
+                mostrarDetalles(
+                  'Comprobante de Pago',
+                  `
+                  <strong>Estado:</strong> ${datosInscripcion.comprobantePagoStatus.estado}<br/>
+                  <strong>Comentarios:</strong> ${datosInscripcion.comprobantePagoStatus.comentarios || 'Ninguno'}<br/>
+                  <strong>Fecha de registro:</strong> ${datosInscripcion.comprobantePagoStatus.fechaRegistro || 'No disponible'}<br/>
+                  <strong>Monto pagado:</strong> Bs ${datosInscripcion.comprobantePagoStatus.comprobantePago?.montoPagado || 'No disponible'}<br/>
+                  <strong>Nombre receptor:</strong> ${datosInscripcion.comprobantePagoStatus.comprobantePago?.nombreReceptor || 'No disponible'}<br/>
+                  <strong>Notas adicionales:</strong> ${datosInscripcion.comprobantePagoStatus.comprobantePago?.notasAdicionales || 'No disponible'}<br/>
+                  <strong>Imagen:</strong> ${
+                    datosInscripcion.comprobantePagoStatus.comprobantePago?.imagenComprobante
+                      ? `<br/><img src="${datosInscripcion.comprobantePagoStatus.comprobantePago.imagenComprobante}" alt="Comprobante" style="max-width:300px;max-height:200px;" />`
+                      : 'No disponible'
+                  }
+                  `
+                )
+              }
+            >
+              Ver detalles
+            </a>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
