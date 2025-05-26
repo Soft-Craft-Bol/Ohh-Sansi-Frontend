@@ -9,13 +9,68 @@ import { IoMdRibbon } from 'react-icons/io';
 import { Link } from 'react-router-dom';
 import { getOlimpiadaPreinscripcion } from '../../api/api';
 import './LandingPage.css';
+import { formatGrados } from '../../utils/GradesOrder';
 
 const LandingPage = () => {
   const [registrationOpen, setRegistrationOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('matematica');
   const [olimpiadaData, setOlimpiadaData] = useState(null);
+  const [activeTab, setActiveTab] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Función para generar las áreas dinámicas
+  const getDynamicAreas = () => {
+    if (!olimpiadaData?.catalogoOlimpiada) return [];
+
+    return olimpiadaData.catalogoOlimpiada.map(catalogo => {
+      // Asigna iconos según el área
+      let icon;
+      switch(catalogo.nombreArea.toLowerCase()) {
+        case 'matemática':
+        case 'matematica':
+          icon = <FaSquareRootAlt />;
+          break;
+        case 'física':
+        case 'fisica':
+          icon = <FaAtom />;
+          break;
+        case 'química':
+        case 'quimica':
+          icon = <GiChemicalDrop />;
+          break;
+        case 'biología':
+        case 'biologia':
+          icon = <FaMicroscope />;
+          break;
+        default:
+          icon = <IoMdRibbon />;
+      }
+
+      // Define colores por área
+      const areaColors = {
+        'matemática': '#2563eb',
+        'matematica': '#2563eb',
+        'física': '#7c3aed',
+        'fisica': '#7c3aed',
+        'química': '#059669',
+        'quimica': '#059669',
+        'biología': '#dc2626',
+        'biologia': '#dc2626'
+      };
+
+      return {
+        id: catalogo.nombreArea.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""),
+        name: catalogo.nombreArea,
+        icon: icon,
+        grades: formatGrados(catalogo.grados),
+        color: areaColors[catalogo.nombreArea.toLowerCase()] || '#6b7280',
+        description: catalogo.descripcionArea || `Competencia de ${catalogo.nombreArea}`
+      };
+    });
+  };
+
+  // Obtener las áreas dinámicas
+  const dynamicAreas = getDynamicAreas();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -31,6 +86,12 @@ const LandingPage = () => {
         setOlimpiadaData(data);
         setRegistrationOpen(isPeriodActive);
         setError(null);
+        
+        // Establecer la primera pestaña como activa después de cargar los datos
+        if (data?.catalogoOlimpiada?.length > 0) {
+          const firstArea = data.catalogoOlimpiada[0].nombreArea.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+          setActiveTab(firstArea);
+        }
       } catch (err) {
         setError(err.message || "Error al cargar los datos");
       } finally {
@@ -55,41 +116,6 @@ const LandingPage = () => {
 
   const { olimpiada, periodoOlimpiada } = olimpiadaData;
 
-  const areas = [
-    {
-      id: 'matematica',
-      name: "Matemática",
-      icon: <FaSquareRootAlt />,
-      grades: "1ro a 6to de secundaria",
-      color: "#2563eb",
-      description: "Desarrolla tu pensamiento lógico y habilidades de resolución de problemas matemáticos complejos."
-    },
-    {
-      id: 'fisica',
-      name: "Física",
-      icon: <FaAtom />,
-      grades: "3ro a 6to de secundaria",
-      color: "#7c3aed",
-      description: "Explora los principios fundamentales del universo y las leyes físicas que lo gobiernan."
-    },
-    {
-      id: 'quimica',
-      name: "Química",
-      icon: <GiChemicalDrop />,
-      grades: "3ro a 6to de secundaria",
-      color: "#059669",
-      description: "Descubre la composición de la materia y sus fascinantes transformaciones químicas."
-    },
-    {
-      id: 'biologia',
-      name: "Biología",
-      icon: <FaMicroscope />,
-      grades: "3ro a 6to de secundaria",
-      color: "#dc2626",
-      description: "Estudia la vida y los organismos vivientes en todos sus niveles de organización."
-    }
-  ];
-
   const quickActions = [
     { icon: <FaUserGraduate />, title: "Inscripción Individual", link: "/inscripcion-individual" },
     { icon: <FaUsers />, title: "Inscripción Masiva", link: "/inscripcion-masiva" },
@@ -100,14 +126,13 @@ const LandingPage = () => {
 
   return (
     <div className="landing-container">
-
       <main className="landing-main">
         {/* Hero Section */}
         <section className="landing-hero">
           <div className="landing-hero-content">
             <div className="landing-hero-badge">
               <IoMdRibbon />
-              <span>Edición {new Date(olimpiada.fechaInicio).getFullYear()}</span>
+              <span>Edición {olimpiada.anio}</span>
             </div>
 
             <h1 className="landing-hero-title">
@@ -181,46 +206,54 @@ const LandingPage = () => {
             <p className="landing-section-subtitle">Elige el área científica que más te apasione</p>
           </div>
 
-          <div className="landing-tabs">
-            {areas.map(area => (
-              <button
-                key={area.id}
-                className={`landing-tab ${activeTab === area.id ? 'landing-tab-active' : ''}`}
-                onClick={() => setActiveTab(area.id)}
-              >
-                {area.name}
-              </button>
-            ))}
-          </div>
-
-          <div className="landing-area-content">
-            {areas.filter(area => area.id === activeTab).map(area => (
-              <div key={area.id} className="landing-area-card">
-                <div
-                  className="landing-area-icon"
-                  style={{ backgroundColor: `${area.color}15`, color: area.color }}
-                >
-                  {area.icon}
-                </div>
-                <div className="landing-area-info">
-                  <h3 className="landing-area-title" style={{ color: area.color }}>
-                    {area.name}
-                  </h3>
-                  <p className="landing-area-description">{area.description}</p>
-                  <div className="landing-area-meta">
-                    <FaUserGraduate />
-                    <span>Grados: {area.grades}</span>
-                  </div>
+          {dynamicAreas.length > 0 ? (
+            <>
+              <div className="landing-tabs">
+                {dynamicAreas.map(area => (
                   <button
-                    className="landing-btn-primary"
-                    style={{ backgroundColor: area.color }}
+                    key={area.id}
+                    className={`landing-tab ${activeTab === area.id ? 'landing-tab-active' : ''}`}
+                    onClick={() => setActiveTab(area.id)}
                   >
-                    Ver temario completo
+                    {area.name}
                   </button>
-                </div>
+                ))}
               </div>
-            ))}
-          </div>
+
+              <div className="landing-area-content">
+                {dynamicAreas.filter(area => area.id === activeTab).map(area => (
+                  <div key={area.id} className="landing-area-card">
+                    <div
+                      className="landing-area-icon"
+                      style={{ backgroundColor: `${area.color}15`, color: area.color }}
+                    >
+                      {area.icon}
+                    </div>
+                    <div className="landing-area-info">
+                      <h3 className="landing-area-title" style={{ color: area.color }}>
+                        {area.name}
+                      </h3>
+                      <p className="landing-area-description">{area.description}</p>
+                      <div className="landing-area-meta">
+                        <FaUserGraduate />
+                        <span>Grados: {area.grades}</span>
+                      </div>
+                      <button
+                        className="landing-btn-primary"
+                        style={{ backgroundColor: area.color }}
+                      >
+                        Ver temario completo
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : (
+            <div className="landing-no-areas">
+              <p>No hay áreas disponibles para esta olimpiada</p>
+            </div>
+          )}
 
           <div className="landing-deadline">
             <FaCalendarAlt />
@@ -228,8 +261,6 @@ const LandingPage = () => {
           </div>
         </section>
       </main>
-
-
     </div>
   );
 };
