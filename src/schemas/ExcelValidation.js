@@ -1,8 +1,7 @@
-import { getCatalogoOlimpiada } from '../api/api';
+import { getPeriodoInscripcionActal } from '../api/api';
 import * as Yup from 'yup';
-const response = await getCatalogoOlimpiada();
-  const catalogo = response?.data || [];
-
+const response = await getPeriodoInscripcionActal();
+  const catalogo = response?.data?.catalogoOlimpiada || [];
   const gradosCatalogo = new Set(
     catalogo.flatMap(item => item.grados)
   );

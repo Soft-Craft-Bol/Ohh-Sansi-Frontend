@@ -10,7 +10,7 @@ import Swal from 'sweetalert2';
 import plantilla from '../../assets/Plantilla-De-Inscipción-v1.xlsx';
 import Table from '../table/Table';
 import { excelRowSchemaAreas, excelRowSchemaDatos } from '../../schemas/ExcelValidation';
-import { getInscripcionByID, postOnlyExcelFile, registerTutor } from '../../api/api';
+import { getInscripcionByID, postOnlyExcelFile, registerTutor, getPeriodoInscripcionActal } from '../../api/api';
 import { useNavigate } from 'react-router-dom';
 
 const validExtensions = ['.xlsx'];
@@ -213,6 +213,14 @@ const handleConfirm = (codigoGenerado) => {
 };
 
   const handleSubmit = async () => {
+    const response = await getPeriodoInscripcionActal()
+    const actualPeriodo = response.data.olimpiada;
+    console.log(actualPeriodo)
+    if(actualPeriodo.nombreEstado !== "EN INSCRIPCION"){
+      Swal.fire("No se permiten inscripciones en este momento",
+      'La olimpiada actual no se encuentra en el periodo de "EN INSCRIPCION"', "warning");
+      return;
+    }
   if (!selectedFile) {
     Swal.fire("Archivo requerido", "Debes cargar un archivo Excel antes de registrar", "warning");
     return;
