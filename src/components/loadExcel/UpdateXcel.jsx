@@ -1,8 +1,8 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import * as XLSX from 'xlsx';
-import { FaUpload, FaDownload, FaCheck } from 'react-icons/fa';
+import { FaUpload, FaDownload, FaCheck, FaTimes, FaCheckCircle } from 'react-icons/fa';
 import { RiFileExcel2Line } from 'react-icons/ri';
 import { ButtonPrimary } from '../button/ButtonPrimary';
 import './LoadExcel.css';
@@ -26,31 +26,31 @@ const UpdateExcel = () => {
   const [excelData, setExcelData] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
   const [buttonState, setButtonState] = useState('upload');
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
+
+  // Función para convertir fechas de Excel
   const convertirFechaExcel = (value) => {
     if (!value) return null;
     
     if (typeof value === 'number') {
-        const utc_days = Math.floor(value - 25569);
-        const utc_value = utc_days * 86400;
-        return new Date(utc_value * 1000);
+      const utc_days = Math.floor(value - 25569);
+      const utc_value = utc_days * 86400;
+      return new Date(utc_value * 1000);
     }
     
-    // Si es string (formato de texto)
     if (typeof value === 'string') {
-        // Intentar parsear diferentes formatos
-        const parsedDate = new Date(value);
-        return isNaN(parsedDate.getTime()) ? null : parsedDate;
+      const parsedDate = new Date(value);
+      return isNaN(parsedDate.getTime()) ? null : parsedDate;
     }
     
-    // Si ya es un objeto Date
     if (value instanceof Date) {
-        return value;
+      return value;
     }
     
     return null;
-    }; 
-  
+  };
+
+  // Validar edad del participante
   const validarEdad = (fechaNacimiento) => {
     const fechaNac = convertirFechaExcel(fechaNacimiento);
     if (!fechaNac) return false;
@@ -60,12 +60,13 @@ const UpdateExcel = () => {
     const mes = hoy.getMonth() - fechaNac.getMonth();
     
     if (mes < 0 || (mes === 0 && hoy.getDate() < fechaNac.getDate())) {
-        edad--;
+      edad--;
     }
     
     return edad >= 4 && edad <= 20;
-};
+  };
 
+  // Formik configuration
   const formik = useFormik({
     initialValues: {
       file: null,
@@ -78,43 +79,56 @@ const UpdateExcel = () => {
       const file = values.file;
       const reader = new FileReader();
     
-      reader.onload = (event) => {
-        const data = new Uint8Array(event.target.result);
-        const workbook = XLSX.read(data, { type: 'array' });
-      
-        const hoja1 = workbook.Sheets['Datos'];
-        const jsonHoja1 = XLSX.utils.sheet_to_json(hoja1);
-      
-        const columnasHoja1 = ['Nombres', 'Apellido Paterno', 'Apellido Materno', 'Departamento', 'Colegio', 'Carnet Identidad'];
-        const participantes = jsonHoja1.map((row) => {
-          const nuevo = {};
-          columnasHoja1.forEach((col) => {
-            nuevo[col] = row[col] ?? '';
+      reader.onload = async (event) => {
+        try {
+          const data = new Uint8Array(event.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+        
+          const hoja1 = workbook.Sheets['Datos'];
+          const jsonHoja1 = XLSX.utils.sheet_to_json(hoja1);
+        
+          const participantes = jsonHoja1.map((row) => {
+            const nuevo = {};
+            columnasPermitidas.forEach((col) => {
+              nuevo[col] = row[col] ?? '';
+            });
+            return nuevo;
           });
-          return nuevo;
-        });
-      
-        if (participantes.length > 600) {
+        
+          if (participantes.length > 600) {
+            Swal.fire({
+              icon: "error",
+              title: "El archivo contiene más de 600 registros",
+              text: "Por favor, reduzca la cantidad o seleccione otro archivo",
+              showConfirmButton: false,
+              timer: 2500,
+            });
+            setSubmitting(false);
+            setButtonState('error');
+            return;
+          }
+          
+          setExcelData(participantes);        
+          setSubmitting(false);
+          setButtonState('done');
+        } catch (error) {
+          console.error('Error al procesar archivo:', error);
           Swal.fire({
             icon: "error",
-            title: "El archivo contiene más de 600 registros",
-            text: "Por favor, reduzca la cantidad o seleccione otro archivo",
+            title: "Error al procesar archivo",
+            text: "Ocurrió un error al leer el archivo Excel",
             showConfirmButton: false,
             timer: 2500,
           });
           setSubmitting(false);
           setButtonState('error');
-          return;
         }
-      
-        setExcelData(participantes);        
-        setSubmitting(false);
-        setButtonState('done');
       };
       reader.readAsArrayBuffer(file);
     },
   });
 
+  // Manejar cambio de archivo
   const handleFileChange = (event) => {
     const file = event.currentTarget.files[0];
     setExcelData([]);
@@ -158,125 +172,240 @@ const UpdateExcel = () => {
     formik.setFieldTouched('file', false);
   };
 
-    const verificarParticipanteRegistrado = async (ci) => {
-    try {
-      const response = await verificarParticipante(ci);
-      return response.data?.fechaNacimiento ? true : false;
-    } catch (error) {
-      console.error('Error al verificar participante:', error);
-      return false;
-    }
+    const limpiarFilasVacias = (filas) => {
+    return filas.filter(fila => {
+      // Considera una fila válida si tiene al menos un campo importante con datos
+      const camposImportantes = ['Nombres', 'Apellido Paterno', 'Carnet Identidad'];
+      
+      return camposImportantes.some(campo => {
+        const valor = fila[campo];
+        return valor && 
+              valor.toString().trim() !== '' && 
+              valor !== 0 && 
+              valor !== '0';
+      });
+     });
     };
 
-    const validarFilasDatos = async (filas) => {
+  const validarFilasDatos = async (filas) => {
     const errores = [];
+    const cisVistos = new Set(); // Para detectar duplicados dentro del mismo archivo
+    
     for (let i = 0; i < filas.length; i++) {
+      const fila = filas[i];
       try {
-        if (filas[i].id_grado === 0 || filas[i].id_grado === '0') continue;
+        if (fila.id_grado === 0 || fila.id_grado === '0') continue;
         
-        // Validación de fecha de nacimiento
-        if (!validarEdad(filas[i].FechaNacimiento)) {
+        // Validar CI duplicado - usando la misma lógica del código antiguo
+        const ci = fila['Carnet Identidad']?.toString().trim();
+        if (ci) {
+          if (cisVistos.has(ci)) {
+            errores.push({
+              hoja: fila._hoja || 'Datos',
+              fila: i + 2,
+              columna: 'Carnet Identidad',
+              mensaje: 'Este carnet ya fue registrado en otra fila'
+            });
+            continue;
+          }
+          cisVistos.add(ci);
+        }
+
+        // Validar edad si es necesario
+        if (fila.FechaNacimiento && !validarEdad(fila.FechaNacimiento)) {
           errores.push({
-            hoja: filas[i]._hoja || 'Datos',
+            hoja: fila._hoja || 'Datos',
             fila: i + 2,
             columna: 'FechaNacimiento',
             mensaje: 'El participante debe tener entre 4 y 20 años'
           });
-          continue;
         }
 
-        // Verificar si el participante ya está registrado
-        if (filas[i]['Carnet Identidad']) {
-          const yaRegistrado = await verificarParticipanteRegistrado(filas[i]['Carnet Identidad']);
-          if (yaRegistrado) {
-            errores.push({
-              hoja: filas[i]._hoja || 'Datos',
-              fila: i + 2,
-              columna: 'Carnet Identidad',
-              mensaje: 'El participante con este CI ya está registrado'
-            });
-            continue;
-          }
-        }
-
-        await excelRowSchemaDatos.validate(filas[i], { abortEarly: false });
+        await excelRowSchemaDatos.validate(fila, { abortEarly: false });
       } catch (validationError) {
-        validationError.inner.forEach(err => {
-          errores.push({
-            hoja: filas[i]._hoja || 'Datos',
-            fila: i + 2,
-            columna: err.path,
-            mensaje: err.message
+        if (validationError.inner) {
+          validationError.inner.forEach(err => {
+            errores.push({
+              hoja: fila._hoja || 'Datos',
+              fila: i + 2,
+              columna: err.path,
+              mensaje: err.message
+            });
           });
-        });
+        }
       }
     }
     return errores;
   };
 
-   const mostrarResultados = (resultados) => {
-    const exitosos = resultados.filter(item => item.success);
-    const fallidos = resultados.filter(item => !item.success);
-
-    Swal.fire({
-      title: 'Resultado del Registro',
-      html: `
-        <div style="text-align: left; max-height: 60vh; overflow-y: auto;">
-          <div style="margin-bottom: 20px;">
-            <h3 style="color: #4CAF50;">Registros Exitosos: ${exitosos.length}</h3>
-            ${exitosos.slice(0, 5).map(item => `
-              <div style="display: flex; align-items: center; margin: 5px 0; color: #4CAF50;">
-                <span style="margin-right: 10px;"><FaCheckCircle /></span>
-                <span>Fila ${item.fila}: ${item.nombre || 'Participante'} (CI: ${item.ci_participante_excel})</span>
-              </div>
-            `).join('')}
-            ${exitosos.length > 5 ? `<p>...y ${exitosos.length - 5} más</p>` : ''}
-          </div>
-          
-          <div>
-            <h3 style="color: #F44336;">Registros Fallidos: ${fallidos.length}</h3>
-            ${fallidos.slice(0, 5).map(item => `
-              <div style="margin: 5px 0; color: #F44336;">
-                <div style="display: flex; align-items: center;">
-                  <span style="margin-right: 10px;"><FaTimes /></span>
-                  <span>Fila ${item.fila}: ${item.error || 'Error desconocido'}</span>
-                </div>
-                ${item.ci_participante_excel ? `<div style="font-size: 0.9em; margin-left: 24px;">CI: ${item.ci_participante_excel}</div>` : ''}
-              </div>
-            `).join('')}
-            ${fallidos.length > 5 ? `<p>...y ${fallidos.length - 5} más</p>` : ''}
-          </div>
-        </div>
-      `,
-      width: '800px',
-      confirmButtonText: 'Continuar',
-      customClass: {
-        popup: 'resultados-popup'
-      }
-    });
-    };
-
+  // Validar filas de áreas
   const validarFilasAreas = async (filas) => {
     const errores = [];
     for (let i = 0; i < filas.length; i++) {
       try {
         await excelRowSchemaAreas.validate(filas[i], { abortEarly: false });
       } catch (validationError) {
-        validationError.inner.forEach(err => {
-          errores.push({
-            hoja: filas[i]._hoja || 'Desconocida',
-            fila: i + 2,
-            columna: err.path,
-            mensaje: err.message
+        if (validationError.inner) {
+          validationError.inner.forEach(err => {
+            errores.push({
+              hoja: filas[i]._hoja || 'Areas',
+              fila: i + 2,
+              columna: err.path,
+              mensaje: err.message
+            });
           });
-        });
+        }
       }
     }
     return errores;
   };
 
+  const leerExcel = (file) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const data = new Uint8Array(event.target.result);
+        const workbook = XLSX.read(data, { type: 'array', cellDates: true });
+        
+        // Filtrar filas válidas
+        const esFilaInvalida = (fila) => {
+          const ci = fila['Carnet tutor'];
+          return !ci || String(ci).trim() === '' || ci === 0;
+        };
+
+        let hojaDatosRaw = XLSX.utils.sheet_to_json(workbook.Sheets['Datos'] || {})
+          .filter(fila => fila['id_grado'] !== 0 && fila['id_grado'] !== '0');
+
+        let hojaAreasRaw = XLSX.utils.sheet_to_json(workbook.Sheets['Areas'] || {})
+          .filter(fila => fila['id_grado'] !== 0 && fila['id_grado'] !== '0');
+
+        // NUEVA LIMPIEZA: Eliminar filas completamente vacías
+        hojaDatosRaw = limpiarFilasVacias(hojaDatosRaw);
+        hojaAreasRaw = limpiarFilasVacias(hojaAreasRaw);
+
+        const hojaDatos = hojaDatosRaw.filter(fila => !esFilaInvalida(fila));
+        const hojaAreas = hojaAreasRaw.filter(fila => !esFilaInvalida(fila));
+
+          // Convertir fechas como en el código antiguo
+          const convertirFechas = (fila) => {
+            const copia = { ...fila };
+            if (typeof copia.FechaNacimiento === 'number') {
+              const serial = copia.FechaNacimiento;
+              const utc_days = Math.floor(serial - 25569);
+              const utc_value = utc_days * 86400;
+              copia.FechaNacimiento = new Date(utc_value * 1000);
+            }
+            return copia;
+          };
+
+          const filasConHojaDatos = hojaDatos.map(fila => ({ ...convertirFechas(fila), _hoja: 'Datos' }));
+          const filasConHojaAreas = hojaAreas.map(fila => ({ ...convertirFechas(fila), _hoja: 'Areas' }));
+          
+          const erroresDatos = await validarFilasDatos(filasConHojaDatos);
+          const erroresAreas = await validarFilasAreas(filasConHojaAreas);
+          
+          resolve([...erroresDatos, ...erroresAreas]);
+        } catch (error) {
+          reject(error);
+        }
+      };
+      reader.onerror = (error) => reject(error);
+      reader.readAsArrayBuffer(file);
+    });
+  };
+
+  // Mostrar errores de validación - CORREGIDA
+  const mostrarErrores = (errores) => {
+    const erroresPorHoja = errores.reduce((acc, error) => {
+      const hoja = error.hoja || 'Desconocida';
+      if (!acc[hoja]) acc[hoja] = [];
+      acc[hoja].push(`Fila ${error.fila}, Columna "${error.columna}": ${error.mensaje}`);
+      return acc;
+    }, {});
+
+    let htmlErrores = '';
+    for (const hoja in erroresPorHoja) {
+      htmlErrores += `<h3 style="margin-top: 10px; font-size: 16px;">Hoja: ${hoja}</h3><ul>`;
+      erroresPorHoja[hoja].forEach(err => {
+        htmlErrores += `<li style="text-align: left; font-size: 14px;">${err}</li>`;
+      });
+      htmlErrores += '</ul>';
+    }
+
+    Swal.fire({
+      title: 'Errores de validación en el archivo Excel',
+      html: htmlErrores,
+      icon: 'error',
+      width: 800,
+      customClass: {
+        htmlContainer: 'scrollable-swals',
+      },
+      showConfirmButton: true
+    });
+  };
+
+  // Mostrar resultados - CORREGIDA para mostrar alerta de éxito
+  const mostrarResultados = async (resultados) => {
+    const exitosos = resultados.filter(item => item?.success);
+    const erroresNoCriticos = resultados.filter(item => !item?.success);
+
+    // Si hay registros exitosos, mostrar alerta de éxito
+    if (exitosos.length > 0) {
+      await Swal.fire({
+        title: '¡Registros procesados exitosamente!',
+        html: `
+          <div style="text-align: center;">
+            <div style="font-size: 48px; color: #4CAF50; margin-bottom: 20px;">
+              <i class="fas fa-check-circle"></i>
+            </div>
+            <p style="font-size: 18px; margin-bottom: 10px;">
+              <strong>${exitosos.length}</strong> participante${exitosos.length > 1 ? 's' : ''} 
+              ${exitosos.length > 1 ? 'fueron registrados' : 'fue registrado'} correctamente
+            </p>
+            ${erroresNoCriticos.length > 0 ? `
+              <p style="color: #FF9800; font-size: 14px;">
+                ${erroresNoCriticos.length} registro${erroresNoCriticos.length > 1 ? 's' : ''} 
+                no ${erroresNoCriticos.length > 1 ? 'pudieron' : 'pudo'} ser procesado${erroresNoCriticos.length > 1 ? 's' : ''}
+              </p>
+            ` : ''}
+          </div>
+        `,
+        icon: 'success',
+        confirmButtonText: 'Continuar'
+      });
+    }
+
+    // Si hay errores, mostrarlos después
+    if (erroresNoCriticos.length > 0) {
+      let html = `
+        <div style="max-height: 60vh; overflow-y: auto; text-align: left;">
+          <h4 style="color: #F44336;">Errores encontrados:</h4>
+          ${erroresNoCriticos.map(item => `
+            <div style="margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #eee;">
+              <p><strong>Fila ${item.fila || 'Desconocida'}</strong></p>
+              <p style="color: red;">${item.error || 'Error desconocido'}</p>
+            </div>
+          `).join('')}
+        </div>
+      `;
+
+      await Swal.fire({
+        title: 'Detalles de errores',
+        html: html,
+        width: 800,
+        confirmButtonText: 'Entendido'
+      });
+    }
+  };
+
+  // Manejar confirmación de inscripción
   const handleConfirm = (codigoGenerado) => {
     setExcelData([]);
+    setSelectedFile(null);
+    setButtonState('upload');
+    formik.resetForm();
+    
     Swal.fire({
       title: '<h2 style="color:#003366;">Inscripción correctamente realizada</h2>',
       html: `
@@ -307,228 +436,161 @@ const UpdateExcel = () => {
     });
   };
 
-  const mostrarErroresValidacion = (errores) => {
-    Swal.fire({
-      title: 'Errores en el archivo',
-      html: `
-        <div style="max-height: 400px; overflow-y: auto; text-align: left;">
-          ${errores.map(error => `
-            <div style="margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #eee;">
-              <p><strong>Hoja ${error.hoja}, Fila ${error.fila}</strong></p>
-              <p><strong>Campo:</strong> ${error.columna}</p>
-              <p style="color: red;">${error.mensaje}</p>
-            </div>
-          `).join('')}
-        </div>
-      `,
-      confirmButtonText: 'Entendido',
-      width: '800px'
-    });
-  };
-
   const handleSubmit = async () => {
     if (!selectedFile) {
-      Swal.fire({
-        icon: "warning",
-        title: "Archivo requerido",
-        text: "Debes cargar un archivo Excel antes de registrar",
-        showConfirmButton: true
-      });
+      Swal.fire("Archivo requerido", "Debes cargar un archivo Excel antes de registrar", "warning");
       return;
-    } 
-
-    const leerExcel = (file) => {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = async (event) => {
-            try {
-                const data = new Uint8Array(event.target.result);
-                const workbook = XLSX.read(data, { type: 'array', cellDates: true });
-                
-                // Procesar hoja Datos
-                const hojaDatos = XLSX.utils.sheet_to_json(workbook.Sheets['Datos'] || {}, {
-                    raw: false, // Para obtener fechas como objetos Date
-                    dateNF: 'yyyy-mm-dd' // Formato esperado
-                }).filter(fila => fila['id_grado'] !== 0 && fila['id_grado'] !== '0' && fila['Carnet tutor']);
-                
-                // Procesar hoja Areas
-                const hojaAreas = XLSX.utils.sheet_to_json(workbook.Sheets['Areas'] || {}, {
-                    raw: false,
-                    dateNF: 'yyyy-mm-dd'
-                }).filter(fila => fila['id_grado'] !== 0 && fila['id_grado'] !== '0' && fila['Carnet tutor']);
-                
-                // Asignar hoja de origen
-                const filasConHojaDatos = hojaDatos.map(fila => ({ ...fila, _hoja: 'Datos' }));
-                const filasConHojaAreas = hojaAreas.map(fila => ({ ...fila, _hoja: 'Areas' }));
-                
-                // Validar
-                const erroresDatos = await validarFilasDatos(filasConHojaDatos);
-                const erroresAreas = await validarFilasAreas(filasConHojaAreas);
-                
-                resolve([...erroresDatos, ...erroresAreas]);
-            } catch (error) {
-                reject(error);
-            }
-        };
-        reader.onerror = (error) => reject(error);
-        reader.readAsArrayBuffer(file);
-    });
-  };
+    }
 
     try {
       const errores = await leerExcel(selectedFile);
       if (errores.length > 0) {
-        setExcelData([]);
-        mostrarErroresValidacion(errores);
+        mostrarErrores(errores);
         return;
       }
 
-      // Verificación del tutor en tiempo real
-      let tutorData = null;
-      let tutorVerificado = false;
-
-      const { value: formValues } = await Swal.fire({
-        title: 'Datos del Responsable de pago',
-        html: `
-          <input id="ci" class="swal2-input" placeholder="N° de documento" maxlength="9" 
-                 oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
-          <input id="comp" class="swal2-input" placeholder="Complemento CI" maxlength="2" />
-          <input id="nombres" class="swal2-input" placeholder="Nombre del responsable" maxlength="50" />
-          <input id="apellidos" class="swal2-input" placeholder="Apellidos del responsable" maxlength="50" />
-          <input id="correo" class="swal2-input" placeholder="Correo del responsable" type="email" />
-          <input id="telefono" class="swal2-input" placeholder="Teléfono del responsable" maxlength="8" 
-                 oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
-        `,
-        focusConfirm: false,
-        confirmButtonText: 'Continuar',
-        showCancelButton: true,
-        cancelButtonText: 'Cancelar',
-        allowOutsideClick: false,
-        didOpen: () => {
-          const ciInput = document.getElementById('ci');
-          
-          ciInput.addEventListener('input', async (e) => {
-            const ci = e.target.value.trim();
-            if (ci.length >= 6n) {
-              try {
-                ciInput.disabled = true;
-                Swal.showLoading();
-                
-                const data = await new Promise((resolve, reject) => {
-                  verificarTutor(ci, resolve, reject);
-                });
-
-                if (data) {
-                  tutorData = data;
-                  tutorVerificado = true;
-                  Swal.hideLoading();
-                  
-                  const { isConfirmed } = await Swal.fire({
-                    icon: 'success',
-                    title: 'Tutor encontrado',
-                    html: `
-                      <p>Se encontró un tutor registrado:</p>
-                      <p><strong>Nombre:</strong> ${data.nombresTutor} ${data.apellidosTutor}</p>
-                      <p><strong>CI:</strong> ${data.carnetIdentidadTutor} ${data.complementoCiTutor || ''}</p>
-                    `,
-                    confirmButtonText: 'Usar estos datos',
-                    showCancelButton: true,
-                    cancelButtonText: 'Ingresar manualmente'
-                  });
-
-                  if (isConfirmed) {
-                    document.getElementById('nombres').value = data.nombresTutor || '';
-                    document.getElementById('apellidos').value = data.apellidosTutor || '';
-                    document.getElementById('correo').value = data.emailTutor || '';
-                    document.getElementById('telefono').value = data.telefono || '';
-                    document.getElementById('comp').value = data.complementoCiTutor || '';
-                  }
-                }
-              } catch (error) {
-                console.log('Tutor no encontrado:', error);
-              } finally {
-                ciInput.disabled = false;
-                Swal.hideLoading();
-              }
-            }
-          });
+      // Mostrar formulario para ingresar CI del tutor
+      const { value: ciTutor } = await Swal.fire({
+        title: 'Ingrese CI del tutor',
+        input: 'text',
+        inputPlaceholder: 'Número de documento',
+        inputAttributes: {
+          maxlength: 9,
+          oninput: "this.value = this.value.replace(/[^0-9]/g, '')"
         },
-        preConfirm: () => {
-          const ci = document.getElementById('ci').value.trim();
-          if (!ci) {
-            Swal.showValidationMessage('El número de documento es obligatorio');
-            return false;
-          }
+        showCancelButton: true,
+        confirmButtonText: 'Continuar',
+        cancelButtonText: 'Cancelar'
+      });
 
-          if (!tutorVerificado) {
+      if (!ciTutor) return;
+
+      // Verificar si el tutor existe
+      let tutorData = null;
+      try {
+        tutorData = await new Promise((resolve, reject) => {
+          verificarTutor(ciTutor, resolve, reject);
+        });
+      } catch (error) {
+        console.log('Tutor no encontrado, se procederá a registro manual');
+      }
+
+      let formValues = null;
+      if (tutorData) {
+        // Mostrar confirmación para usar datos del tutor encontrado
+        const { value: confirmar } = await Swal.fire({
+          title: 'Tutor encontrado',
+          html: `
+            <p>Se encontró un tutor registrado con los siguientes datos:</p>
+            <p><strong>Nombre:</strong> ${tutorData.nombresTutor} ${tutorData.apellidosTutor}</p>
+            <p><strong>CI:</strong> ${tutorData.carnetIdentidadTutor} ${tutorData.complementoCiTutor || ''}</p>
+            <p><strong>Teléfono:</strong> ${tutorData.telefono}</p>
+            <p><strong>Correo:</strong> ${tutorData.emailTutor}</p>
+          `,
+          icon: 'info',
+          showCancelButton: true,
+          confirmButtonText: 'Usar estos datos',
+          cancelButtonText: 'Ingresar manualmente'
+        });
+
+        if (confirmar) {
+          formValues = {
+            ci: tutorData.carnetIdentidadTutor,
+            comp: tutorData.complementoCiTutor || '',
+            nombres: tutorData.nombresTutor,
+            apellidos: tutorData.apellidosTutor,
+            correo: tutorData.emailTutor,
+            telefono: tutorData.telefono
+          };
+        }
+      }
+
+      // Si no se confirmó el tutor automático o no se encontró, pedir datos manualmente
+      if (!formValues) {
+        const { value: valores } = await Swal.fire({
+          title: 'Datos del Responsable de pago',
+          html: `
+            <input id="ci" class="swal2-input" placeholder="N° de documento" maxlength="9" value="${ciTutor || ''}" 
+                   oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
+            <input id="comp" class="swal2-input" placeholder="Complemento CI" maxlength="2" />
+            <input id="nombres" class="swal2-input" placeholder="Nombre del responsable" maxlength="50" />
+            <input id="apellidos" class="swal2-input" placeholder="Apellidos del responsable" maxlength="50" />
+            <input id="correo" class="swal2-input" placeholder="Correo del responsable" type="email" />
+            <input id="telefono" class="swal2-input" placeholder="Teléfono del responsable" maxlength="8" 
+                   oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
+          `,
+          focusConfirm: false,
+          confirmButtonText: 'Registrar Tutor',
+          preConfirm: () => {
+            const ci = document.getElementById('ci').value.trim();
+            const comp = document.getElementById('comp').value.trim();
             const nombres = document.getElementById('nombres').value.trim();
             const apellidos = document.getElementById('apellidos').value.trim();
             const correo = document.getElementById('correo').value.trim();
             const telefono = document.getElementById('telefono').value.trim();
-            
-            if (!nombres || !apellidos || !correo || !telefono) {
+
+            if (!ci || !nombres || !apellidos || !correo || !telefono) {
               Swal.showValidationMessage('Por favor, complete todos los campos obligatorios');
               return false;
             }
-          }
 
-          return {
-            ci,
-            comp: document.getElementById('comp').value.trim(),
-            nombres: tutorVerificado ? tutorData.nombresTutor : document.getElementById('nombres').value.trim(),
-            apellidos: tutorVerificado ? tutorData.apellidosTutor : document.getElementById('apellidos').value.trim(),
-            correo: tutorVerificado ? tutorData.emailTutor : document.getElementById('correo').value.trim(),
-            telefono: tutorVerificado ? tutorData.telefono : document.getElementById('telefono').value.trim(),
-            tutorVerificado
-          };
-        }
+            return { ci, comp, nombres, apellidos, correo, telefono };
+          }
+        });
+
+        if (!valores) return;
+        formValues = valores;
+      }
+
+      // Procesar el archivo
+      const { value: confirm } = await Swal.fire({
+        title: '¿Está seguro de registrar los participantes?',
+        text: 'Esta acción no se puede deshacer',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, registrar',
+        cancelButtonText: 'Cancelar'
       });
 
-      if (!formValues) return;
-      try {
+      if (!confirm) return;
+
       Swal.fire({
         title: "Subiendo archivo...",
         text: "Espere un momento mientras se procesa",
         allowOutsideClick: false,
-        didOpen: () => Swal.showLoading()
+        didOpen: () => {
+          Swal.showLoading();
+        }
       });
-      
+
+      try {
         const res = await postOnlyExcelFile(selectedFile);
-        const result = await res.data;
-        Swal.close();
         
-        if (Array.isArray(result)) {
-          const erroresFiltrados = result.filter(item => !(item.error && item.error.includes('violates foreign key constraint')));
-          
-          if (erroresFiltrados.some(item => !item.success)) {
-            setExcelData([]);
+        if (!res || !res.data) {
+          throw new Error('Respuesta inválida del servidor');
+        }
+
+        const result = Array.isArray(res.data) ? res.data : [res.data];
+        
+        Swal.close();
+
+        // Filtrar errores de foreign key como en el código antiguo
+        const erroresFiltrados = result.filter(item => {
+          if (!item) return false;
+          if (item.error && item.error.includes('violates foreign key constraint')) {
+            return false;
           }
+          return true;
+        });
 
-          await Swal.fire({
-            title: 'Resultados del Proceso',
-            html: `
-              <div style="max-height: 400px; overflow-y: auto; margin-bottom: 15px; text-align: left;">
-                ${erroresFiltrados.filter(item => item.fila !== undefined).map(item => `
-                  <div style="margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 8px;">
-                    <p style="margin: 2px 0; font-weight: bold; color: #555;">Fila ${item.fila}</p>
-                    <p style="margin: 2px 0; color: ${item.success ? 'green' : 'red'}">
-                      <strong>Estado:</strong> ${item.success ? 'Éxito' : 'Error'}
-                    </p>
-                    ${item.error ? `<p style="margin: 2px 0; color: red;"><strong>Error:</strong> ${item.error}</p>` : ''}
-                  </div>
-                `).join('')}
-              </div>
-              <div style="background-color: #f5f5f5; padding: 10px; border-radius: 5px; margin-top: 10px;">
-                <p style="margin: 5px 0;"><strong>Registros exitosos:</strong> ${result.filter(e => e.success).length}</p>
-              </div>
-            `,
-            width: 800,
-            confirmButtonText: 'Continuar'
-          });
+        // Mostrar resultados
+        await mostrarResultados(erroresFiltrados);
 
-          const tutorPayload = {
-            idTutorParentesco: 2,
-            tutors: [{
+        // Preparar payload del tutor
+        const tutorPayload = {
+          idTutorParentesco: 2,
+          tutors: [
+            {
               idTipoTutor: 3,
               emailTutor: formValues.correo,
               nombresTutor: formValues.nombres,
@@ -536,37 +598,37 @@ const UpdateExcel = () => {
               telefono: Number(formValues.telefono),
               carnetIdentidadTutor: Number(formValues.ci),
               complementoCiTutor: formValues.comp
-            }]
-          };
-
-          for (const fila of result) {
-            if (fila.success) {
-              await registerTutor(fila.ci_participante_excel, tutorPayload);
-              const forModal = await getInscripcionByID(fila.id_inscripcion);
-              handleConfirm(forModal.data.data.codigoUnicoInscripcion);
-              break;
             }
+          ]
+        };
+
+        // Buscar el primer participante exitoso para registro de tutor
+        const participanteExitoso = result.find(item => item?.success);
+        if (participanteExitoso) {
+          try {
+            await registerTutor(participanteExitoso.ci_participante_excel, tutorPayload);
+            const forModal = await getInscripcionByID(participanteExitoso.id_inscripcion);
+            handleConfirm(forModal.data.data.codigoUnicoInscripcion);
+          } catch (error) {
+            console.error("Error al registrar tutor:", error);
           }
         }
       } catch (error) {
         console.error("Error al enviar archivo:", error);
+        Swal.close();
         Swal.fire({
-          icon: 'error',
-          title: 'Error al procesar archivo',
-          text: error.message || 'Ocurrió un error al enviar el archivo',
-          confirmButtonText: 'Entendido'
+          title: "Error",
+          text: "No se pudo enviar el archivo. Por favor, intente nuevamente.",
+          icon: "error"
         });
-        setExcelData([]);
       }
     } catch (error) {
       console.error("Error al procesar el archivo Excel:", error);
       Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: error.message || 'Hubo un problema al leer o validar el archivo',
-        confirmButtonText: 'Entendido'
+        title: "Error",
+        text: "Hubo un problema al leer o validar el archivo",
+        icon: "error"
       });
-      setExcelData([]);
     }
   };
 
@@ -606,7 +668,7 @@ const UpdateExcel = () => {
               <div className="error-message">{formik.errors.file}</div>
             )}
           </div>
-          <p className="formats">Formatos soportados: .xlsx, .xls (máximo 7 mb)</p>
+          <p className="formats">Formatos soportados: .xlsx, .xls (máximo 3 mb)</p>
           {selectedFile && (
             <ButtonPrimary className="btn-loading" type="submit" disabled={buttonState === 'loading'}>
               {buttonState === 'loading' ? (
@@ -648,8 +710,9 @@ const UpdateExcel = () => {
           <Table data={excelData} columns={columnas} />
         </div>
       )}
-      <div style={{display: "flex", justifyContent:"flex-end"}}>
-        <ButtonPrimary type='submit' onClick={handleSubmit}>
+      
+      <div style={{display: "flex", justifyContent: "flex-end"}}>
+        <ButtonPrimary type='button' onClick={handleSubmit}>
           Registrar participantes
         </ButtonPrimary>
       </div>
