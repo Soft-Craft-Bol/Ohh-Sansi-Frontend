@@ -22,7 +22,9 @@ const CatalogoManagement = () => {
     selectedOlimpiada: null,
     loading: true,
     modalOpen: false,
-    error: null
+    error: null,
+    isEditing: false, //Modal modo edicion
+    itemToEdit: null, //item editar
   });
 
   const showAlert = (type, title, message) => {
@@ -91,6 +93,34 @@ const CatalogoManagement = () => {
   useEffect(() => {
     fetchData();
   }, []);
+
+  const handleEdit = (item) => {
+    if (!state.selectedOlimpiada) {
+      throw new Error('No se ha seleccionado una olimpiada');
+    }
+    const currentOlimpiada = state.olimpiadas.find(o => o.idOlimpiada === state.selectedOlimpiada);
+    
+    if (/*currentOlimpiada.nombreEstado !== 'PLANIFICACION'*/ false) {
+      showAlert('error', 'Error al editar', 'Solo se puede modificar el catálogo cuando la olimpiada está en estado "PLANIFICACION"');
+      throw new Error('Solo se puede modificar el catálogo cuando la olimpiada está en estado "PLANIFICACION"');
+    }else {
+      setState(prev => ({
+        ...prev,
+        modalOpen: true,
+        isEditing: true,
+        itemToEdit: item,
+      }));
+    }
+  };
+
+  const closeModal = () => {
+    setState(prev => ({
+      ...prev,
+      modalOpen: false,
+      isEditing: false,
+      itemToEdit: null,
+    }));
+  };
 
   const handleAddItem = async (formData) => {
   try {
@@ -216,7 +246,7 @@ const CatalogoManagement = () => {
                 </p>
                 <button 
                   className="primary-btn"
-                  onClick={() => setState(prev => ({ ...prev, modalOpen: true }))}
+                  onClick={() => setState(prev => ({ ...prev, modalOpen: true, isEditing: false, itemToEdit: null }))}
                   disabled={!state.selectedOlimpiada}
                 >
                   <FiPlus /> Crear primera configuración
@@ -227,9 +257,8 @@ const CatalogoManagement = () => {
                 {filteredCatalogo.map((item, index) => (
                   <CatalogCard
                     key={`${item.nombreArea}-${item.nombreCategoria}-${index}`}
-                    area={item.nombreArea}
-                    category={item.nombreCategoria}
-                    grades={item.grados}
+                    item={item}//ahora se envia el item entero
+                    onEdit={handleEdit}
                   />
                 ))}
               </div>
@@ -242,8 +271,10 @@ const CatalogoManagement = () => {
         <CatalogModal
           areas={state.areas}
           categories={state.categories}
-          onClose={() => setState(prev => ({ ...prev, modalOpen: false }))}
+          onClose={closeModal}
           onSubmit={handleAddItem}
+          isEditing={state.isEditing}
+          itemData={state.itemToEdit}
         />
       )}
     </div>
