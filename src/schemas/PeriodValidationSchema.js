@@ -1,19 +1,15 @@
 import * as yup from 'yup';
 
 export const PERIOD_TYPES = {
-    INSCRIPCION: {
-        label: "Inscripciones Formales",
-        defaultName: "Inscripciones Formales"
-    },
-    AMPLIACION: {
-        label: "Ampliación de Inscripciones",
-        defaultName: "Ampliación de Inscripciones"
-    },
+  NORMAL: { label: 'Período Normal', color: 'blue' },
+  AMPLIACION: { label: 'Ampliación', color: 'orange' }
 };
 
-export const PERIOD_ORDER = {
-    INSCRIPCION: 1,
-    AMPLIACION: 2,
+export const PERIOD_STATUS = {
+  PLANIFICADO: { label: 'Planificado', color: 'gray' },
+  ACTIVO: { label: 'En Curso', color: 'green' },
+  FINALIZADO: { label: 'Finalizado', color: 'blue' },
+  CANCELADO: { label: 'Cancelado', color: 'red' }
 };
 
 export const getPeriodValidationSchema = (existingPeriods = [], year) => {
