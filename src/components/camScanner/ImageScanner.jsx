@@ -293,7 +293,7 @@ const ImageScanner = ({ initialImage, onComplete, onRetry, attemptsLeft }) => {
           )}
         </div>
       )}
-
+{/* Hola fabri */}
       {extractedText && (
         <details className="text-preview">
           <summary>Ver texto reconocido (irá en Notas Adicionales)</summary>
