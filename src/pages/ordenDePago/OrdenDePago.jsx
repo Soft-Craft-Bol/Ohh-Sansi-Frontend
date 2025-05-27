@@ -48,14 +48,14 @@ const OrdenDePago = () => {
       totalAreas = ordenExel.Responsable?.cantAreas
       nombreResponsable = `${ordenExel.Responsable.nombreTut || ""} ${ordenExel.Responsable.apellidoTut || ""}`.trim()
       correoResponsable = ordenExel.Responsable.correoTut
-      costoPorArea = ordenExel.olimpiadas[0]?.precio_olimpiada || 0;
+      costoPorArea = ordenExel.olimpiadas?.olimpiada?.precioOlimpiada || 0;
       totalAPagar = totalAreas * costoPorArea;
 
     }else{
       if (!ordenData) return null;
       const participantes = ordenData.participantes || [];
       tutores = ordenData.tutores || [];
-      olimpiadas = ordenData.olimpiadas || [];
+      olimpiadas = ordenData.olimpiada || [];
       areas = ordenData.areas || [];
 
       totalParticipantes = participantes.length;
@@ -67,7 +67,7 @@ const OrdenDePago = () => {
         : "No disponible";
       correoResponsable = primerTutor?.email_tutor || "No disponible";
 
-      costoPorArea = olimpiadas[0]?.precio_olimpiada || 0;
+      costoPorArea = olimpiadas?.olimpiada?.precioOlimpiada || 0;
       totalAPagar = totalAreas * costoPorArea;
     }
     
