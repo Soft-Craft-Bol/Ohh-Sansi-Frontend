@@ -1,23 +1,41 @@
 import * as yup from 'yup';
 
 export const PERIOD_TYPES = {
-  NORMAL: { label: 'Período Normal', color: 'blue' },
-  AMPLIACION: { label: 'Ampliación', color: 'orange' }
+  INSCRIPCIONES: { label: 'INSCRIPCIONES', color: 'blue' },
+  AMPLIACION: { label: 'AMPLIACION', color: 'orange' }
 };
 
 export const PERIOD_STATUS = {
-  PLANIFICADO: { label: 'Planificado', color: 'gray' },
+  PENDIENTE: { label: 'Pendiente', color: 'gray' },
   ACTIVO: { label: 'En Curso', color: 'green' },
   FINALIZADO: { label: 'Finalizado', color: 'blue' },
   CANCELADO: { label: 'Cancelado', color: 'red' }
 };
 
-export const getPeriodValidationSchema = (existingPeriods = [], year) => {
+export const getPeriodValidationSchema = (existingPeriods = [], year, editingId = null) => {
     return yup.object().shape({
         tipoPeriodo: yup
             .string()
             .required("El tipo de período es requerido")
-            .oneOf(Object.keys(PERIOD_TYPES)),
+            .oneOf(Object.keys(PERIOD_TYPES))
+            .test(
+                'unique-period-type',
+                'Ya existe un período con este tipo',
+                function(value) {
+                    // Skip validation if no value or no existing periods
+                    if (!value || !existingPeriods || existingPeriods.length === 0) {
+                        return true;
+                    }
+                    
+                    // Check if there's already a period with this type, excluding the current editing one
+                    const duplicatePeriod = existingPeriods.find(
+                        period => period.tipoPeriodo === value && 
+                                 period.idPeriodo !== editingId
+                    );
+                    
+                    return !duplicatePeriod;
+                }
+            ),
         nombrePeriodo: yup
             .string()
             .required("El nombre del período es requerido")

@@ -89,7 +89,7 @@ export const getPeriodoInscripcionActal = () => api.get('/fecha-olimpiada/period
 //FechaOlimpiada
 export const getOlimpiadasConEventos = () => api.get('/fecha-olimpiada/olimpiadas-con-eventos');
 export const savePeriodoOlimpiada = (data) => api.post('/fecha-olimpiada/register', data);
-export const updatePeriodoOlimpiada = (data) => api.put('/fecha-olimpiada/update', data);
+export const updatePeriodoOlimpiada = (idPeriodo, idOlimpiada, data) => api.put(`/fecha-olimpiada/${idPeriodo}?idOlimpiada=${idOlimpiada}`, data);
 export const deletePeriodoOlimpiada = (id) => api.delete(`/fecha-olimpiada/${id}`);
 //EMAILS
 export const sendEmail = (data) => api.post('/email/send', data);
@@ -100,9 +100,8 @@ export const createOrdenPago = (data) => api.post('/orden-pago', data);
 export const getOrdenPagoExcel = (codigoUnico) => api.get(`inscripcion/masivo/details/${codigoUnico}`)
 
 //estado orden de pago
-export const getEstadoOrdenPago = () => api.get(`/api/estadisticas/ordenes-pago`);
-export const getReporteOrdenPago = (fechaInicio, fechaFin) => 
-  api.get(`/orden-pago/no-vencidas?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`);
+export const getEstadoOrdenPago = (idOlimpiada) => api.get(`/orden-pago/find-by-olimpiada/${idOlimpiada}`);
+export const getEstadoPagos = (idOlimpiada) => api.get(`/comprobante-pago/findByOlimpiada/${idOlimpiada}`);
 //estado de inscripcoin
 export const getEstadoInscripcion = (ciParticipante) => api.get(`/estado-inscripcion/${ciParticipante}`);
 
