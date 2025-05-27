@@ -1,0 +1,130 @@
+@import '../../../App.css';
+
+.convocatoria-container {
+  max-width: 900px;
+  margin: 3rem auto;
+  background: var(--lighter);
+  border-radius: 1.5rem;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+  padding: 3rem 3.5rem 2.5rem 3.5rem;
+  font-family: var(--poppins);
+}
+
+.convocatoria-container h2 {
+  color: var(--blue);
+  font-size: 2rem;
+  margin-bottom: 2rem;
+  text-align: center;
+  font-weight: 700;
+}
+
+.convocatoria-form {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.convocatoria-input {
+  width: 100%;
+  padding: 1rem 1.25rem;
+  border: 1.5px solid var(--border-gray);
+  border-radius: 0.7rem;
+  font-size: 1.1rem;
+  font-family: var(--lato);
+  background: var(--light);
+  color: var(--dark);
+  
+  transition: border 0.2s;
+}
+.convocatoria-file-btn{
+  margin-right: 1rem;
+}
+.convocatoria-input:focus {
+  outline: none;
+  
+  border-color: var(--blue);
+}
+
+.convocatoria-btn {
+  background: var(--blue);
+  color: #fff;
+  border: none;
+  border-radius: 0.7rem;
+  padding: 1.1rem 2.2rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-family: var(--poppins);
+  margin-top: 1rem;
+}
+
+.convocatoria-btn:disabled {
+  background: var(--blue-light);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.convocatoria-btn:hover:not(:disabled) {
+  background: var(--blue-dark);
+}
+
+.convocatoria-preview {
+  margin-top: 1.5rem;
+  background: var(--light-blue2);
+  border: 1.5px solid var(--light-blue);
+  border-radius: 0.7rem;
+  padding: 1.5rem;
+  width: 100%;
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.convocatoria-preview span {
+  display: block;
+  color: var(--blue);
+  font-weight: 600;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+}
+
+.convocatoria-preview embed {
+  width: 100%;
+  height: 500px;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border-gray);
+  background: #fff;
+}
+
+.convocatoria-message {
+  margin-top: 1.5rem;
+  padding: 1rem 1.5rem;
+  border-radius: 0.7rem;
+  background: var(--science-green);
+  color: #fff;
+  font-weight: 600;
+  text-align: center;
+  font-size: 1.1rem;
+}
+
+@media (max-width: 1000px) {
+  .convocatoria-container {
+    max-width: 98vw;
+    padding: 1.5rem 0.5rem;
+  }
+  .convocatoria-preview embed {
+    height: 350px;
+  }
+}
+
+@media (max-width: 600px) {
+  .convocatoria-container {
+    padding: 1rem 0.2rem;
+    max-width: 100vw;
+  }
+  .convocatoria-preview embed {
+    height: 220px;
+  }
+}

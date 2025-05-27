@@ -131,3 +131,14 @@ export const postOnlyExcelFile = (file) => {
 //OCR43
 export const sendImageForOCR = (data) => api.post('/ocr', data);
 export const verificarPago = (data) => api.post('/comprobante-pago', data);
+
+//convocatorias
+export const uploadConvocatoriaPDF = (idArea, idOlimpiada, pdfFile) => {
+  const formData = new FormData();
+  formData.append('pdfFile', pdfFile);
+  return api.post(`/areas/convocatoria/pdf?idArea=${idArea}&idOlimpiada=${idOlimpiada}`, formData);
+};
+
+
+export const getConvocatoriaArea = (idArea, idOlimpiada) =>
+  api.get(`/areas/convocatoria/${idArea}/${idOlimpiada}`);

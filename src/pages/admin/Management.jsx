@@ -12,7 +12,8 @@ import {
   ChevronLeft,
   Settings,
   BarChart3,
-  Home
+  Home,
+  FileSliders
 } from 'lucide-react';
 import "./Management.css";
 
@@ -26,6 +27,7 @@ const OrderSummaryDashboard = lazy(() => import("../../components/management/pag
 const ReporteOrdenPago = lazy(() => import("../../components/management/pagos/ReporteOrdenPago"));
 const PaymentVerification = lazy(() => import("../../components/management/verificationpagos/PaymentVerification"));
 const Inscritos = lazy(() => import("../../components/management/reporteinscritos/ListaInscritos"));
+const Convocatoria = lazy(() => import("../../components/management/convocatoria/Convocatoria")); 
 const ManagementPage = () => {
   const [activeTab, setActiveTab] = useState("olimpiadas");
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -92,6 +94,12 @@ const ManagementPage = () => {
       icon: Settings,
       label: "Lista de Inscritos",
       description: "Lista de inscritos por olimpiada"
+    },
+    {
+      id: "convocatorias",
+      icon: FileSliders,
+      label: "Info. Convocatoria",
+      description: "Insertar PDF de convocatoria"
     }
   ], []);
 
@@ -117,6 +125,8 @@ const ManagementPage = () => {
         return <PaymentVerification />;
       case "inscritos":
         return <Inscritos />;
+      case "convocatorias":
+        return <Convocatoria />;
       default:
         return (
           <div className="admin-dashboard-content">

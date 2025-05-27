@@ -7,7 +7,7 @@ import {
 import { GiChemicalDrop } from 'react-icons/gi';
 import { IoMdRibbon } from 'react-icons/io';
 import { Link } from 'react-router-dom';
-import { getOlimpiadaPreinscripcion } from '../../api/api';
+import { getOlimpiadaPreinscripcion, getConvocatoriaArea } from '../../api/api';
 import './LandingPage.css';
 import { formatGrados } from '../../utils/GradesOrder';
 
@@ -17,6 +17,9 @@ const LandingPage = () => {
   const [activeTab, setActiveTab] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [pdfBase64, setPdfBase64] = useState('');
+  const [modalTitle, setModalTitle] = useState('');
 
   // Función para generar las áreas dinámicas
   const getDynamicAreas = () => {
@@ -71,6 +74,30 @@ const LandingPage = () => {
 
   // Obtener las áreas dinámicas
   const dynamicAreas = getDynamicAreas();
+  const handleVerConvocatoria = async (area) => {
+    try {
+      const areaObj = olimpiadaData.catalogoOlimpiada.find(
+        a => a.nombreArea.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") === area.id
+      );
+      if (!areaObj) return;
+
+      const idArea = areaObj.idArea;
+      const idOlimpiada = olimpiadaData.olimpiada.idOlimpiada;
+
+      const response = await getConvocatoriaArea(idArea, idOlimpiada);
+      const data = response.data;
+      if (data.convocatorias && data.convocatorias.length > 0) {
+        setPdfBase64(data.convocatorias[0].pdf_base64);
+        setModalTitle(area.name);
+        setModalOpen(true);
+      } else {
+        window.alert('No hay convocatoria disponible para esta área.');
+      }
+    } catch (err) {
+      window.alert('No se pudo obtener la convocatoria.');
+    }
+  };
+  
 
   useEffect(() => {
     const fetchData = async () => {
@@ -241,8 +268,9 @@ const LandingPage = () => {
                       <button
                         className="landing-btn-primary"
                         style={{ backgroundColor: area.color }}
+                        onClick={() => handleVerConvocatoria(area)}
                       >
-                        Ver temario completo
+                        Ver convocatoria
                       </button>
                     </div>
                   </div>
@@ -261,6 +289,24 @@ const LandingPage = () => {
           </div>
         </section>
       </main>
+      {modalOpen && (
+        <div className="convocatoria-modal-overlay" onClick={() => setModalOpen(false)}>
+          <div className="convocatoria-modal" onClick={e => e.stopPropagation()}>
+            <div className="convocatoria-modal-header">
+              <h3>{modalTitle}</h3>
+              <button className="convocatoria-modal-close" onClick={() => setModalOpen(false)}>×</button>
+            </div>
+            <div className="convocatoria-modal-body">
+              <embed
+                src={`data:application/pdf;base64,${pdfBase64}`}
+                type="application/pdf"
+                width="100%"
+                height="600px"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

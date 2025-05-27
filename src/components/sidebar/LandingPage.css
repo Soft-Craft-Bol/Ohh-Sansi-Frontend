@@ -443,3 +443,55 @@
 .dark-theme .landing-info-item {
   color: #e5e7eb;
 }
+
+
+
+
+
+/* PDF de la convocatoria */
+.convocatoria-modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.convocatoria-modal {
+  background: #fff;
+  border-radius: 1rem;
+  max-width: 900px;
+  width: 95vw;
+  max-height: 90vh;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  display: flex;
+  flex-direction: column;
+}
+.convocatoria-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background: #f5f7fa;
+  border-bottom: 1px solid #eee;
+}
+.convocatoria-modal-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #033771;
+}
+.convocatoria-modal-close {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: #033771;
+  cursor: pointer;
+  line-height: 1;
+}
+.convocatoria-modal-body {
+  padding: 1rem 1.5rem;
+  background: #fff;
+  overflow: auto;
+}
