@@ -122,7 +122,6 @@ const useOrdenPago = () => {
 
       cantidadAreas = areas.length;
       precioPorArea = ordenData.olimpiada?.olimpiada?.precioOlimpiada || 0;
-      console.log('inidividual', precioPorArea)
       montoTotalPago = cantidadAreas * precioPorArea;
 
       const fechaActual = new Date();
