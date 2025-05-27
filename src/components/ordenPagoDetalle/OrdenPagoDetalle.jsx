@@ -3,6 +3,7 @@ import './OrdenPagoDetalle.css';
 import { generateOrdenPagoPDF } from '../../utils/PDFGenerator';
 
 const OrdenPagoDetalle = ({ data, nit_tutor }) => {
+  console.log('dato de la orden',data)
   const formatFecha = (fechaStr) => {
     if (!fechaStr) return '';
     const meses = [

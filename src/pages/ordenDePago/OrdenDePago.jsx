@@ -50,7 +50,6 @@ const OrdenDePago = () => {
       correoResponsable = ordenExel.Responsable.correoTut
       costoPorArea = ordenExel.olimpiadas?.olimpiada?.precioOlimpiada || 0;
       totalAPagar = totalAreas * costoPorArea;
-
     }else{
       if (!ordenData) return null;
       const participantes = ordenData.participantes || [];
