@@ -7,18 +7,12 @@ import { ButtonPrimary } from '../button/ButtonPrimary';
 
 const processReceiptText = (ocrText) => {
   const receiptData = {
-    universidad: 'UNIVERSIDAD MAYOR DE SAN SIMÓN',
-    direccion: 'DIRECCIÓN ADMINISTRATIVA Y FINANCIERA',
-    tipoDocumento: 'RECIBO DE CAJA',
-    codTransaccion: '',// Nro factura 
-    facultad: 'FAC. DE CIENCIAS Y TECNOLOGÍA',
-    nombreReceptor: '', //nombre del que paga esta como recibido de
-    notasAdicionales: '', //por concepto de
-    montoPagado: '', //total Bs
-    aclaracion: '', // materia a la que corresponde el pago
-    carnetIdentidad: '', // documento
-    NumeroControl: '', //Nro control
-    fechaPago: '', //fecha
+    codTransaccion: '',    // Nro factura 
+    nombreReceptor: '',    // recibido de
+    montoPagado: '',       // total Bs
+    carnetIdentidad: '',   // documento
+    fechaPago: '',         // fecha
+    notasAdicionales: ocrText // Texto completo OCR por defecto
   };
 
   // Preprocesamiento del texto
@@ -32,86 +26,47 @@ const processReceiptText = (ocrText) => {
 
   const lines = normalizedText.split('\n').map(line => line.trim()).filter(line => line);
 
-  // Variables de contexto
-  let nextLineIsConcepto = false;
-  let nextLineIsSuma = false;
-
   lines.forEach((line, index) => {
-    // Extraer número de recibo
+    // Extraer número de recibo/factura
     if (line.match(/Nro[\s\.\-:]/i)) {
       const numMatch = line.match(/(\d{5,})/);
-      if (numMatch) receiptData.numero = numMatch[1];
+      if (numMatch) receiptData.codTransaccion = numMatch[1];
     }
 
-    // Extraer facultad
-    if (line.match(/FAC(?:ULTAD)?[:\.]|car\./i)) {
-      const facMatch = line.split(/[:\.]/)[1]?.trim() || line.replace(/car\./i, '').trim();
-      receiptData.facultad = facMatch
-        .replace(/TELVOLOGDA/i, 'TECNOLOGÍA')
-        .replace(/CIENCIAS Y/i, 'FAC. DE CIENCIAS Y');
-    }
-
-    // Extraer "Recibí de"
+    // Extraer "Recibí de" (nombre del receptor)
     if (line.match(/Recibí de:|ope del/i)) {
       const nameMatch = line.replace(/Recibí de:|ope del/i, '').trim();
-      receiptData.recibidoDe = nameMatch
+      receiptData.nombreReceptor = nameMatch
         .replace(/LEGECMA/i, 'LEDEZMA')
         .replace(/NEPEA/i, 'NEREA');
     }
 
-    // Extraer concepto
-    if (line.match(/Por concepto de:|concepto[:\.]/i)) {
-      nextLineIsConcepto = true;
-      receiptData.concepto = line.split(/[:\.]/)[1]?.trim() || '';
-    } else if (nextLineIsConcepto && !line.match(/suma|total|bs\.?/i)) {
-      receiptData.concepto += ' ' + line;
-    }
-
-    // Extraer suma en letras
-    if (line.match(/suma de|La suma de/i)) {
-      nextLineIsSuma = true;
-      receiptData.suma = line.split(/[:\.]/)[1]?.trim() || line.replace(/suma de|La suma de/i, '').trim();
-    } else if (nextLineIsSuma && line.match(/BOLIVIANOS/i)) {
-      receiptData.suma += ' ' + line;
-      nextLineIsSuma = false;
-
-      const sumaMatch = receiptData.suma.match(/CUARENTA Y CINCO/i);
-      if (sumaMatch) {
-        receiptData.suma = '45.00';
-      }
-    }
-
-    // Extraer total Bs
+    // Extraer total Bs (monto pagado)
     if (line.match(/Total\sBs?\.?[\s:]|TW:[\s-]/i)) {
       const totalMatch = line.match(/(\d+[\.,]\d{2})/);
       if (totalMatch) {
-        receiptData.totalBs = totalMatch[1].replace(',', '.');
+        receiptData.montoPagado = totalMatch[1].replace(',', '.');
       } else {
         for (let i = index + 1; i < Math.min(index + 4, lines.length); i++) {
           const nextLineMatch = lines[i].match(/(\d+[\.,]\d{2})/);
           if (nextLineMatch) {
-            receiptData.totalBs = nextLineMatch[1].replace(',', '.');
+            receiptData.montoPagado = nextLineMatch[1].replace(',', '.');
             break;
           }
         }
       }
     }
 
-    // Extraer número de documento
+    // Extraer número de documento (carnet)
     if (line.match(/Documento[:\.]|poLUMENLA -/i)) {
       const docMatch = line.match(/(\d{6,})/);
-      if (docMatch) receiptData.documento = docMatch[1];
+      if (docMatch) receiptData.carnetIdentidad = docMatch[1];
     }
 
     // Extraer fecha
     if (line.match(/\d{2}[\-\/]\d{2}[\-\/]\d{2,4}/)) {
       const dateMatch = line.match(/(\d{2}[\-\/]\d{2}[\-\/]\d{2,4})/);
-      if (dateMatch) receiptData.fecha = dateMatch[1].replace(/\//g, '-');
-    }
-
-    // Extraer usuario
-    if (line.match(/Usuario[:\.]|UTORREZ/i)) {
-      receiptData.usuario = line.split(/[:\.]/)[1]?.trim() || line;
+      if (dateMatch) receiptData.fechaPago = dateMatch[1].replace(/\//g, '-');
     }
   });
 
@@ -119,7 +74,7 @@ const processReceiptText = (ocrText) => {
 };
 
 const validateReceiptData = (data) => {
-  const requiredFields = ['documento', 'totalBs', 'recibidoDe'];
+  const requiredFields = ['carnetIdentidad', 'montoPagado', 'nombreReceptor'];
   const missingFields = requiredFields.filter(field => !data[field] || data[field].trim() === '');
   
   if (missingFields.length > 0) {
@@ -149,6 +104,7 @@ const ImageScanner = ({ initialImage, onComplete, onRetry, attemptsLeft }) => {
     }
   }, [initialImage]);
 
+  // Campos editables (solo los necesarios)
   const editableFields = [
     { 
       key: 'codTransaccion', 
@@ -163,20 +119,10 @@ const ImageScanner = ({ initialImage, onComplete, onRetry, attemptsLeft }) => {
       inputProps: { onlyLetters: true }
     },
     { 
-      key: 'notasAdicionales', 
-      label: 'Notas Adicionales', 
-      type: 'text'
-    },
-    { 
       key: 'montoPagado', 
       label: 'Monto Pagado (Bs.)', 
       type: 'text',
       inputProps: { decimal: true, decimalPlaces: 2 }
-    },
-    { 
-      key: 'aclaracion', 
-      label: 'Materia', 
-      type: 'text'
     },
     { 
       key: 'carnetIdentidad', 
@@ -185,19 +131,11 @@ const ImageScanner = ({ initialImage, onComplete, onRetry, attemptsLeft }) => {
       inputProps: { onlyNumbers: true }
     },
     { 
-      key: 'NumeroControl', 
-      label: 'Número de Control', 
-      type: 'text',
-      inputProps: { onlyNumbers: true }
-    },
-    { 
       key: 'fechaPago', 
       label: 'Fecha de Pago', 
-      type: 'date',
-      inputProps: { onlyNumbers: true }
+      type: 'date'
     }
   ];
-
 
   const extractTextFromImage = async (imageSrc) => {
     setIsProcessing(true);
@@ -237,15 +175,26 @@ const ImageScanner = ({ initialImage, onComplete, onRetry, attemptsLeft }) => {
   };
 
   const handleFormSubmit = (values) => {
-    setReceiptData(values);
-    const validation = validateReceiptData(values);
+    // Mantenemos el texto OCR completo en notasAdicionales
+    const updatedData = {
+      ...values,
+      notasAdicionales: extractedText
+    };
+    setReceiptData(updatedData);
+    const validation = validateReceiptData(updatedData);
     setValidationResult(validation);
     setIsEditing(false);
   };
 
   const handleConfirm = () => {
     if (receiptData && validationResult?.isValid) {
-      onComplete(extractedText, receiptData);
+      // Preparamos los datos finales para enviar
+      const finalData = {
+        ...receiptData,
+        estadoOrden: "PAGADO",  // Valor fijo
+        notasAdicionales: extractedText  // Texto OCR completo
+      };
+      onComplete(extractedText, finalData);
     }
   };
 
@@ -287,7 +236,7 @@ const ImageScanner = ({ initialImage, onComplete, onRetry, attemptsLeft }) => {
                       name={field.key}
                       label={field.label}
                       type={field.type}
-                      {...field.inputProps} // Pasamos las props específicas aquí
+                      {...field.inputProps}
                     />
                   ))}
                   
@@ -347,7 +296,7 @@ const ImageScanner = ({ initialImage, onComplete, onRetry, attemptsLeft }) => {
 
       {extractedText && (
         <details className="text-preview">
-          <summary>Ver texto reconocido</summary>
+          <summary>Ver texto reconocido (irá en Notas Adicionales)</summary>
           <div className="text-content">
             {extractedText}
           </div>
