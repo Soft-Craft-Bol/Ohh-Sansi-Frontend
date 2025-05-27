@@ -269,7 +269,7 @@ const UpdateExcel = () => {
     }
 
     Swal.fire({
-      title: 'Errores de validación en el archivo Excel',
+      title: 'Errores de validación en el archivo Excel. Corríjalos para poder subirlo',
       html: htmlErrores,
       icon: 'error',
       width: 800,
@@ -637,9 +637,10 @@ const UpdateExcel = () => {
             <h4>Recomendaciones de Formato</h4>
             <span className="tips-label">TIPS</span>
           </div>
-          <p>Utilice la plantilla personalizada, en la Hoja de <strong>'Datos'</strong> ingrese la información del participante y tutor
-            legal. En la hoja de <strong>'Areas'</strong> asigne las áreas a las que postulará el participante seguido de la información
-            del profesor.
+          <p>Utilice la plantilla personalizada, en la Hoja de <strong>'Datos'</strong> ingrese la información del participante
+           y asigne las áreas a las que postulará; seguido de la información
+            del profesor. Tome en cuenta la olimpiada actual y las áreas habilitadas para el Grado del participante. En caso de tener errores
+            se visualizarán al intentar subir el archivo
           </p>
           
           <a href={plantilla} download className="download-template">
