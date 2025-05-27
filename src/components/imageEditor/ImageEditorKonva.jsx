@@ -39,11 +39,18 @@ export default function ImageEditor({ imageSrc, onComplete, onCancel }) {
   const stageRef = useRef();
 
   // 1) Al cargar la imagen, guardar dimensiones reales
-  useEffect(() => {
-    if (!image) return;
-    const { width, height } = image;
-    setDimensions({ width, height });
-  }, [image]);
+  // ─── 1) Al cargar la imagen, ajustar rectángulo al 100% ─────────────────
+useEffect(() => {
+  if (!image) return;
+  const { width, height } = image;
+  // guardar dimensiones
+  setDimensions({ width, height });
+  // hacer que el rect cubra toda la imagen
+  setRectSize({ width: height, height });  // <-- aquí width: width
+  setRectSize({ width, height });
+  // posicionarlo arriba/izquierda
+  setRectPos({ x: 0, y: 0 });
+}, [image]);
 
   // 2) Calcular dimensiones rotadas y límites
   const { stageW, stageH, boundWidth, boundHeight } = useMemo(() => {
@@ -79,27 +86,23 @@ export default function ImageEditor({ imageSrc, onComplete, onCancel }) {
     };
   }, [stageW, stageH]);
 
-  // 6) Rotar la imagen 90°
-  const rotateImage = () => {
-    // 1) Calculamos el nuevo ángulo
-    const next = (rotation + 90) % 360;
-    setRotation(next);
+  // ─── 6) Rotar la imagen 90° y re-ajustar rect al 100% ─────────────────
+const rotateImage = () => {
+  // nuevo ángulo
+  const next = (rotation + 90) % 360;
+  setRotation(next);
 
-    // 2) Determinamos las dimensiones en la nueva orientación
-    const isRotated = next % 180 !== 0;
-    const boundW = isRotated ? dimensions.height : dimensions.width;
-    const boundH = isRotated ? dimensions.width : dimensions.height;
+  // dimensiones tras rotar
+  const isRotated = next % 180 !== 0;
+  const boundW = isRotated ? dimensions.height : dimensions.width;
+  const boundH = isRotated ? dimensions.width : dimensions.height;
 
-    // 3) Hacemos el rectángulo cuadrado con lado = mínimo de ancho/alto
-    const side = Math.min(boundW, boundH);
+  // ajustar rect para cubrir toda la imagen rotada
+  setRectSize({ width: boundW, height: boundH });
+  // posicionarlo arriba/izquierda
+  setRectPos({ x: 0, y: 0 });
+};
 
-    // 4) Centramos ese cuadrado dentro de la imagen
-    setRectSize({ width: side, height: side });
-    setRectPos({
-      x: (boundW - side) / 2,
-      y: (boundH - side) / 2,
-    });
-  };
 
   // 7) Mantener el rectángulo dentro de la imagen al arrastrar
   const handleDragMove = useCallback(e => {
@@ -225,7 +228,7 @@ export default function ImageEditor({ imageSrc, onComplete, onCancel }) {
               height={rectSize.height}
               fill={RECT_FILL}
               stroke={RECT_STROKE}
-              strokeWidth={RECT_STROKE_WIDTH}
+              strokeWidth={RECT_STROKE_WIDTH / scale}
               draggable
               onDragMove={handleDragMove}
               onTransformEnd={handleTransformEnd}
@@ -245,15 +248,15 @@ export default function ImageEditor({ imageSrc, onComplete, onCancel }) {
 
               // ── STROKE PUNTEADO PARA EL BORDE ────────────────────────
               borderStroke="white"
-              borderStrokeWidth={2}
-              borderDash={[6, 4]}
+              borderStrokeWidth={TRANSFORMER_BORDER_STROKE / scale}
+              borderDash={[6 / scale, 4 / scale]}
 
               // ── MANIJAS CIRCULARES (PERO ATRAPAN EN EL CENTRO DEL BORDE) ─
-              anchorSize={14}
-              anchorCornerRadius={7}
+              anchorSize={TRANSFORMER_ANCHOR_SIZE / scale}
+              anchorCornerRadius={7 / scale}
               anchorFill="white"
               anchorStroke="blue"
-              anchorStrokeWidth={3}
+              anchorStrokeWidth={TRANSFORMER_ANCHOR_STROKE / scale}
 
               boundBoxFunc={(oldBox, newBox) => {
                 // aquí tu lógica de límites para que el recorte nunca salga
