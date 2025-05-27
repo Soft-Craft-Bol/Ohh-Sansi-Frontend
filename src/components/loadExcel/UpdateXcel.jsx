@@ -28,44 +28,6 @@ const UpdateExcel = () => {
   const [buttonState, setButtonState] = useState('upload');
   const navigate = useNavigate();
 
-  // Función para convertir fechas de Excel
-  const convertirFechaExcel = (value) => {
-    if (!value) return null;
-    
-    if (typeof value === 'number') {
-      const utc_days = Math.floor(value - 25569);
-      const utc_value = utc_days * 86400;
-      return new Date(utc_value * 1000);
-    }
-    
-    if (typeof value === 'string') {
-      const parsedDate = new Date(value);
-      return isNaN(parsedDate.getTime()) ? null : parsedDate;
-    }
-    
-    if (value instanceof Date) {
-      return value;
-    }
-    
-    return null;
-  };
-
-  // Validar edad del participante
-  const validarEdad = (fechaNacimiento) => {
-    const fechaNac = convertirFechaExcel(fechaNacimiento);
-    if (!fechaNac) return false;
-    
-    const hoy = new Date();
-    let edad = hoy.getFullYear() - fechaNac.getFullYear();
-    const mes = hoy.getMonth() - fechaNac.getMonth();
-    
-    if (mes < 0 || (mes === 0 && hoy.getDate() < fechaNac.getDate())) {
-      edad--;
-    }
-    
-    return edad >= 4 && edad <= 20;
-  };
-
   // Formik configuration
   const formik = useFormik({
     initialValues: {
@@ -189,37 +151,10 @@ const UpdateExcel = () => {
 
   const validarFilasDatos = async (filas) => {
     const errores = [];
-    const cisVistos = new Set(); // Para detectar duplicados dentro del mismo archivo
     
     for (let i = 0; i < filas.length; i++) {
       const fila = filas[i];
       try {
-        if (fila.id_grado === 0 || fila.id_grado === '0') continue;
-        
-        // Validar CI duplicado - usando la misma lógica del código antiguo
-        const ci = fila['Carnet Identidad']?.toString().trim();
-        if (ci) {
-          if (cisVistos.has(ci)) {
-            errores.push({
-              hoja: fila._hoja || 'Datos',
-              fila: i + 2,
-              columna: 'Carnet Identidad',
-              mensaje: 'Este carnet ya fue registrado en otra fila'
-            });
-            continue;
-          }
-          cisVistos.add(ci);
-        }
-
-        // Validar edad si es necesario
-        if (fila.FechaNacimiento && !validarEdad(fila.FechaNacimiento)) {
-          errores.push({
-            hoja: fila._hoja || 'Datos',
-            fila: i + 2,
-            columna: 'FechaNacimiento',
-            mensaje: 'El participante debe tener entre 4 y 20 años'
-          });
-        }
 
         await excelRowSchemaDatos.validate(fila, { abortEarly: false });
       } catch (validationError) {
@@ -238,7 +173,6 @@ const UpdateExcel = () => {
     return errores;
   };
 
-  // Validar filas de áreas
   const validarFilasAreas = async (filas) => {
     const errores = [];
     for (let i = 0; i < filas.length; i++) {
