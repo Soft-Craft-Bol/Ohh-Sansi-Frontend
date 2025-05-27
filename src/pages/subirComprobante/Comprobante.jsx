@@ -1,11 +1,11 @@
 import React, { useState, useCallback } from 'react';
 import { FaSearch } from 'react-icons/fa';
 import Swal from 'sweetalert2';
-import { getEstudianteByCarnet } from '../../api/api';
+import { getEstudianteByCarnet, verificarPago } from '../../api/api';
 import Header from '../../components/header/Header';
 import ImageEditor from '../../components/imageEditor/ImageEditorKonva';
 import ImageScanner from '../../components/camScanner/ImageScanner';
-import uploadImageToCloudinary from '../../utils/uploadImageToCloudinary'; // Importamos la función de Cloudinary
+import uploadImageToCloudinary from '../../utils/uploadImageToCloudinary';
 import './Comprobante.css';
 
 export default function Comprobante() {
@@ -70,32 +70,32 @@ export default function Comprobante() {
   const handleScanComplete = useCallback((text, data) => {
     setExtractedText(text);
     setReceiptData({
-      codTransaccion: data.numero || '',
-      nombreReceptor: data.recibidoDe || '',
-      notasAdicionales: text || data.concepto || '', // Usamos el texto completo OCR como notas
-      montoPagado: data.totalBs || '',
-      carnetIdentidad: data.documento || '',
-      fechaPago: data.fecha || ''
+      codTransaccion: data.codTransaccion || '',
+      nombreReceptor: data.nombreReceptor || '',
+      notasAdicionales: text, // Usamos el texto completo OCR
+      montoPagado: data.montoPagado || '',
+      carnetIdentidad: data.carnetIdentidad || '',
+      fechaPago: data.fechaPago || ''
     });
     setScanComplete(true);
   }, []);
 
-  // Función para subir la imagen a Cloudinary y enviar los datos
+  // Función para subir la imagen y verificar el pago
   const handleSubmitReceipt = useCallback(async () => {
     if (!receiptData || !croppedImage) return;
-    
+
     setIsUploading(true);
     try {
-      // 1. Convertir la imagen cropped (que es una URL) a Blob
+      // 1. Convertir imagen cropped a Blob
       const response = await fetch(croppedImage);
       const blob = await response.blob();
       const file = new File([blob], 'comprobante.jpg', { type: 'image/jpeg' });
 
       // 2. Subir a Cloudinary
       const imageUrl = await uploadImageToCloudinary(file);
-      
-      // 3. Preparar el JSON final
-      const finalData = {
+
+      // 3. Preparar datos para verificarPago
+      const pagoData = {
         carnetIdentidad: carnet || receiptData.carnetIdentidad,
         montoPagado: parseFloat(receiptData.montoPagado) || 0,
         fechaPago: receiptData.fechaPago || new Date().toISOString().split('T')[0],
@@ -106,28 +106,33 @@ export default function Comprobante() {
         notasAdicionales: receiptData.notasAdicionales || ''
       };
 
-      // 4. Aquí iría tu llamada API para enviar finalData al backend
-      console.log('Datos a enviar:', finalData);
-      
-      Swal.fire(
-        'Éxito',
-        'Comprobante subido y procesado correctamente',
-        'success'
-      );
+      // 4. Llamar a verificarPago
+      const responsePago = await verificarPago(pagoData);
 
-      // Resetear el formulario
-      setSelectedImage(null);
-      setCroppedImage(null);
-      setScanComplete(false);
-      setAttempts(3);
-      setExtractedText('');
-      setReceiptData(null);
+      // 5. Mostrar resultado
+      if (responsePago.data.success) {
+        Swal.fire(
+          '¡Pago verificado!',
+          'Tu comprobante ha sido registrado correctamente.',
+          'success'
+        );
+
+        // Resetear el formulario
+        setSelectedImage(null);
+        setCroppedImage(null);
+        setScanComplete(false);
+        setAttempts(3);
+        setExtractedText('');
+        setReceiptData(null);
+      } else {
+        throw new Error('No se pudo verificar el pago. Inténtalo nuevamente.');
+      }
 
     } catch (error) {
-      console.error('Error al subir comprobante:', error);
+      console.error('Error al verificar pago:', error);
       Swal.fire(
         'Error',
-        error.message || 'Ocurrió un error al subir el comprobante',
+        error.response?.data || error.message || 'Ocurrió un error al verificar el pago',
         'error'
       );
     } finally {
@@ -145,13 +150,13 @@ export default function Comprobante() {
         />
         <div className="verification-form">
           <input
-              type="text"
-              className="carnet-input"
-              placeholder="Ej: 1234567"
-              value={carnet}
-              maxLength={10}
-              onChange={e => setCarnet(e.target.value.replace(/[^a-zA-Z0-9]/g, ''))}
-              disabled={isVerifying}
+            type="text"
+            className="carnet-input"
+            placeholder="Ej: 1234567"
+            value={carnet}
+            maxLength={10}
+            onChange={e => setCarnet(e.target.value.replace(/[^a-zA-Z0-9]/g, ''))}
+            disabled={isVerifying}
           />
           <button
             className="carnet-btn"
@@ -230,6 +235,12 @@ export default function Comprobante() {
                       <div>
                         <strong>Monto:</strong> {receiptData.montoPagado} Bs.
                       </div>
+                      <div>
+                        <strong>Fecha:</strong> {receiptData.fechaPago}
+                      </div>
+                      <div>
+                        <strong>Transacción:</strong> {receiptData.codTransaccion}
+                      </div>
                     </div>
                   </div>
                 )}
@@ -238,7 +249,7 @@ export default function Comprobante() {
                   onClick={handleSubmitReceipt}
                   disabled={isUploading}
                 >
-                  {isUploading ? 'Subiendo...' : 'Confirmar y enviar comprobante'}
+                  {isUploading ? 'Verificando pago...' : 'Confirmar y verificar pago'}
                 </button>
                 <button
                   className="new-scan-button"
