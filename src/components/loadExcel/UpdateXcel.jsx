@@ -7,7 +7,7 @@ import { RiFileExcel2Line } from 'react-icons/ri';
 import { ButtonPrimary } from '../button/ButtonPrimary';
 import './LoadExcel.css';
 import Swal from 'sweetalert2';
-import plantilla from '../../assets/Plantilla-De-Inscipción-v1.xlsx';
+import plantilla from '../../assets/Plantilla-De-Inscipción-v3.xlsx';
 import Table from '../table/Table';
 import { excelRowSchemaAreas, excelRowSchemaDatos } from '../../schemas/ExcelValidation';
 import { getInscripcionByID, postOnlyExcelFile, registerTutor, getPeriodoInscripcionActal } from '../../api/api';
