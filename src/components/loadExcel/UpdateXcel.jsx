@@ -376,15 +376,45 @@ const UpdateExcel = () => {
       Swal.fire("Archivo requerido", "Debes cargar un archivo Excel antes de registrar", "warning");
       return;
     }
+    try{
+      const response = await getPeriodoInscripcionActal()
+      const actualPeriodo = response.data.olimpiada;
+      console.log(actualPeriodo)
+      if(actualPeriodo?.nombreEstado !== "EN INSCRIPCION"){
+        Swal.fire("No se permiten inscripciones en este momento",
+        'La olimpiada actual no se encuentra en el periodo de "EN INSCRIPCION"', "warning");
+        return;
+      }
+      
+    }catch (error) {
+      console.error("Error al obtener el periodo de inscripción:", error);
 
-    const response = await getPeriodoInscripcionActal()
-    const actualPeriodo = response.data.olimpiada;
-    console.log(actualPeriodo)
-    if(actualPeriodo.nombreEstado !== "EN INSCRIPCION"){
-      Swal.fire("No se permiten inscripciones en este momento",
-      'La olimpiada actual no se encuentra en el periodo de "EN INSCRIPCION"', "warning");
-      return;
+        let errorMessage = "Ocurrió un error al verificar el estado de la inscripción.";
+
+        if (error.response) {
+            console.error("Error de respuesta del servidor:", error.response.status, error.response.data);
+            if (error.response.status === 404) {
+                errorMessage = "Endpoint no encontrado o periodo de inscripción no configurado.";
+            } else if (error.response.data && error.response.data.message) {
+                errorMessage = error.response.data.message; // Mensaje de error personalizado del backend
+            } else {
+                errorMessage = `Error del servidor: ${error.response.status}`;
+            }
+        } else if (error.request) {
+            console.error("No se recibió respuesta del servidor:", error.request);
+            errorMessage = "No se pudo conectar con el servidor. Por favor, verifica tu conexión a internet o intenta más tarde.";
+        } else {
+            console.error("Error desconocido al configurar la solicitud:", error.message);
+            errorMessage = `Error inesperado: ${error.message}`;
+        }
+
+        Swal.fire(
+            "Error de Conexión",
+            errorMessage,
+            "error"
+        );
     }
+    
 
     try {
       const errores = await leerExcel(selectedFile);
