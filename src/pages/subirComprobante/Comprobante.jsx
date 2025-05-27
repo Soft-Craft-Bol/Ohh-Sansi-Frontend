@@ -1,5 +1,3 @@
-// src/pages/subirComprobante/Comprobante.jsx
-
 import React, { useState, useCallback } from 'react';
 import { FaSearch } from 'react-icons/fa';
 import Swal from 'sweetalert2';
@@ -7,14 +5,23 @@ import { getEstudianteByCarnet } from '../../api/api';
 import Header from '../../components/header/Header';
 import ImageEditor from '../../components/imageEditor/ImageEditorKonva';
 import ImageScanner from '../../components/camScanner/ImageScanner';
+import uploadImageToCloudinary from '../../utils/uploadImageToCloudinary'; // Importamos la función de Cloudinary
 import './Comprobante.css';
 
 export default function Comprobante() {
-  // ─── FASE 1: Verificar carnet ───────────────────────────────────────────
+  // ─── Estados ───────────────────────────────────────────────────────────
   const [carnet, setCarnet] = useState('');
   const [isCarnetVerified, setIsCarnetVerified] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [croppedImage, setCroppedImage] = useState(null);
+  const [attempts, setAttempts] = useState(3);
+  const [scanComplete, setScanComplete] = useState(false);
+  const [extractedText, setExtractedText] = useState('');
+  const [receiptData, setReceiptData] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
 
+  // ─── Funciones ──────────────────────────────────────────────────────────
   const handleVerifyCarnet = useCallback(async () => {
     if (!carnet.trim()) {
       Swal.fire('Carnet vacío', 'Ingresa tu número de carnet.', 'warning');
@@ -22,8 +29,7 @@ export default function Comprobante() {
     }
     setIsVerifying(true);
     try {
-      const { data } = await getEstudianteByCarnet(carnet);
-      // Si 200 OK, damos por válido el carnet
+      await getEstudianteByCarnet(carnet);
       setIsCarnetVerified(true);
     } catch (err) {
       if (err.response?.status === 404) {
@@ -39,14 +45,6 @@ export default function Comprobante() {
       setIsVerifying(false);
     }
   }, [carnet]);
-
-  // ─── FASE 2: Estados para manejo de imagen y OCR ────────────────────────
-  const [selectedImage, setSelectedImage] = useState(null);
-  const [croppedImage, setCroppedImage] = useState(null);
-  const [attempts, setAttempts] = useState(3);
-  const [scanComplete, setScanComplete] = useState(false);
-  const [extractedText, setExtractedText] = useState('');
-  const [receiptData, setReceiptData] = useState(null);
 
   const handleImageUpload = useCallback(event => {
     const file = event.target.files[0];
@@ -74,18 +72,70 @@ export default function Comprobante() {
     setReceiptData({
       codTransaccion: data.numero || '',
       nombreReceptor: data.recibidoDe || '',
-      notasAdicionales: data.concepto || '',
+      notasAdicionales: text || data.concepto || '', // Usamos el texto completo OCR como notas
       montoPagado: data.totalBs || '',
-      aclaracion: data.aclaracion || '',
       carnetIdentidad: data.documento || '',
-      numeroControl: data.NumeroControl || '',
       fechaPago: data.fecha || ''
     });
     setScanComplete(true);
   }, []);
 
-  // ─── RENDER ───────────────────────────────────────────────────────────────
-  // 1) Si el carnet no está verificado, mostramos sólo el buscador
+  // Función para subir la imagen a Cloudinary y enviar los datos
+  const handleSubmitReceipt = useCallback(async () => {
+    if (!receiptData || !croppedImage) return;
+    
+    setIsUploading(true);
+    try {
+      // 1. Convertir la imagen cropped (que es una URL) a Blob
+      const response = await fetch(croppedImage);
+      const blob = await response.blob();
+      const file = new File([blob], 'comprobante.jpg', { type: 'image/jpeg' });
+
+      // 2. Subir a Cloudinary
+      const imageUrl = await uploadImageToCloudinary(file);
+      
+      // 3. Preparar el JSON final
+      const finalData = {
+        carnetIdentidad: carnet || receiptData.carnetIdentidad,
+        montoPagado: parseFloat(receiptData.montoPagado) || 0,
+        fechaPago: receiptData.fechaPago || new Date().toISOString().split('T')[0],
+        codTransaccion: receiptData.codTransaccion || '',
+        imagenComprobante: imageUrl,
+        nombreReceptor: receiptData.nombreReceptor || '',
+        estadoOrden: "PAGADO",
+        notasAdicionales: receiptData.notasAdicionales || ''
+      };
+
+      // 4. Aquí iría tu llamada API para enviar finalData al backend
+      console.log('Datos a enviar:', finalData);
+      
+      Swal.fire(
+        'Éxito',
+        'Comprobante subido y procesado correctamente',
+        'success'
+      );
+
+      // Resetear el formulario
+      setSelectedImage(null);
+      setCroppedImage(null);
+      setScanComplete(false);
+      setAttempts(3);
+      setExtractedText('');
+      setReceiptData(null);
+
+    } catch (error) {
+      console.error('Error al subir comprobante:', error);
+      Swal.fire(
+        'Error',
+        error.message || 'Ocurrió un error al subir el comprobante',
+        'error'
+      );
+    } finally {
+      setIsUploading(false);
+    }
+  }, [croppedImage, receiptData, carnet]);
+
+  // ─── Render ─────────────────────────────────────────────────────────────
   if (!isCarnetVerified) {
     return (
       <div className="comprobante-verification">
@@ -99,17 +149,10 @@ export default function Comprobante() {
               className="carnet-input"
               placeholder="Ej: 1234567"
               value={carnet}
-              maxLength={10}                                // ← máximo 10 caracteres
-              onChange={e => {
-                // quitamos todo lo que no sea letra o número
-                const filtered = e.target.value
-                  .replace(/[^a-zA-Z0-9]/g, '')
-                  
-                setCarnet(filtered);
-              }}
+              maxLength={10}
+              onChange={e => setCarnet(e.target.value.replace(/[^a-zA-Z0-9]/g, ''))}
               disabled={isVerifying}
           />
-
           <button
             className="carnet-btn"
             onClick={handleVerifyCarnet}
@@ -122,7 +165,6 @@ export default function Comprobante() {
     );
   }
 
-  // 2) Una vez verificado, toda la UI de comprobante + OCR
   return (
     <div className="comprobante-container">
       <Header
@@ -188,18 +230,16 @@ export default function Comprobante() {
                       <div>
                         <strong>Monto:</strong> {receiptData.montoPagado} Bs.
                       </div>
-                      <div>
-                        <strong>Concepto:</strong> {receiptData.notasAdicionales}
-                      </div>
                     </div>
                   </div>
                 )}
-                {extractedText && (
-                  <details className="extracted-text">
-                    <summary>Ver texto reconocido</summary>
-                    <pre>{extractedText}</pre>
-                  </details>
-                )}
+                <button
+                  className="submit-button"
+                  onClick={handleSubmitReceipt}
+                  disabled={isUploading}
+                >
+                  {isUploading ? 'Subiendo...' : 'Confirmar y enviar comprobante'}
+                </button>
                 <button
                   className="new-scan-button"
                   onClick={() => {

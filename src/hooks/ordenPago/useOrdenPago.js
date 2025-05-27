@@ -89,10 +89,11 @@ const useOrdenPago = () => {
     let  id_inscripcion, cantidadAreas, precioPorArea, montoTotalPago,
      fechaEmision,  fechaVencimientoStr,montoLiteral, centavos, nombreResponsable;
     if(ordenExel){
+      console.log('que orden llega?:',ordenExel)
       id_inscripcion = ordenExel.Responsable?.idInscripcion;
 
       cantidadAreas = ordenExel.Responsable?.cantAreas;
-      precioPorArea = ordenExel.olimpiadas[0]?.precio_olimpiada || 0;
+      precioPorArea = ordenExel.olimpiadas?.olimpiada?.precioOlimpiada || 0;
       montoTotalPago = cantidadAreas * precioPorArea;
 
       const fechaActual = new Date();
@@ -120,7 +121,7 @@ const useOrdenPago = () => {
       nombreResponsable = `${primerTutor.nombres_tutor || ""} ${primerTutor.apellidos_tutor || ""}`.trim();
 
       cantidadAreas = areas.length;
-      precioPorArea = ordenData.olimpiadas[0]?.precio_olimpiada || 0;
+      precioPorArea = ordenData.olimpiada?.olimpiada?.precioOlimpiada || 0;
       montoTotalPago = cantidadAreas * precioPorArea;
 
       const fechaActual = new Date();
