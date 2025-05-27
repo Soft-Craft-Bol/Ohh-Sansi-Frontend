@@ -84,6 +84,7 @@ export const getOlimpiadaPreinscripcion = () => api.get(`/fecha-olimpiada/period
 //CatalogoOlimpiada
 export const saveCatalogoOlimpiada = (data) => api.post('/catalogo-olimpiada/save', data);
 export const getCatalogoOlimpiada = () => api.get('/catalogo-olimpiada');
+export const getPeriodoInscripcionActal = () => api.get('/fecha-olimpiada/periodo-inscripcion-actual');
 
 //FechaOlimpiada
 export const getOlimpiadasConEventos = () => api.get('/fecha-olimpiada/olimpiadas-con-eventos');

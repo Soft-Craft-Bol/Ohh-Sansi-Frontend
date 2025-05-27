@@ -1,8 +1,7 @@
-import { getCatalogoOlimpiada } from '../api/api';
+import { getPeriodoInscripcionActal } from '../api/api';
 import * as Yup from 'yup';
-const response = await getCatalogoOlimpiada();
-  const catalogo = response?.data || [];
-
+const response = await getPeriodoInscripcionActal();
+  const catalogo = response?.data?.catalogoOlimpiada || [];
   const gradosCatalogo = new Set(
     catalogo.flatMap(item => item.grados)
   );
@@ -47,22 +46,48 @@ export const excelRowSchemaDatos = Yup.object().shape({
         .min(2, 'Debe tener al menos 2 caracteres')
         .matches(/^[A-Za-zÁáÉéÍíÓóÚúÑñ\s]+$/, 'Solo puede contener letras y espacios'),
 
-    'FechaNacimiento': Yup.date()
-        .required("Este campo es obligatorio")
+    'FechaNacimiento': Yup.mixed()
+        .required("La fecha de nacimiento es obligatoria")
         .test(
-        "edad-valida",
-        "La edad debe estar entre 4 y 20 años",
-        function (value) {
-            if (!value) return false;
-            const hoy = new Date();
-            const fechaNacimiento = new Date(value);
-            const edad = hoy.getFullYear() - fechaNacimiento.getFullYear();
-            const m = hoy.getMonth() - fechaNacimiento.getMonth();
-            if (m < 0 || (m === 0 && hoy.getDate() < fechaNacimiento.getDate())) {
-            return edad - 1 >= 4 && edad - 1 <= 20;
+            "edad-valida",
+            "El participante debe tener entre 4 y 20 años",
+            function(value) {
+                if (!value) return false;
+                
+                let fechaNacimiento;
+                
+                // Si es número (formato serial de Excel)
+                if (typeof value === 'number') {
+                    const utc_days = Math.floor(value - 25569);
+                    const utc_value = utc_days * 86400;
+                    fechaNacimiento = new Date(utc_value * 1000);
+                } 
+                // Si es string (formato de texto)
+                else if (typeof value === 'string') {
+                    // Intentar parsear diferentes formatos de fecha
+                    fechaNacimiento = new Date(value);
+                    if (isNaN(fechaNacimiento.getTime())) {
+                        return false;
+                    }
+                }
+                // Si ya es un objeto Date
+                else if (value instanceof Date) {
+                    fechaNacimiento = value;
+                } else {
+                    return false;
+                }
+
+                const hoy = new Date();
+                let edad = hoy.getFullYear() - fechaNacimiento.getFullYear();
+                const mes = hoy.getMonth() - fechaNacimiento.getMonth();
+                
+                if (mes < 0 || (mes === 0 && hoy.getDate() < fechaNacimiento.getDate())) {
+                    edad--;
+                }
+                
+                return edad >= 4 && edad <= 20;
             }
-            return edad >= 4 && edad <= 20;
-        }),
+        ),
 
     'Correo': emailSchema,
     'Carnet Identidad': CIschema,
