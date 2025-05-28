@@ -141,3 +141,6 @@ export const uploadConvocatoriaPDF = (idArea, idOlimpiada, pdfFile) => {
 
 export const getConvocatoriaArea = (idArea, idOlimpiada) =>
   api.get(`/areas/convocatoria/${idArea}/${idOlimpiada}`);
+
+export const getEstadoPago = (codigoUnico) =>
+  api.get(`/pagos/estado/${codigoUnico}`);
