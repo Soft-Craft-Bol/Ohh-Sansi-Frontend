@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { FaSearch } from 'react-icons/fa';
 import Swal from 'sweetalert2';
-import { getEstudianteByCarnet, verificarPago } from '../../api/api';
+import { getEstudianteByCarnet, verificarPago, getEstadoPago } from '../../api/api';
 import Header from '../../components/header/Header';
 import ImageEditor from '../../components/imageEditor/ImageEditorKonva';
 import ImageScanner from '../../components/camScanner/ImageScanner';
@@ -10,9 +10,9 @@ import './Comprobante.css';
 
 export default function Comprobante() {
   // ─── Estados ───────────────────────────────────────────────────────────
-  const [carnet, setCarnet] = useState('');
-  const [isCarnetVerified, setIsCarnetVerified] = useState(false);
-  const [isVerifying, setIsVerifying] = useState(false);
+   const [codigoUnico, setCodigoUnico] = useState('');
+  const [estadoPago, setEstadoPago] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
   const [croppedImage, setCroppedImage] = useState(null);
   const [attempts, setAttempts] = useState(3);
@@ -22,29 +22,46 @@ export default function Comprobante() {
   const [isUploading, setIsUploading] = useState(false);
 
   // ─── Funciones ──────────────────────────────────────────────────────────
-  const handleVerifyCarnet = useCallback(async () => {
-    if (!carnet.trim()) {
-      Swal.fire('Carnet vacío', 'Ingresa tu número de carnet.', 'warning');
+
+  const handleVerifyCodigo = useCallback(async () => {
+    if (!codigoUnico.trim()) {
+      Swal.fire('Código vacío', 'Ingresa tu código único de inscripción.', 'warning');
       return;
     }
-    setIsVerifying(true);
+    setIsLoading(true);
     try {
-      await getEstudianteByCarnet(carnet);
-      setIsCarnetVerified(true);
+      const response = await getEstadoPago(codigoUnico);
+      setEstadoPago(response.data);
+      
+      // Validar estado de pago
+      if (response.data.estadoPago === 'Pago verificado') {
+        Swal.fire(
+          'Pago ya verificado',
+          'Este código ya tiene un pago verificado, no es necesario subir comprobante.',
+          'info'
+        );
+      } else if (response.data.mensaje === 'El participante no generó orden de pago') {
+        Swal.fire(
+          'Sin orden de pago',
+          'Debes generar primero una orden de pago antes de subir comprobante.',
+          'warning'
+        );
+      }
     } catch (err) {
       if (err.response?.status === 404) {
-        Swal.fire('No encontrado', 'El carnet no está registrado.', 'error');
+        Swal.fire('No encontrado', 'El código no está registrado.', 'error');
       } else {
         Swal.fire(
           'Error',
-          err.response?.data?.message || err.message || 'Error al verificar carnet',
+          err.response?.data?.message || err.message || 'Error al verificar código',
           'error'
         );
       }
+      setEstadoPago(null);
     } finally {
-      setIsVerifying(false);
+      setIsLoading(false);
     }
-  }, [carnet]);
+  }, [codigoUnico]);
 
   const handleImageUpload = useCallback(event => {
     const file = event.target.files[0];
@@ -141,43 +158,89 @@ export default function Comprobante() {
     } finally {
       setIsUploading(false);
     }
-  }, [croppedImage, receiptData, carnet]);
+  }, [croppedImage, receiptData]);
 
   // ─── Render ─────────────────────────────────────────────────────────────
-  if (!isCarnetVerified) {
+   if (!estadoPago) {
     return (
       <div className="comprobante-verification">
         <Header
-          title="Verificar carnet"
-          description="Ingresa tu número de carnet para continuar"
+          title="Verificar código único"
+          description="Ingresa tu código único de inscripción para continuar"
         />
         <div className="verification-form">
           <input
             type="text"
             className="carnet-input"
-            placeholder="Ej: 1234567"
-            value={carnet}
-            maxLength={10}
-            onChange={e => setCarnet(e.target.value.replace(/[^a-zA-Z0-9]/g, ''))}
-            disabled={isVerifying}
+            placeholder="Ej: LG614I"
+            value={codigoUnico}
+            onChange={e => setCodigoUnico(e.target.value)}
+            disabled={isLoading}
           />
           <button
             className="carnet-btn"
-            onClick={handleVerifyCarnet}
-            disabled={isVerifying}
+            onClick={handleVerifyCodigo}
+            disabled={isLoading}
           >
-            {isVerifying ? 'Verificando...' : <FaSearch />}
+            {isLoading ? 'Verificando...' : <FaSearch />}
           </button>
         </div>
       </div>
     );
   }
 
+  if (estadoPago.estadoPago === 'Pago verificado') {
+    return (
+      <div className="comprobante-verification">
+        <Header
+          title="Estado de pago"
+          description="Tu pago ya ha sido verificado"
+        />
+        <div className="pago-verificado">
+          <div className="pago-info">
+            <h3>Pago Verificado</h3>
+            <p>No es necesario subir comprobante adicional.</p>
+            <div className="pago-details">
+              <p><strong>Código:</strong> {codigoUnico}</p>
+              <p><strong>Nombre:</strong> {estadoPago.nombreParticipante} {estadoPago.apellidoPaterno} {estadoPago.apellidoMaterno}</p>
+              <p><strong>Monto:</strong> {estadoPago.montoTotalPago} Bs.</p>
+              <p><strong>Responsable:</strong> {estadoPago.responsablePago}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+   if (estadoPago.mensaje === 'El participante no generó orden de pago') {
+    return (
+      <div className="comprobante-verification">
+        <Header
+          title="Estado de pago"
+          description="No se encontró orden de pago"
+        />
+        <div className="sin-orden-pago">
+          <div className="pago-info">
+            <h3>Orden de pago no generada</h3>
+            <p>Debes generar primero una orden de pago para poder subir comprobantes.</p>
+            <button 
+              className="back-button"
+              onClick={() => setEstadoPago(null)}
+            >
+              Volver a intentar
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+
   return (
     <div className="comprobante-container">
       <Header
         title="Comprobante de pago"
-        description="Sube tu comprobante para verificar tu inscripción"
+        description={`Sube tu comprobante para verificar tu inscripción (Código: ${codigoUnico})`}
       />
       <div className="comprobante-content">
         {!selectedImage ? (
