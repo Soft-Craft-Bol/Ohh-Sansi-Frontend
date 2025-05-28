@@ -202,55 +202,64 @@ const UpdateExcel = () => {
         const data = new Uint8Array(event.target.result);
         const workbook = XLSX.read(data, { type: 'array', cellDates: true });
         
-        // Filtrar filas válidas
+        // Función para verificar si una fila es inválida
         const esFilaInvalida = (fila) => {
           const ci = fila['Carnet tutor'];
           return !ci || String(ci).trim() === '' || ci === 0;
         };
 
-        let hojaDatosRaw = XLSX.utils.sheet_to_json(workbook.Sheets['Datos'] || {})
-          .filter(fila => fila['id_grado'] !== 0 && fila['id_grado'] !== '0');
+        // Obtener todas las filas y excluir la última si está vacía
+        let hojaDatosRaw = XLSX.utils.sheet_to_json(workbook.Sheets['Datos'] || {});
+        
+        // Eliminar la última fila si está vacía o es inválida
+        if (hojaDatosRaw.length > 0) {
+          const ultimaFila = hojaDatosRaw[hojaDatosRaw.length - 1];
+          if (esFilaInvalida(ultimaFila) || 
+              (!ultimaFila['Nombres'] && !ultimaFila['Carnet Identidad'])) {
+            hojaDatosRaw = hojaDatosRaw.slice(0, -1);
+          }
+        }
 
-        let hojaAreasRaw = XLSX.utils.sheet_to_json(workbook.Sheets['Datos'] || {})
-          .filter(fila => fila['id_grado'] !== 0 && fila['id_grado'] !== '0');
+        // Filtrar filas con id_grado válido
+        hojaDatosRaw = hojaDatosRaw.filter(fila => fila['id_grado'] !== 0 && fila['id_grado'] !== '0');
+        let hojaAreasRaw = [...hojaDatosRaw]; // Usamos los mismos datos ya filtrados
 
-        // NUEVA LIMPIEZA: Eliminar filas completamente vacías
+        // Limpieza adicional: Eliminar filas completamente vacías
         hojaDatosRaw = limpiarFilasVacias(hojaDatosRaw);
         hojaAreasRaw = limpiarFilasVacias(hojaAreasRaw);
 
         const hojaDatos = hojaDatosRaw.filter(fila => !esFilaInvalida(fila));
         const hojaAreas = hojaAreasRaw.filter(fila => !esFilaInvalida(fila));
 
-          // Convertir fechas como en el código antiguo
-          const convertirFechas = (fila) => {
-            const copia = { ...fila };
-            if (typeof copia.FechaNacimiento === 'number') {
-              const serial = copia.FechaNacimiento;
-              const utc_days = Math.floor(serial - 25569);
-              const utc_value = utc_days * 86400;
-              copia.FechaNacimiento = new Date(utc_value * 1000);
-            }
-            return copia;
-          };
+        // Convertir fechas
+        const convertirFechas = (fila) => {
+          const copia = { ...fila };
+          if (typeof copia.FechaNacimiento === 'number') {
+            const serial = copia.FechaNacimiento;
+            const utc_days = Math.floor(serial - 25569);
+            const utc_value = utc_days * 86400;
+            copia.FechaNacimiento = new Date(utc_value * 1000);
+          }
+          return copia;
+        };
 
-            const filasConHojaDatos = hojaDatos.map(fila => ({ ...convertirFechas(fila), _hoja: 'Datos' }));
-            const filasConHojaAreas = hojaAreas.map(fila => ({ ...convertirFechas(fila), _hoja: 'Datos' }));
+        const filasConHojaDatos = hojaDatos.map(fila => ({ ...convertirFechas(fila), _hoja: 'Datos' }));
+        const filasConHojaAreas = hojaAreas.map(fila => ({ ...convertirFechas(fila), _hoja: 'Datos' }));
 
-            const erroresDatos = await validarFilasDatos(filasConHojaDatos);
-            const erroresAreas = await validarFilasAreas(filasConHojaAreas);
-            
-            const erroresTotales = [...erroresDatos, ...erroresAreas];
-            resolve(erroresTotales);
-        } catch (error) {
-          reject(error);
-        }
-      };
-      reader.onerror = (error) => reject(error);
-      reader.readAsArrayBuffer(file);
-    });
-  };
+        const erroresDatos = await validarFilasDatos(filasConHojaDatos);
+        const erroresAreas = await validarFilasAreas(filasConHojaAreas);
+        
+        const erroresTotales = [...erroresDatos, ...erroresAreas];
+        resolve(erroresTotales);
+      } catch (error) {
+        reject(error);
+      }
+    };
+    reader.onerror = (error) => reject(error);
+    reader.readAsArrayBuffer(file);
+  });
+};
 
-  // Mostrar errores de validación - CORREGIDA
   const mostrarErrores = (errores) => {
     const erroresPorHoja = errores.reduce((acc, error) => {
       const hoja = error.hoja || 'Desconocida';
@@ -280,59 +289,92 @@ const UpdateExcel = () => {
     });
   };
 
-  // Mostrar resultados - CORREGIDA para mostrar alerta de éxito
+  // Mostrar resultados 
   const mostrarResultados = async (resultados) => {
-    const exitosos = resultados.filter(item => item?.success);
-    const erroresNoCriticos = resultados.filter(item => !item?.success);
+  const resultadosFiltrados = resultados.filter(item => {
+    if (!item) return false;
+    
+    // Excluir errores no deseados y undefined
+    if (!item.error || 
+        item.error.includes('omitida') || 
+        item.error.includes('undefined') ||
+        item.error.includes('Desconocido') ||
+        item.fila === 'No especificada') {
+      return false;
+    }
+    
+    return true;
+  });
 
-    // Si hay registros exitosos, mostrar alerta de éxito
-    if (exitosos.length > 0) {
-      await Swal.fire({
-        title: '¡Registros procesados exitosamente!',
-        html: `
-          <div style="text-align: center;">
-            <div style="font-size: 48px; color: #4CAF50; margin-bottom: 20px;">
-              <i class="fas fa-check-circle"></i>
-            </div>
-            <p style="font-size: 18px; margin-bottom: 10px;">
-              <strong>${exitosos.length}</strong> participante${exitosos.length > 1 ? 's' : ''} 
-              ${exitosos.length > 1 ? 'fueron registrados' : 'fue registrado'} correctamente
-            </p>
-            ${erroresNoCriticos.length > 0 ? `
-              <p style="color: #FF9800; font-size: 14px;">
-                ${erroresNoCriticos.length} registro${erroresNoCriticos.length > 1 ? 's' : ''} 
-                no ${erroresNoCriticos.length > 1 ? 'pudieron' : 'pudo'} ser procesado${erroresNoCriticos.length > 1 ? 's' : ''}
-              </p>
-            ` : ''}
+  const exitosos = resultadosFiltrados.filter(item => item?.success);
+  const errores = resultadosFiltrados.filter(item => !item?.success && item.error && item.fila);
+
+  // Modal de éxito si hay registros correctos
+  if (exitosos.length > 0) {
+    await Swal.fire({
+      title: '¡Registro exitoso!',
+      html: `
+        <div style="text-align: center;">
+          <div style="font-size: 48px; color: #4CAF50; margin-bottom: 20px;">
+            <i class="fas fa-check-circle"></i>
           </div>
-        `,
-        icon: 'success',
-        confirmButtonText: 'Continuar'
-      });
-    }
-
-    // Si hay errores, mostrarlos después
-    if (erroresNoCriticos.length > 0) {
-      let html = `
-        <div style="max-height: 60vh; overflow-y: auto; text-align: left;">
-          <h4 style="color: #F44336;">Errores encontrados:</h4>
-          ${erroresNoCriticos.map(item => `
-            <div style="margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #eee;">
-              <p><strong>Fila ${item.fila || 'Desconocida'}</strong></p>
-              <p style="color: red;">${item.error || 'Error desconocido'}</p>
-            </div>
-          `).join('')}
+          <p style="font-size: 18px; margin-bottom: 10px;">
+            <strong>${exitosos.length}</strong> participante${exitosos.length > 1 ? 's' : ''} 
+            registrado${exitosos.length > 1 ? 's' : ''} correctamente
+          </p>
         </div>
-      `;
+      `,
+      icon: 'success',
+      confirmButtonText: 'Continuar'
+    });
 
-      await Swal.fire({
-        title: 'Detalles de errores',
-        html: html,
-        width: 800,
-        confirmButtonText: 'Entendido'
-      });
+    // Modal de confirmación con código
+    if (exitosos.length > 0) {
+      const participanteExitoso = exitosos[0];
+      try {
+        const forModal = await getInscripcionByID(participanteExitoso.id_inscripcion);
+        handleConfirm(forModal.data.data.codigoUnicoInscripcion);
+      } catch (error) {
+        console.error("Error al obtener datos para el modal:", error);
+      }
     }
-  };
+  }
+
+  // Modal de errores
+  if (errores.length > 0) {
+    let htmlErrores = `
+      <div style="max-height: 60vh; overflow-y: auto; text-align: left;">
+        <h4 style="color: #F44336; margin-bottom: 15px;">Errores encontrados:</h4>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+    `;
+
+    errores.forEach(error => {
+      if (error.fila && error.error) { // Doble verificación
+        htmlErrores += `
+          <div style="padding: 8px; background: #fff3f3; border-radius: 4px;">
+            <strong>Fila ${error.fila}:</strong> ${error.error}
+          </div>
+        `;
+      }
+    });
+
+    htmlErrores += `
+        </div>
+        <p style="margin-top: 15px; color: #666; font-size: 14px;">
+          Total de errores: ${errores.length}
+        </p>
+      </div>
+    `;
+
+    await Swal.fire({
+      title: 'Errores en el archivo',
+      html: htmlErrores,
+      width: '700px',
+      confirmButtonText: 'Entendido',
+      icon: 'error'
+    });
+  }
+};
 
   // Manejar confirmación de inscripción
   const handleConfirm = (codigoGenerado) => {
