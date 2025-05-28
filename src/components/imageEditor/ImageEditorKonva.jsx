@@ -32,6 +32,7 @@ export default function ImageEditor({ imageSrc, onComplete, onCancel }) {
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
   const [rectPos, setRectPos] = useState({ x: 0, y: 0 });
   const [rectSize, setRectSize] = useState({ width: 400, height: 300 });
+  const [confirmed, setConfirmed] = useState(false);
 
   // Referencias al canvas y nodos Konva
   const rectRef = useRef();
@@ -176,6 +177,7 @@ const rotateImage = () => {
      out.toBlob(blob => {
     const url = URL.createObjectURL(blob);
     onComplete(url); 
+    setConfirmed(true);  
   }, 'image/jpeg');
   }, [dimensions, image, onComplete, rotation]);
 
@@ -279,7 +281,8 @@ const rotateImage = () => {
         </Stage>
       </div>
       {/* Botones de acción */}
-      <div className="editor-buttons">
+      {!confirmed && (
+        <div className="editor-buttons">
         <Button variant="contained" color="primary" onClick={rotateImage}>
           Rotar 90°
         </Button>
@@ -295,6 +298,8 @@ const rotateImage = () => {
           Confirmar
         </Button>
       </div>
-    </div>
+
+      )}
+          </div>
   );
 }

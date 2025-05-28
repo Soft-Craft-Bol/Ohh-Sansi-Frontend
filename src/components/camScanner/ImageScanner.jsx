@@ -4,6 +4,7 @@ import { Formik, Form } from 'formik';
 import './ImageScanner.css';
 import InputText from '../inputs/InputText';
 import { ButtonPrimary } from '../button/ButtonPrimary';
+import receiptSchema from '../../schemas/receiptSchema';
 
 const processReceiptText = (ocrText) => {
   const receiptData = {
@@ -76,27 +77,27 @@ const processReceiptText = (ocrText) => {
 const validateReceiptData = (data) => {
   const requiredFields = ['carnetIdentidad', 'montoPagado', 'nombreReceptor'];
   const missingFields = requiredFields.filter(field => !data[field] || data[field].trim() === '');
-  
+
   if (missingFields.length > 0) {
     return {
       isValid: false,
       message: "No se pudo detectar toda la información necesaria. Por favor, suba una foto con mejor resolución o verifique que el comprobante sea legible."
     };
   }
-  
+
   return {
     isValid: true,
     message: "La información del comprobante ha sido validada correctamente."
   };
 };
 
-const ImageScanner = ({ initialImage, onComplete, onRetry, attemptsLeft }) => {
+const ImageScanner = ({ initialImage, onComplete, onRetry, attemptsLeftm, allowManualEdit = false, attemptsLeft }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [receiptData, setReceiptData] = useState(null);
   const [validationResult, setValidationResult] = useState(null);
   const [extractedText, setExtractedText] = useState('');
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState(allowManualEdit);
 
   useEffect(() => {
     if (initialImage) {
@@ -106,33 +107,33 @@ const ImageScanner = ({ initialImage, onComplete, onRetry, attemptsLeft }) => {
 
   // Campos editables (solo los necesarios)
   const editableFields = [
-    { 
-      key: 'codTransaccion', 
-      label: 'Número de Factura', 
+    {
+      key: 'codTransaccion',
+      label: 'Número de Factura',
       type: 'text',
       inputProps: { onlyNumbers: true }
     },
-    { 
-      key: 'nombreReceptor', 
-      label: 'Nombre del Receptor', 
+    {
+      key: 'nombreReceptor',
+      label: 'Nombre del Receptor',
       type: 'text',
       inputProps: { onlyLetters: true }
     },
-    { 
-      key: 'montoPagado', 
-      label: 'Monto Pagado (Bs.)', 
+    {
+      key: 'montoPagado',
+      label: 'Monto Pagado (Bs.)',
       type: 'text',
       inputProps: { decimal: true, decimalPlaces: 2 }
     },
-    { 
-      key: 'carnetIdentidad', 
-      label: 'Carnet de Identidad', 
+    {
+      key: 'carnetIdentidad',
+      label: 'Carnet de Identidad',
       type: 'text',
       inputProps: { onlyNumbers: true }
     },
-    { 
-      key: 'fechaPago', 
-      label: 'Fecha de Pago', 
+    {
+      key: 'fechaPago',
+      label: 'Fecha de Pago',
       type: 'date'
     }
   ];
@@ -211,10 +212,19 @@ const ImageScanner = ({ initialImage, onComplete, onRetry, attemptsLeft }) => {
         <div className={`validation-results ${validationResult.isValid ? 'valid' : 'invalid'}`}>
           <p>{validationResult.message}</p>
           {!validationResult.isValid && (
-            <p className="attempts-warning">
-              Tienes {attemptsLeft} intento{attemptsLeft !== 1 ? 's' : ''} restante{attemptsLeft !== 1 ? 's' : ''}. 
-              Suba una foto con mejor resolución y buena iluminación.
-            </p>
+            <>
+              {attemptsLeft > 0 ? (
+                <p className="attempts-warning">
+                  Tienes {attemptsLeft} intento{attemptsLeft !== 1 ? 's' : ''} restante{attemptsLeft !== 1 ? 's' : ''}.
+                  Suba una foto con mejor resolución y buena iluminación.
+                </p>
+              ) : (
+                <div className="attempts-exhausted">
+                  <h4>¡Se agotaron tus intentos!</h4>
+                  <p>Por favor, edita manualmente los datos del comprobante y confírmalos.</p>
+                </div>
+              )}
+            </>
           )}
         </div>
       )}
@@ -222,10 +232,12 @@ const ImageScanner = ({ initialImage, onComplete, onRetry, attemptsLeft }) => {
       {receiptData && (
         <div className="structured-data">
           <h3>Datos del comprobante:</h3>
-          
+
           {isEditing ? (
             <Formik
               initialValues={receiptData}
+              validationSchema={receiptSchema}
+              enableReinitialize  
               onSubmit={handleFormSubmit}
             >
               {() => (
@@ -239,21 +251,23 @@ const ImageScanner = ({ initialImage, onComplete, onRetry, attemptsLeft }) => {
                       {...field.inputProps}
                     />
                   ))}
-                  
+
                   <div className="edit-buttons">
-                    <ButtonPrimary 
+                    <ButtonPrimary
                       buttonStyle="primary"
                       type="submit"
                     >
                       Guardar cambios
                     </ButtonPrimary>
-                    <ButtonPrimary 
-                      buttonStyle="secondary"
-                      type="button"
-                      onClick={() => setIsEditing(false)}
-                    >
-                      Cancelar
-                    </ButtonPrimary>
+                    {!allowManualEdit && ( // Solo mostrar cancelar si no es edición forzada
+                      <ButtonPrimary
+                        buttonStyle="secondary"
+                        type="button"
+                        onClick={() => setIsEditing(false)}
+                      >
+                        Cancelar
+                      </ButtonPrimary>
+                    )}
                   </div>
                 </Form>
               )}
@@ -269,31 +283,37 @@ const ImageScanner = ({ initialImage, onComplete, onRetry, attemptsLeft }) => {
               </div>
 
               <div className="action-buttons">
-                <ButtonPrimary 
-                  buttonStyle="primary"
-                  onClick={() => setIsEditing(true)}
-                >
-                  Editar datos
-                </ButtonPrimary>
-                <ButtonPrimary 
-                  buttonStyle="success"
-                  onClick={handleConfirm}
-                  disabled={!validationResult?.isValid}
-                >
-                  Confirmar
-                </ButtonPrimary>
-                <ButtonPrimary 
-                  buttonStyle="danger"
-                  onClick={onRetry}
-                >
-                  Volver a intentar
-                </ButtonPrimary>
+                {allowManualEdit ? ( 
+                  <ButtonPrimary
+                    buttonStyle="success"
+                    onClick={handleConfirm}
+                  >
+                    Confirmar datos manuales
+                  </ButtonPrimary>
+                ) : (
+                  <>
+                    
+                    <ButtonPrimary
+                      buttonStyle="success"
+                      onClick={handleConfirm}
+                      disabled={!validationResult?.isValid}
+                    >
+                      Confirmar
+                    </ButtonPrimary>
+                    <ButtonPrimary
+                      buttonStyle="danger"
+                      onClick={onRetry}
+                    >
+                      Volver a intentar
+                    </ButtonPrimary>
+                  </>
+                )}
               </div>
             </>
           )}
         </div>
       )}
-{/* Hola fabri */}
+      {/* Hola fabri */}
       {extractedText && (
         <details className="text-preview">
           <summary>Ver texto reconocido (irá en Notas Adicionales)</summary>
