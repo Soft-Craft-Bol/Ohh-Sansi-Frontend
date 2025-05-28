@@ -4,6 +4,7 @@ import { getCatalogoOlimpiada, getReporteInscritos } from '../../../api/api';
 import { exportToPDFInscritos, exportToExcelInscritos, exportToCSVInscritos } from '../../../utils/exportUtils';
 import './ListaInscritos.css';
 import Swal from 'sweetalert2';
+import ExportButtons from '../pagos/ExportButtons';
 
 const ListaInscritos = () => {
   const [selectedOlimpiada, setSelectedOlimpiada] = useState('');
@@ -24,18 +25,18 @@ const ListaInscritos = () => {
       const olimpiadaSeleccionada = catalogoCompleto.find(
         item => item.nombreOlimpiada === selectedOlimpiada
       );
-      
+
       if (olimpiadaSeleccionada) {
         const areasOlimpiada = catalogoCompleto
-          .filter(item => 
-            item.nombreOlimpiada === selectedOlimpiada && 
+          .filter(item =>
+            item.nombreOlimpiada === selectedOlimpiada &&
             item.idOlimpiada === olimpiadaSeleccionada.idOlimpiada
           )
           .map(item => ({
             nombre: item.nombreArea,
             id: item.idArea
           }));
-        
+
         setAreas(areasOlimpiada);
       }
       setSelectedArea('');
@@ -48,13 +49,13 @@ const ListaInscritos = () => {
   const cargarCatalogo = async () => {
     try {
       setLoadingCatalogo(true);
-      const response = await getCatalogoOlimpiada();  
+      const response = await getCatalogoOlimpiada();
       const data = response?.data || response;
-      
-      
+
+
       if (data && Array.isArray(data)) {
         setCatalogoCompleto(data);
-        
+
         const olimpiadasUnicas = data.reduce((acc, item) => {
           if (!acc.some(olim => olim.id === item.idOlimpiada)) {
             acc.push({
@@ -83,25 +84,25 @@ const ListaInscritos = () => {
     }
 
     setLoading(true);
-    
+
     try {
       const olimpiadaSeleccionada = catalogoCompleto.find(
         item => item.nombreOlimpiada === selectedOlimpiada
       );
-      
+
       const areaSeleccionada = areas.find(
         area => area.nombre === selectedArea
       );
-      
-       if (!olimpiadaSeleccionada) {
+
+      if (!olimpiadaSeleccionada) {
         throw new Error('No se encontró la olimpiada seleccionada');
       }
-      
-       const response = await getReporteInscritos(
+
+      const response = await getReporteInscritos(
         areaSeleccionada?.id || null,
         olimpiadaSeleccionada.idOlimpiada
       );
-            setInscritos(response.data || response);
+      setInscritos(response.data || response);
 
     } catch (error) {
       console.error('Error al generar reporte:', error);
@@ -112,35 +113,7 @@ const ListaInscritos = () => {
     }
   };
 
-  const handleExportarPDF = () => {
-    if (inscritos.length === 0) {
-      Swal.fire('No hay datos para exportar');
-      return;
-    }
-    
-    const titulo = `Lista de Inscritos - ${selectedOlimpiada}${selectedArea ? ` - ${selectedArea}` : ''}`;
-    exportToPDFInscritos(inscritos, titulo, selectedArea);
-  };
-
-  const handleExportarExcel = () => {
-    if (inscritos.length === 0) {
-      Swal.fire('No hay datos para exportar');
-      return;
-    }
-    
-    const titulo = `Lista de Inscritos - ${selectedOlimpiada}${selectedArea ? ` - ${selectedArea}` : ''}`;
-    exportToExcelInscritos(inscritos, titulo);
-  };
-
-  const handleExportarCSV = () => {
-    if (inscritos.length === 0) {
-      Swal.fire('No hay datos para exportar');
-      return;
-    }
-    
-    const titulo = `Lista de Inscritos - ${selectedOlimpiada}${selectedArea ? ` - ${selectedArea}` : ''}`;
-    exportToCSVInscritos(inscritos, titulo);
-  };
+  
 
   if (loadingCatalogo) {
     return (
@@ -164,7 +137,7 @@ const ListaInscritos = () => {
             <Filter className="ra-filter-icon" />
             <h2 className="ra-filters-title">Filtros de Búsqueda</h2>
           </div>
-          
+
           <div className="ra-filters-grid">
             <div>
               <label className="ra-label">
@@ -245,30 +218,18 @@ const ListaInscritos = () => {
                     </div>
                   </div>
                 </div>
-                
+
                 {/* Botones de exportación */}
                 <div className="ra-export-buttons">
-                  <button
-                    onClick={handleExportarPDF}
-                    className="ra-button-export"
-                  >
-                    <Download className="ra-icon" />
-                    <span>PDF</span>
-                  </button>
-                  <button
-                    onClick={handleExportarExcel}
-                    className="ra-button-export"
-                  >
-                    <Download className="ra-icon" />
-                    <span>Excel</span>
-                  </button>
-                  <button
-                    onClick={handleExportarCSV}
-                    className="ra-button-export"
-                  >
-                    <Download className="ra-icon" />
-                    <span>CSV</span>
-                  </button>
+                  <ExportButtons
+                    data={inscritos}
+                    title={`Lista de Inscritos - ${selectedOlimpiada}${selectedArea ? ` - ${selectedArea}` : ''}`}
+                    exportFunctions={{
+                      pdf: exportToPDFInscritos,
+                      excel: exportToExcelInscritos,
+                      csv: exportToCSVInscritos
+                    }}
+                  />
                 </div>
               </div>
             </div>
@@ -340,10 +301,10 @@ const ListaInscritos = () => {
                   Organizado por Universidad Mayor de San Simón
                 </p>
                 <p className="ra-footer-date">
-                  Reporte generado el {new Date().toLocaleDateString('es-ES', { 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric' 
+                  Reporte generado el {new Date().toLocaleDateString('es-ES', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
                   })}
                 </p>
               </div>
