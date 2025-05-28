@@ -15,7 +15,7 @@ export default function Comprobante() {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
   const [croppedImage, setCroppedImage] = useState(null);
-  const [attempts, setAttempts] = useState(3);
+  const [attempts, setAttempts] = useState(2);
   const [scanComplete, setScanComplete] = useState(false);
   const [extractedText, setExtractedText] = useState('');
   const [receiptData, setReceiptData] = useState(null);
@@ -140,7 +140,7 @@ export default function Comprobante() {
         setSelectedImage(null);
         setCroppedImage(null);
         setScanComplete(false);
-        setAttempts(3);
+        setAttempts(2);
         setExtractedText('');
         setReceiptData(null);
       } else {
@@ -259,7 +259,7 @@ export default function Comprobante() {
                   </svg>
                   <p>Selecciona o arrastra tu comprobante</p>
                   <span className="file-types">Formatos aceptados: JPG, PNG</span>
-                  {attempts < 3 && (
+                  {attempts < 2 && (
                     <p className="attempts-info">Intentos restantes: {attempts}</p>
                   )}
                 </div>
