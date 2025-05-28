@@ -9,7 +9,7 @@ import {
   getOlimpiadas,
   saveCatalogoOlimpiada
 } from '../../../api/api';
-import { ordenarGrados } from '../../../utils/GradesOrder';
+import { ordenarGrados, GRADO_ORDEN, normalizarGrado } from '../../../utils/GradesOrder';
 import './CatalogoManagement.css';
 import Swal from 'sweetalert2';
 
@@ -23,27 +23,16 @@ const CatalogoManagement = () => {
     loading: true,
     modalOpen: false,
     error: null,
-    isEditing: false, //Modal modo edicion
-    itemToEdit: null, //item editar
+    isEditing: false, 
+    itemToEdit: null, 
   });
 
-  const showAlert = (type, title, message) => {
-  Swal.fire({
-    icon: type,
-    title: title,
-    html: `<div style="max-height: 200px; overflow-y: auto;">${message}</div>`,
-    timer: type === 'error' ? 5000 : 3000,
-    showConfirmButton: type === 'error',
-    background: 'var(--light)',
-    color: 'var(--dark)',
-    width: '600px'
-  });
-};
+
 
   const fetchData = async () => {
     try {
       setState(prev => ({ ...prev, loading: true, error: null }));
-      
+
       const [olimpiadasRes, areasRes, categoriesRes, catalogoRes] = await Promise.all([
         getOlimpiadas(),
         getAreas(),
@@ -53,10 +42,10 @@ const CatalogoManagement = () => {
 
       const processCatalogoData = (data) => {
         if (!Array.isArray(data)) return [];
-        
+
         return data.map(item => ({
           ...item,
-          grados: Array.isArray(item.grados) 
+          grados: Array.isArray(item.grados)
             ? item.grados.map(grado => (typeof grado === 'string' ? { nombreGrado: grado } : grado))
             : []
         }));
@@ -86,7 +75,7 @@ const CatalogoManagement = () => {
         loading: false,
         error: error.message
       }));
-      showAlert('error', 'Error', 'No se pudieron cargar los datos');
+      Swal.fire('error', 'Error', 'No se pudieron cargar los datos');
     }
   };
 
@@ -99,11 +88,14 @@ const CatalogoManagement = () => {
       throw new Error('No se ha seleccionado una olimpiada');
     }
     const currentOlimpiada = state.olimpiadas.find(o => o.idOlimpiada === state.selectedOlimpiada);
-    
-    if (/*currentOlimpiada.nombreEstado !== 'PLANIFICACION'*/ false) {
-      showAlert('error', 'Error al editar', 'Solo se puede modificar el catálogo cuando la olimpiada está en estado "PLANIFICACION"');
-      throw new Error('Solo se puede modificar el catálogo cuando la olimpiada está en estado "PLANIFICACION"');
-    }else {
+
+    if (currentOlimpiada.nombreEstado == 'EN INSCRIPCION') {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No se puede editar el catálogo cuando la olimpiada está en estado "EN INSCRIPCION"'
+      });
+    } else {
       setState(prev => ({
         ...prev,
         modalOpen: true,
@@ -122,14 +114,37 @@ const CatalogoManagement = () => {
     }));
   };
 
-  const handleAddItem = async (formData) => {
+  const processCatalogoData = (data) => {
+    if (!Array.isArray(data)) return [];
+    
+    return data.map(item => {
+        // Procesar grados
+        let gradosProcesados = [];
+        if (Array.isArray(item.grados)) {
+            gradosProcesados = item.grados.map(g => {
+                if (typeof g === 'object' && g.nombreGrado) {
+                    return { ...g, nombreGrado: normalizarGrado(g.nombreGrado) };
+                }
+                return { nombreGrado: normalizarGrado(g) };
+            }).filter(g => GRADO_ORDEN.includes(g.nombreGrado));
+        }
+        
+        return {
+            ...item,
+            grados: gradosProcesados
+        };
+    });
+};
+
+
+const handleAddItem = async (formData) => {
   try {
     if (!state.selectedOlimpiada) {
       throw new Error('No se ha seleccionado una olimpiada');
     }
 
     const currentOlimpiada = state.olimpiadas.find(o => o.idOlimpiada === state.selectedOlimpiada);
-    
+
     if (currentOlimpiada.nombreEstado !== 'PLANIFICACION') {
       throw new Error('Solo se puede modificar el catálogo cuando la olimpiada está en estado "PLANIFICACION"');
     }
@@ -139,27 +154,36 @@ const CatalogoManagement = () => {
       idOlimpiada: currentOlimpiada.idOlimpiada,
     };
 
+    if (state.isEditing && state.itemToEdit?.idCatalogo) {
+      payload.idCatalogo = state.itemToEdit.idCatalogo;
+    }
+
     const response = await saveCatalogoOlimpiada(payload);
-    
+
     if (response?.data?.status === 'success') {
-      showAlert('success', 'Éxito', response.data.message || 'Ítem guardado correctamente');
-      await fetchData();
+      Swal.fire({
+        icon: 'success',
+        title: 'Éxito',
+        text: response.data.message || (state.isEditing ? 'Ítem actualizado correctamente' : 'Ítem creado correctamente')
+      });
+      await fetchData(); 
+      closeModal(); 
     } else {
       throw new Error(response?.data?.message || 'Error al guardar el ítem');
     }
   } catch (error) {
     console.error("Error saving catalog item:", error);
-    showAlert(
-      'error', 
-      'Error', 
-      error.response?.data?.message || error.message || 'Error al procesar la solicitud'
-    );
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: error.response?.data?.message || error.message || 'Error al procesar la solicitud'
+    });
   }
 };
 
   const getFilteredCatalogo = () => {
     if (!state.selectedOlimpiada) return [];
-    
+
     const currentOlimpiada = state.olimpiadas.find(o => o.idOlimpiada === state.selectedOlimpiada);
     if (!currentOlimpiada) return [];
 
@@ -172,7 +196,7 @@ const CatalogoManagement = () => {
   };
 
   const filteredCatalogo = getFilteredCatalogo();
-  const currentOlimpiada = state.olimpiadas.find(o => 
+  const currentOlimpiada = state.olimpiadas.find(o =>
     o.idOlimpiada === state.selectedOlimpiada
   );
 
@@ -191,9 +215,9 @@ const CatalogoManagement = () => {
               <button
                 key={olimpiada.idOlimpiada}
                 className={`selector-btn ${state.selectedOlimpiada === olimpiada.idOlimpiada ? 'active' : ''}`}
-                onClick={() => setState(prev => ({ 
-                  ...prev, 
-                  selectedOlimpiada: olimpiada.idOlimpiada 
+                onClick={() => setState(prev => ({
+                  ...prev,
+                  selectedOlimpiada: olimpiada.idOlimpiada
                 }))}
               >
                 {olimpiada.nombreOlimpiada}
@@ -203,14 +227,14 @@ const CatalogoManagement = () => {
         </div>
 
         <div className="action-buttons">
-          <button 
+          <button
             className="refresh-btn"
             onClick={fetchData}
             disabled={state.loading}
           >
             <FiRefreshCw className={state.loading ? 'spinning' : ''} />
           </button>
-          <button 
+          <button
             className="add-btn"
             onClick={() => setState(prev => ({ ...prev, modalOpen: true }))}
             disabled={!state.selectedOlimpiada || state.loading}
@@ -240,11 +264,11 @@ const CatalogoManagement = () => {
             {filteredCatalogo.length === 0 ? (
               <div className="empty-state">
                 <p>
-                  {state.selectedOlimpiada 
+                  {state.selectedOlimpiada
                     ? `No se encontraron configuraciones para ${currentOlimpiada?.nombreOlimpiada || 'esta olimpiada'}`
                     : 'Selecciona una olimpiada para ver sus configuraciones'}
                 </p>
-                <button 
+                <button
                   className="primary-btn"
                   onClick={() => setState(prev => ({ ...prev, modalOpen: true, isEditing: false, itemToEdit: null }))}
                   disabled={!state.selectedOlimpiada}
