@@ -13,8 +13,8 @@ export default function PeriodForm({ selectedOlimpiada, editing, onClose, onSave
     const validationSchema = useMemo(() => {
         const currentYear = new Date().getFullYear();
         return getPeriodValidationSchema(
-            periods, 
-            currentYear, 
+            periods,
+            currentYear,
             editing?.idPeriodo
         );
     }, [periods, editing]);
@@ -29,11 +29,14 @@ export default function PeriodForm({ selectedOlimpiada, editing, onClose, onSave
     const handleSubmit = useCallback(async (values) => {
         setSubmitting(true);
         try {
-            // Check for duplicate period type manually as a safety check
             if (!editing) {
                 const duplicatePeriod = periods.find(p => p.tipoPeriodo === values.tipoPeriodo);
                 if (duplicatePeriod) {
-                    Swal.fire('Error', 'Ya existe un período con este tipo', 'error');
+                    await Swal.fire({
+                        title: 'Error',
+                        text: 'Ya existe un período con este tipo',
+                        icon: 'error'
+                    });
                     setSubmitting(false);
                     return;
                 }
@@ -42,32 +45,79 @@ export default function PeriodForm({ selectedOlimpiada, editing, onClose, onSave
                     p => p.tipoPeriodo === values.tipoPeriodo && p.idPeriodo !== editing.idPeriodo
                 );
                 if (duplicatePeriod) {
-                    Swal.fire('Error', 'Ya existe un período con este tipo', 'error');
+                    await Swal.fire({
+                        title: 'Error',
+                        text: 'Ya existe un período con este tipo',
+                        icon: 'error'
+                    });
                     setSubmitting(false);
                     return;
                 }
             }
-            
+
+            let response;
+            const payload = {
+                idPeriodo: editing.idPeriodo,
+                idOlimpiada: selectedOlimpiada,
+                fechaInicio: values.fechaInicio,
+                fechaFin: values.fechaFin,
+                tipoPeriodo: values.tipoPeriodo,
+                nombrePeriodo: values.nombrePeriodo
+            };
             if (editing) {
-                // Update existing period
-                await updatePeriodoOlimpiada(
-                    editing.idPeriodo, 
-                    selectedOlimpiada, 
-                    values
-                );
-                Swal.fire('Éxito', 'Período actualizado', 'success');
+                response = await updatePeriodoOlimpiada(editing.idPeriodo, payload);
             } else {
-                // Create new period
-                await savePeriodoOlimpiada({ 
-                    idOlimpiada: selectedOlimpiada, 
-                    ...values 
+                response = await savePeriodoOlimpiada({
+                    idOlimpiada: selectedOlimpiada,
+                    ...values
                 });
-                Swal.fire('Éxito', 'Período creado', 'success');
             }
-            
+
+            console.log('Full response:', response);
+
+            if (response.data && response.data.status === 'error') {
+                throw {
+                    response: {
+                        data: {
+                            message: response.data.message || 'Error desconocido',
+                            status: response.data.status
+                        }
+                    }
+                };
+            }
+
+            await Swal.fire({
+                title: 'Éxito',
+                text: editing ? 'Período actualizado correctamente' : 'Período creado correctamente',
+                icon: 'success'
+            });
+
             onSave();
-        } catch (err) {
-            Swal.fire('Error', err.response?.data?.message || err.message, 'error');
+
+        } catch (error) {
+            console.error('Error saving period:', error);
+
+            let errorMessage = 'Error al procesar la solicitud';
+
+            if (error?.response?.data?.message) {
+                errorMessage = error.response.data.message;
+            }
+            else if (error?.message) {
+                errorMessage = error.message;
+            }
+            else if (error?.response?.data) {
+                errorMessage = typeof error.response.data === 'string'
+                    ? error.response.data
+                    : JSON.stringify(error.response.data);
+            }
+
+            await Swal.fire({
+                title: 'Error',
+                text: errorMessage,
+                icon: 'error',
+                confirmButtonText: 'Entendido'
+            });
+
         } finally {
             setSubmitting(false);
         }
@@ -95,7 +145,7 @@ export default function PeriodForm({ selectedOlimpiada, editing, onClose, onSave
                                             disabled={value === 'AMPLIACION'}
                                         >
                                             {config.label}
-                                            {value === 'AMPLIACION' }
+                                            {value === 'AMPLIACION'}
                                         </option>
                                     ))}
                                 </Field>
@@ -131,7 +181,7 @@ export default function PeriodForm({ selectedOlimpiada, editing, onClose, onSave
                             <button type="submit" className="gpo-save-btn" >
                                 Guardar Período
                             </button>
-                           {/*  <button
+                            {/*  <button
                                 type="button"
                                 className="gpo-cancel-btn"
                                 onClick={handleCancelForm}

@@ -89,7 +89,7 @@ export const getPeriodoInscripcionActal = () => api.get('/fecha-olimpiada/period
 //FechaOlimpiada
 export const getOlimpiadasConEventos = () => api.get('/fecha-olimpiada/olimpiadas-con-eventos');
 export const savePeriodoOlimpiada = (data) => api.post('/fecha-olimpiada/register', data);
-export const updatePeriodoOlimpiada = (idPeriodo, idOlimpiada, data) => api.put(`/fecha-olimpiada/${idPeriodo}?idOlimpiada=${idOlimpiada}`, data);
+export const updatePeriodoOlimpiada = (idPeriodo, data) => api.put(`/fecha-olimpiada/${idPeriodo}`, data);
 export const deletePeriodoOlimpiada = (id) => api.delete(`/fecha-olimpiada/${id}`);
 //EMAILS
 export const sendEmail = (data) => api.post('/email/send', data);

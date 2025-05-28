@@ -444,3 +444,194 @@ export const mapInscritosForTable = (data) => {
     departamento: inscrito.nombre_departamento || 'N/A'
   }));
 };
+
+// Agrega estas funciones al archivo exportUtils.js
+
+/**
+ * Exporta comprobantes de pago a PDF
+ * @param {Array} data - Array de comprobantes
+ * @param {string} title - Título del reporte
+ * @param {Date} fechaInicio - Fecha de inicio del filtro
+ * @param {Date} fechaFin - Fecha de fin del filtro
+ * @param {Array} estadosComprobante - Estados posibles de los comprobantes
+ */
+export const exportComprobantesToPDF = (data, title, fechaInicio, fechaFin, estadosComprobante = []) => {
+  try {
+    if (!Array.isArray(data)) {
+      throw new Error('Los datos deben ser un array');
+    }
+
+    const doc = new jsPDF();
+    
+    // Configuración del documento
+    doc.setFontSize(16);
+    doc.text(title, 14, 15);
+    doc.setFontSize(10);
+    
+    // Función para formatear fechas
+    const formatDate = (date) => {
+      if (!date) return 'N/A';
+      if (date instanceof Date) {
+        return format(date, 'dd/MM/yyyy');
+      }
+      try {
+        return format(parseISO(date), 'dd/MM/yyyy');
+      } catch {
+        return 'N/A';
+      }
+    };
+    
+    doc.text(`Período: ${formatDate(fechaInicio)} - ${formatDate(fechaFin)}`, 14, 22);
+    
+    // Encabezados
+    const headers = [
+      'Código',
+      'Fecha Pago',
+      'Receptor',
+      'Notas',
+      'Monto (BOB)',
+      'Estado'
+    ];
+    
+    // Preparar datos
+    const tableData = data.map(comprobante => {
+      const estadoObj = estadosComprobante.find(e => e.idEstadoComprobantePago === comprobante.idEstadoComprobante);
+      const estado = estadoObj ? estadoObj.nombreEstadoComprobante : 'DESCONOCIDO';
+      
+      return [
+        comprobante.codTransaccion || 'N/A',
+        formatDate(comprobante.fechaPago),
+        comprobante.nombreReceptor || 'N/A',
+        comprobante.notasAdicionales || 'N/A',
+        comprobante.montoPagado?.toFixed(2) || '0.00',
+        estado  
+      ];
+    });
+    
+    // Generar tabla
+    autoTable(doc, {
+      head: [headers],
+      body: tableData,
+      startY: 25,
+      styles: {
+        fontSize: 8,
+        cellPadding: 2,
+        valign: 'middle'
+      },
+      headStyles: {
+        fillColor: [41, 128, 185],
+        textColor: 255,
+        fontStyle: 'bold'
+      },
+      alternateRowStyles: {
+        fillColor: [240, 240, 240]
+      },
+      columnStyles: {
+        0: { cellWidth: 25 }, // Código
+        1: { cellWidth: 20 }, // Fecha Pago
+        2: { cellWidth: 35 }, // Receptor
+        3: { cellWidth: 50 }, // Notas
+        4: { cellWidth: 20 }, // Monto
+        5: { cellWidth: 25 }  // Estado
+      }
+    });
+
+    // Numeración de páginas
+    const pageCount = doc.internal.getNumberOfPages();
+    for(let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.text(
+        `Página ${i} de ${pageCount}`,
+        doc.internal.pageSize.width - 30,
+        doc.internal.pageSize.height - 10
+      );
+      
+      // Footer
+      doc.text(
+        'Universidad Mayor de San Simón',
+        14,
+        doc.internal.pageSize.height - 10
+      );
+    }
+    
+    // Guardar PDF
+    doc.save(`${title.replace(/ /g, '_')}_${format(new Date(), 'yyyyMMdd_HHmmss')}.pdf`);
+    
+  } catch (error) {
+    console.error('Error al generar PDF:', error);
+    throw new Error(`No se pudo generar el PDF: ${error.message}`);
+  }
+};
+
+/**
+ * Exporta comprobantes de pago a Excel
+ * @param {Array} data - Array de comprobantes
+ * @param {string} title - Título del reporte
+ * @param {Date} fechaInicio - Fecha de inicio del filtro
+ * @param {Date} fechaFin - Fecha de fin del filtro
+ * @param {Array} estadosComprobante - Estados posibles de los comprobantes
+ */
+export const exportComprobantesToExcel = (data, title, fechaInicio, fechaFin, estadosComprobante = []) => {
+  const formattedData = data.map(comprobante => {
+    const estadoObj = estadosComprobante.find(e => e.idEstadoComprobantePago === comprobante.idEstadoComprobante);
+    const estado = estadoObj ? estadoObj.nombreEstadoComprobante : 'DESCONOCIDO';
+    
+    return {
+      'Código': comprobante.codTransaccion || 'N/A',
+      'Fecha Pago': format(parseISO(comprobante.fechaPago), 'dd/MM/yyyy'),
+      'Receptor': comprobante.nombreReceptor || 'N/A',
+      'Notas': comprobante.notasAdicionales || 'N/A',
+      'Monto (BOB)': comprobante.montoPagado?.toFixed(2) || '0.00',
+      'Estado': estado
+    };
+  });
+  
+  const worksheet = XLSX.utils.json_to_sheet(formattedData);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Comprobantes');
+  
+  // Generar archivo Excel
+  XLSX.writeFile(workbook, `${title.toLowerCase().replace(/ /g, '_')}_${format(new Date(), 'yyyyMMdd_HHmmss')}.xlsx`);
+};
+
+/**
+ * Exporta comprobantes de pago a CSV
+ * @param {Array} data - Array de comprobantes
+ * @param {string} title - Título del reporte
+ * @param {Date} fechaInicio - Fecha de inicio del filtro
+ * @param {Date} fechaFin - Fecha de fin del filtro
+ * @param {Array} estadosComprobante - Estados posibles de los comprobantes
+ */
+export const exportComprobantesToCSV = (data, title, fechaInicio, fechaFin, estadosComprobante = []) => {
+  const headers = [
+    'Código',
+    'Fecha Pago',
+    'Receptor',
+    'Notas',
+    'Monto (BOB)',
+    'Estado'
+  ];
+  
+  const csvData = data.map(comprobante => {
+    const estadoObj = estadosComprobante.find(e => e.idEstadoComprobantePago === comprobante.idEstadoComprobante);
+    const estado = estadoObj ? estadoObj.nombreEstadoComprobante : 'DESCONOCIDO';
+    
+    return [
+      comprobante.codTransaccion || 'N/A',
+      format(parseISO(comprobante.fechaPago), 'dd/MM/yyyy'),
+      comprobante.nombreReceptor || 'N/A',
+      comprobante.notasAdicionales || 'N/A',
+      comprobante.montoPagado?.toFixed(2) || '0.00',
+      estado
+    ];
+  });
+  
+  let csvContent = headers.join(',') + '\n';
+  csvData.forEach(row => {
+    csvContent += row.map(field => `"${field}"`).join(',') + '\n';
+  });
+  
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  saveAs(blob, `${title.toLowerCase().replace(/ /g, '_')}_${format(new Date(), 'yyyyMMdd_HHmmss')}.csv`);
+};

@@ -12,7 +12,7 @@ const ExportButtons = ({
     excel: () => {},
     csv: () => {}
   },
-  estadosOrden = []
+  estados = [],
 }) => {
   const fechaInicio = dateRange?.start || new Date();
   const fechaFin = dateRange?.end || new Date();
@@ -26,6 +26,7 @@ const ExportButtons = ({
       });
       return;
     }
+
     const sampleItem = data[0];
     if (!sampleItem || typeof sampleItem !== 'object') {
       Swal.fire({
@@ -37,18 +38,13 @@ const ExportButtons = ({
     }
 
     try {
-      const exportData = data.map(item => ({
-        ...item,
-        codigo: item.codigo || 'N/A',
-        fechaEmision: item.fechaEmision || 'N/A',
-        fechaVencimiento: item.fechaVencimiento || 'N/A',
-        responsable: item.responsable || 'N/A',
-        concepto: item.concepto || 'N/A',
-        monto: item.monto || '0.00',
-        estado: item.estado || 'DESCONOCIDO'
-      }));
-
-      exportFunctions[type](data, title, fechaInicio, fechaFin, estadosOrden);
+      // Llamar a la función de exportación pasada desde el componente padre
+      exportFunctions[type](data, title, fechaInicio, fechaFin, estados);
+      Swal.fire({
+        icon: 'success',
+        title: `Exportación a ${type.toUpperCase()} exitosa`,
+        text: `Los datos han sido exportados a ${type.toUpperCase()} correctamente`
+      });
     } catch (error) {
       console.error(`Error al exportar a ${type}:`, error);
       Swal.fire({
@@ -58,7 +54,6 @@ const ExportButtons = ({
       });
     }
   };
-
 
   return (
     <div className="export-buttons">

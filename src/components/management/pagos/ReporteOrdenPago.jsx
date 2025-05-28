@@ -202,7 +202,7 @@ const ReporteOrdenPago = () => {
                 excel: exportToExcel,
                 csv: exportToCSV
               }}
-              estadosOrden={reportData.estadosOrden}
+              estados={reportData.estadosOrden}
             />
           </div>
 

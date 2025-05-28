@@ -6,7 +6,7 @@ import { getEstadoPagos, getOlimpiadas } from '../../../api/api';
 import Swal from 'sweetalert2';
 import { format, parseISO, startOfDay, endOfDay, isWithinInterval, isBefore, isAfter } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { exportToCSV, exportToExcel, exportToPDF } from '../../../utils/exportUtils';
+import { exportComprobantesToPDF, exportComprobantesToExcel, exportComprobantesToCSV } from '../../../utils/exportUtils';
 import './ReporteOrdenPago.css';
 import ExportButtons from './ExportButtons';
 
@@ -202,11 +202,11 @@ const ReporteOrdenPago = () => {
               title={`Reporte de Comprobantes - ${olimpiadas.find(o => o.idOlimpiada == selectedOlimpiada)?.nombreOlimpiada || ''}`}
               dateRange={{ start: fechaInicio, end: fechaFin }}
               exportFunctions={{
-                pdf: exportToPDF,
-                excel: exportToExcel,
-                csv: exportToCSV
+                pdf: exportComprobantesToPDF,
+                excel: exportComprobantesToExcel,
+                csv: exportComprobantesToCSV
               }}
-              estadosComprobante={reportData.estadosComprobantePago} />
+              estados={reportData.estadosComprobantePago} />
           </div>
 
           <div className="rop-table-container">

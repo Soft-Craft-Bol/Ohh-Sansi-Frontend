@@ -63,14 +63,14 @@ export default function PeriodCard ({ periodo, onEdit, onCancel, canEdit, curren
               {isEditable ? <FiEdit3 /> : <FiLock />} {isEditable ? 'Editar' : 'Bloqueado'}
             </button>
             
-            <button
+           {/*  <button
               className="gpo-cancel-period-btn"
               onClick={() => onCancel(periodo)}
               disabled={!isEditable || currentStatus === 'CANCELADO'}
               title={!isEditable ? 'No se puede cancelar este período' : 'Cancelar período'}
             >
               <FiX /> Cancelar
-            </button>
+            </button> */}
           </div>
         </div>
       )}
