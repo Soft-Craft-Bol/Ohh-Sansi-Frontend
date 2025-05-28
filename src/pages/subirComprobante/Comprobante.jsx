@@ -78,6 +78,7 @@ export default function Comprobante() {
       fechaPago: data.fechaPago || ''
     });
     setScanComplete(true);
+     if (!ocrIsValid) setAttempts(prev => prev - 1);
   }, []);
 
   // Función para subir la imagen y verificar el pago
@@ -181,24 +182,33 @@ export default function Comprobante() {
       <div className="comprobante-content">
         {!selectedImage ? (
           <div className="upload-section">
-            <label className="file-upload-label">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleImageUpload}
-                className="file-input"
-              />
-              <div className="upload-box">
-                <svg className="upload-icon" viewBox="0 0 24 24">
-                  <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
-                </svg>
-                <p>Selecciona o arrastra tu comprobante</p>
-                <span className="file-types">Formatos aceptados: JPG, PNG</span>
-                {attempts < 3 && (
-                  <p className="attempts-info">Intentos restantes: {attempts}</p>
-                )}
+            {attempts > 0 ? (
+              <label className="file-upload-label">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="file-input"
+                />
+                <div className="upload-box">
+                  <svg className="upload-icon" viewBox="0 0 24 24">
+                    <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+                  </svg>
+                  <p>Selecciona o arrastra tu comprobante</p>
+                  <span className="file-types">Formatos aceptados: JPG, PNG</span>
+                  {attempts < 3 && (
+                    <p className="attempts-info">Intentos restantes: {attempts}</p>
+                  )}
+                </div>
+              </label>
+            ) : (
+              <div className="upload-disabled-message">
+                <p className="error-message">
+                  Has alcanzado el número máximo de intentos permitidos.
+                </p>
+                <p>Por favor, contacta con soporte para continuar.</p>
               </div>
-            </label>
+            )}
           </div>
         ) : (
           <div className="editor-section">
@@ -208,15 +218,18 @@ export default function Comprobante() {
                   imageSrc={selectedImage}
                   onComplete={handleImageCropped}
                   onCancel={handleRetry}
+                  disabled={attempts <= 0}
+                  isConfirmed={scanComplete}
                 />
                 {croppedImage && (
                   <div className="scanner-section">
                     <ImageScanner
-                      initialImage={croppedImage}
-                      onComplete={handleScanComplete}
-                      onRetry={handleRetry}
-                      attemptsLeft={attempts}
-                    />
+  initialImage={croppedImage}
+  onComplete={(txt, data) => handleScanComplete(txt, data, true)}
+  onRetry={handleRetry}
+  attemptsLeft={attempts}
+  allowManualEdit={attempts === 0}
+/>
                   </div>
                 )}
               </>
