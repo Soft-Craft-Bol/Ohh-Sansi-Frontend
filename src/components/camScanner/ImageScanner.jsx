@@ -6,73 +6,97 @@ import InputText from '../inputs/InputText';
 import { ButtonPrimary } from '../button/ButtonPrimary';
 import receiptSchema from '../../schemas/receiptSchema';
 
-const processReceiptText = (ocrText) => {
+const previousResults = {}; // Guardar resultados parciales entre intentos
+
+const processReceiptText = (ocrText, attemptId = 'default') => {
   const receiptData = {
-    codTransaccion: '',    // Nro factura 
-    nombreReceptor: '',    // recibido de
-    montoPagado: '',       // total Bs
-    carnetIdentidad: '',   // documento
-    fechaPago: '',         // fecha
-    notasAdicionales: ocrText // Texto completo OCR por defecto
+    codTransaccion: '',
+    nombreReceptor: '',
+    montoPagado: '',
+    carnetIdentidad: '',
+    fechaPago: '',
+    notasAdicionales: ocrText,
   };
 
-  // Preprocesamiento del texto
-  const normalizedText = ocrText
-    .replace(/[|]/g, '1')
-    .replace(/[!]/g, 'I')
-    .replace(/[.]{2,}/g, '.')
-    .replace(/\s+/g, ' ')
-    .replace(/TW:/g, 'Total Bs:')
-    .replace(/Br:/g, 'Por concepto de:');
+  const corrections = {
+    'TACVOLOSIA': 'TECNOLOGIA',
+    'FROCOEL': 'FROEGEL',
+    'EDJCACIONAL': 'EDUCACIONAL',
+    'OlMPLAos': 'OLIMPIADAS',
+    'EZENCIAS': 'CIENCIAS',
+    'SANSE': 'SAN SIMON',
+    'OECUMATO': 'DECANATO',
+    'OECANATO': 'DECANATO',
+    'OlMPLAos': 'OLIMPIADAS',
+    'BOLIVIAROS': 'BOLIVIANOS',
+    'NEPEA': 'NEREA',
+    'LEGECMA': 'LEDEZMA'
+  };
 
-  const lines = normalizedText.split('\n').map(line => line.trim()).filter(line => line);
+  // Corrección básica del OCR
+  let normalizedText = ocrText
+    .replace(/[|]/g, 'I')
+    .replace(/[!]/g, 'I')
+    .replace(/[1]/g, 'I')
+    .replace(/[0]/g, 'O')
+    .replace(/\s{2,}/g, ' ')
+    .replace(/[\uFFFD]/g, '')
+    .toUpperCase();
+
+  // Aplicar correcciones comunes
+  Object.entries(corrections).forEach(([wrong, correct]) => {
+    const regex = new RegExp(wrong, 'g');
+    normalizedText = normalizedText.replace(regex, correct);
+  });
+
+  const lines = normalizedText.split('\n').map(l => l.trim()).filter(Boolean);
 
   lines.forEach((line, index) => {
-    // Extraer número de recibo/factura
-    if (line.match(/Nro[\s\.\-:]/i)) {
-      const numMatch = line.match(/(\d{5,})/);
-      if (numMatch) receiptData.codTransaccion = numMatch[1];
+    // Número de transacción
+    if (!receiptData.codTransaccion && /NRO[^\d]*?(\d{6,})/.test(line)) {
+      const match = line.match(/NRO[^\d]*?(\d{6,})/);
+      if (match) receiptData.codTransaccion = match[1];
     }
 
-    // Extraer "Recibí de" (nombre del receptor)
-    if (line.match(/Recibí de:|ope del/i)) {
-      const nameMatch = line.replace(/Recibí de:|ope del/i, '').trim();
-      receiptData.nombreReceptor = nameMatch
-        .replace(/LEGECMA/i, 'LEDEZMA')
-        .replace(/NEPEA/i, 'NEREA');
+    // Nombre receptor
+    if (!receiptData.nombreReceptor && /COOPERATIVA|RECIBI DE|USUARIO|TORREZ|LEDEZMA|FROEGEL/.test(line)) {
+      const nameMatch = line.match(/(?:RECIBI DE:|USUARIO:?|COOPERATIVA|TORREZ|LEDEZMA|FROEGEL)[\s:]*([\w\s]+)/i);
+      if (nameMatch) receiptData.nombreReceptor = nameMatch[1].trim();
     }
 
-    // Extraer total Bs (monto pagado)
-    if (line.match(/Total\sBs?\.?[\s:]|TW:[\s-]/i)) {
-      const totalMatch = line.match(/(\d+[\.,]\d{2})/);
-      if (totalMatch) {
-        receiptData.montoPagado = totalMatch[1].replace(',', '.');
-      } else {
-        for (let i = index + 1; i < Math.min(index + 4, lines.length); i++) {
-          const nextLineMatch = lines[i].match(/(\d+[\.,]\d{2})/);
-          if (nextLineMatch) {
-            receiptData.montoPagado = nextLineMatch[1].replace(',', '.');
-            break;
-          }
-        }
-      }
+    // Monto pagado
+    if (!receiptData.montoPagado && /BS|BOLIVIANOS|TOTAL/.test(line)) {
+      const monto = line.match(/(\d{2,3}[.,]\d{2})/);
+      if (monto) receiptData.montoPagado = monto[1].replace(',', '.');
     }
 
-    // Extraer número de documento (carnet)
-    if (line.match(/Documento[:\.]|poLUMENLA -/i)) {
-      const docMatch = line.match(/(\d{6,})/);
-      if (docMatch) receiptData.carnetIdentidad = docMatch[1];
+    // Documento de identidad
+    if (!receiptData.carnetIdentidad && /DOCUMENTO|CEDULA|CI[:\s]/i.test(line)) {
+      const doc = line.match(/(\d{6,})/);
+      if (doc) receiptData.carnetIdentidad = doc[1];
     }
 
-    // Extraer fecha
-    if (line.match(/\d{2}[\-\/]\d{2}[\-\/]\d{2,4}/)) {
-      const dateMatch = line.match(/(\d{2}[\-\/]\d{2}[\-\/]\d{2,4})/);
-      if (dateMatch) receiptData.fechaPago = dateMatch[1].replace(/\//g, '-');
+    // Fecha de pago
+    if (!receiptData.fechaPago && /\d{2}[-\/]\d{2}[-\/]\d{2,4}/.test(line)) {
+      const fecha = line.match(/(\d{2}[-\/]\d{2}[-\/]\d{2,4})/);
+      if (fecha) receiptData.fechaPago = fecha[1].replace(/\//g, '-');
     }
   });
 
+  // Intentar rellenar campos faltantes con intentos anteriores
+  const prev = previousResults[attemptId] || {};
+  Object.keys(receiptData).forEach(key => {
+    if (!receiptData[key] && prev[key]) {
+      receiptData[key] = prev[key];
+    }
+  });
+
+  // Guardar datos para reintento futuro
+  previousResults[attemptId] = { ...receiptData };
+
   return receiptData;
 };
+
 
 const validateReceiptData = (data) => {
   const requiredFields = ['carnetIdentidad', 'montoPagado', 'nombreReceptor'];
@@ -81,7 +105,8 @@ const validateReceiptData = (data) => {
   if (missingFields.length > 0) {
     return {
       isValid: false,
-      message: "No se pudo detectar toda la información necesaria. Por favor, suba una foto con mejor resolución o verifique que el comprobante sea legible."
+      missingFields,
+      message: `Faltan los siguientes campos: ${missingFields.join(', ')}.`
     };
   }
 
@@ -90,6 +115,7 @@ const validateReceiptData = (data) => {
     message: "La información del comprobante ha sido validada correctamente."
   };
 };
+
 
 const ImageScanner = ({ initialImage, onComplete, onRetry, attemptsLeftm, allowManualEdit = false, attemptsLeft }) => {
   const [isProcessing, setIsProcessing] = useState(false);
