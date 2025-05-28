@@ -108,14 +108,15 @@ export default function Comprobante() {
 
       // 4. Llamar a verificarPago
       const responsePago = await verificarPago(pagoData);
-
+      console.log("Respuesta del backend:", responsePago.data);
       // 5. Mostrar resultado
-      if (responsePago.data.success) {
+      if (responsePago.data && responsePago.status === 200) {
         Swal.fire(
           '¡Pago verificado!',
           'Tu comprobante ha sido registrado correctamente.',
           'success'
         );
+
 
         // Resetear el formulario
         setSelectedImage(null);
@@ -130,11 +131,12 @@ export default function Comprobante() {
 
     } catch (error) {
       console.error('Error al verificar pago:', error);
-      Swal.fire(
-        'Error',
-        error.response?.data || error.message || 'Ocurrió un error al verificar el pago',
-        'error'
-      );
+      const mensajeError = error.response?.data || error.message || 'Ocurrió un error';
+      const mensajeLimpio = typeof mensajeError === 'string'
+        ? mensajeError.replace(/^ERROR:\s*/i, '')
+        : 'Ocurrió un error al verificar el pago';
+
+      Swal.fire('Error', mensajeLimpio, 'error');
     } finally {
       setIsUploading(false);
     }
