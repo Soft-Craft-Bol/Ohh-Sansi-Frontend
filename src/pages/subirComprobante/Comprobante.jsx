@@ -114,7 +114,7 @@ export default function Comprobante() {
 
       // 3. Preparar datos para verificarPago
       const pagoData = {
-        carnetIdentidad: carnet || receiptData.carnetIdentidad,
+        carnetIdentidad: receiptData.carnetIdentidad,
         montoPagado: parseFloat(receiptData.montoPagado) || 0,
         fechaPago: receiptData.fechaPago || new Date().toISOString().split('T')[0],
         codTransaccion: receiptData.codTransaccion || '',
