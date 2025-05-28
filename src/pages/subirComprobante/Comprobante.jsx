@@ -160,7 +160,7 @@ export default function Comprobante() {
     }
   }, [croppedImage, receiptData]);
 
-  // ─── Render ─────────────────────────────────────────────────────────────
+  // ─── Render ─────────────────────────────────jhj────────────────────────────
    if (!estadoPago) {
     return (
       <div className="comprobante-verification">
