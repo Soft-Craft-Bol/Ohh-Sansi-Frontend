@@ -1,39 +1,68 @@
 // src/components/ExportButtons.jsx
 import React from 'react';
 import './ExportButtons.css';
-import { exportToPDF, exportToExcel, exportToCSV } from '../../../utils/exportUtils';
+import Swal from 'sweetalert2';
 
-const ExportButtons = ({ reportData = [], dateRange, title = 'Reporte de Órdenes de Pago' }) => {
+const ExportButtons = ({ 
+  data = [], 
+  title = 'Reporte', 
+  dateRange, 
+  exportFunctions = {
+    pdf: () => {},
+    excel: () => {},
+    csv: () => {}
+  },
+  estadosOrden = []
+}) => {
   const fechaInicio = dateRange?.start || new Date();
   const fechaFin = dateRange?.end || new Date();
 
-  const handleExportPDF = () => {
-    if (reportData.length === 0) {
-      alert('No hay datos para exportar');
+  const handleExport = (type) => {
+    if (!Array.isArray(data) || data.length === 0) {
+      Swal.fire({
+        icon: 'error',
+        title: 'No hay datos para exportar',
+        text: 'Los datos no están en el formato correcto o están vacíos'
+      });
       return;
     }
-    exportToPDF(reportData, title, fechaInicio, fechaFin);
+    const sampleItem = data[0];
+    if (!sampleItem || typeof sampleItem !== 'object') {
+      Swal.fire({
+        icon: 'error',
+        title: 'Formato de datos incorrecto',
+        text: 'Los datos deben ser un array de objetos'
+      });
+      return;
+    }
+
+    try {
+      const exportData = data.map(item => ({
+        ...item,
+        codigo: item.codigo || 'N/A',
+        fechaEmision: item.fechaEmision || 'N/A',
+        fechaVencimiento: item.fechaVencimiento || 'N/A',
+        responsable: item.responsable || 'N/A',
+        concepto: item.concepto || 'N/A',
+        monto: item.monto || '0.00',
+        estado: item.estado || 'DESCONOCIDO'
+      }));
+
+      exportFunctions[type](data, title, fechaInicio, fechaFin, estadosOrden);
+    } catch (error) {
+      console.error(`Error al exportar a ${type}:`, error);
+      Swal.fire({
+        icon: 'error',
+        title: `Error al exportar a ${type.toUpperCase()}`,
+        text: error.message || 'Ocurrió un error durante la exportación'
+      });
+    }
   };
 
-  const handleExportExcel = () => {
-    if (reportData.length === 0) {
-      alert('No hay datos para exportar');
-      return;
-    }
-    exportToExcel(reportData, title);
-  };
-
-  const handleExportCSV = () => {
-    if (reportData.length === 0) {
-      alert('No hay datos para exportar');
-      return;
-    }
-    exportToCSV(reportData, title);
-  };
 
   return (
     <div className="export-buttons">
-      <button onClick={handleExportPDF} className="export-btn pdf">
+      <button onClick={() => handleExport('pdf')} className="export-btn pdf">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
           <path d="M8.267 14.68c-.184 0-.308.018-.372.036v1.178c.076.018.171.018.29.018.357 0 .601-.18.601-.619 0-.348-.184-.613-.519-.613zM14.187 14.43c-.2 0-.33.018-.407.036v2.61c.077.018.201.018.313.018.411 0 .634-.18.634-.613v-.027c0-.425-.223-.674-.54-.674z"/>
           <path d="M4 0h5l6 6v16H4V0zm13 7h-6V1H5v20h12V7z"/>
@@ -43,7 +72,7 @@ const ExportButtons = ({ reportData = [], dateRange, title = 'Reporte de Órdene
         </svg>
         PDF
       </button>
-      <button onClick={handleExportExcel} className="export-btn excel">
+      <button onClick={() => handleExport('excel')} className="export-btn excel">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
           <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/>
           <path d="m14,2 l0,6 l6,0"/>
@@ -51,7 +80,7 @@ const ExportButtons = ({ reportData = [], dateRange, title = 'Reporte de Órdene
         </svg>
         Excel
       </button>
-      <button onClick={handleExportCSV} className="export-btn csv">
+      <button onClick={() => handleExport('csv')} className="export-btn csv">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
           <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/>
           <path d="m14,2 l0,6 l6,0"/>

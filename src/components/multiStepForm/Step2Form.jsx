@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import { motion } from "framer-motion";
-import { Form, Formik } from "formik";
 import BuscadorCodigo from "./../buscadorCodigo/BuscadorCodigo";
 import { ButtonPrimary } from "../button/ButtonPrimary";
 import { getCatalogoAreasCategorias, setCatalogoAreasParticipante, getEstudenteByCi } from "../../api/api";
@@ -18,10 +17,15 @@ const AsignarAreasForm = ({ participanteCI, shouldSearch, onSearchComplete, onCo
   const [dataEstudiante, setDataEstudiante] = useState(null);
 
   const carnet = estudiante ? estudiante.carnetIdentidadParticipante : null;
+
   useEffect(() => {
+    if (!carnet) {
+      console.log("No se ejecuta fetchEstudiante porque carnet es:", carnet);
+      return;
+    }
     const fetchEstudiante = async (carnet) => {
       try {
-
+        console.log("Llamando getEstudenteByCi con carnet:", carnet);
         const res = await getEstudenteByCi(carnet);
         console.log("Respuesta de estudiante:", res.data);
         if (res.data) {
@@ -34,7 +38,7 @@ const AsignarAreasForm = ({ participanteCI, shouldSearch, onSearchComplete, onCo
         console.error("Error fetching estudiante:", error);
         setDataEstudiante(null);
       }
-    }
+    };
     fetchEstudiante(carnet);
   }, [carnet]);
 
@@ -92,7 +96,6 @@ const AsignarAreasForm = ({ participanteCI, shouldSearch, onSearchComplete, onCo
         setError("");
       } else {
         setError("El carnet no puede tener más de 11 dígitos");
-        // Cortar el valor a 11 dígitos
         setCodigoIntroducido(value.slice(0, 11));
       }
     }
@@ -103,7 +106,6 @@ const AsignarAreasForm = ({ participanteCI, shouldSearch, onSearchComplete, onCo
       buscarEstudiante(codigoIntroducido);
     }
   };
-
 
   const buscarEstudiante = async (carnet) => {
     if (!carnet || carnet.trim() === "") {
@@ -127,7 +129,6 @@ const AsignarAreasForm = ({ participanteCI, shouldSearch, onSearchComplete, onCo
 
     setLoading(true);
     try {
-      // Obtener áreas disponibles y estado de asignación
       const resCatalogo = await getCatalogoAreasCategorias(carnetNumerico);
 
       if (resCatalogo.data.length === 0) {
@@ -141,15 +142,13 @@ const AsignarAreasForm = ({ participanteCI, shouldSearch, onSearchComplete, onCo
         return;
       }
 
-      // Procesar áreas asignadas
       const asignadas = resCatalogo.data
         .filter(item => item.asignada)
         .map(item => item.id_area);
 
       setAreasAsignadas(asignadas);
-      setSeleccionadas(asignadas); // Marcamos como seleccionadas las áreas ya asignadas
+      setSeleccionadas(asignadas);
 
-      // Preparar datos para mostrar
       const combined = resCatalogo.data.map((item) => ({
         idArea: item.id_area,
         nombreArea: item.nombre_area,
@@ -162,13 +161,12 @@ const AsignarAreasForm = ({ participanteCI, shouldSearch, onSearchComplete, onCo
         },
         idOlimpiada: item.id_olimpiada,
         idCatalogo: item.id_catalogo,
-        yaAsignada: item.asignada // Nuevo campo para saber si ya está asignada
+        yaAsignada: item.asignada
       }));
 
       setEstudiante({ carnetIdentidadParticipante: carnetNumerico });
       setAreas(combined);
 
-      // Mostrar mensaje si ya tiene áreas asignadas
       if (asignadas.length > 0) {
         Swal.fire({
           icon: 'info',
@@ -192,7 +190,6 @@ const AsignarAreasForm = ({ participanteCI, shouldSearch, onSearchComplete, onCo
   };
 
   const toggleSeleccion = (id) => {
-    // No permitir deseleccionar áreas ya asignadas
     if (areasAsignadas.includes(id)) return;
 
     setSeleccionadas((prev) => {
@@ -240,6 +237,7 @@ const AsignarAreasForm = ({ participanteCI, shouldSearch, onSearchComplete, onCo
           idOlimpiada: a.idOlimpiada,
           idCatalogo: a.idCatalogo,
         }));
+      console.log("Llamando setCatalogoAreasParticipante con:", estudiante.carnetIdentidadParticipante, dataToSend);
       await setCatalogoAreasParticipante(estudiante.carnetIdentidadParticipante, dataToSend);
 
       Swal.fire({
@@ -247,7 +245,7 @@ const AsignarAreasForm = ({ participanteCI, shouldSearch, onSearchComplete, onCo
         title: '¡Éxito!',
         text: 'Áreas asignadas correctamente'
       }).then(() => {
-        onComplete(); // Llamar a la función de completar el paso
+        onComplete();
       });
       setEstudiante(null);
       setSeleccionadas([]);
@@ -271,7 +269,6 @@ const AsignarAreasForm = ({ participanteCI, shouldSearch, onSearchComplete, onCo
   const formatCurrency = (value) => {
     return value?.toFixed ? value.toFixed(2) : "0.00";
   };
-
 
   const renderAreaCard = (area) => {
     const estaSeleccionada = seleccionadas.includes(area.idArea);
@@ -329,7 +326,7 @@ const AsignarAreasForm = ({ participanteCI, shouldSearch, onSearchComplete, onCo
           placeholder="Ej: 123456789"
           codigoIntroducidoTexto="Carnet introducido:"
           codigoIntroducido={codigoIntroducido}
-          onInputChange={(e) => setCodigoIntroducido(e.target.value)}
+          onInputChange={handleInputChange}
           onKeyPress={handleKeyPress}
           onSearch={() => buscarEstudiante(codigoIntroducido)}
           onClear={handleClearCI}
@@ -364,7 +361,6 @@ const AsignarAreasForm = ({ participanteCI, shouldSearch, onSearchComplete, onCo
         </motion.div>
       )}
 
-
       {estudiante && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -380,9 +376,7 @@ const AsignarAreasForm = ({ participanteCI, shouldSearch, onSearchComplete, onCo
             ) : (
               <p>Seleccione hasta 2 áreas</p>
             )}
-
           </div>
-
 
           <motion.div className="step2-grid" variants={listVariants} initial="hidden" animate="visible">
             {areas.map(renderAreaCard)}

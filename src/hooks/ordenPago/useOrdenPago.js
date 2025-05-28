@@ -58,12 +58,24 @@ const useOrdenPago = () => {
                     setOrdenGenerada(null);
                     console.log("Datos recibidos de getOrdenPagoDetailInfo:", detailResponse.data);
                 } catch (detailError) {
-                    // Manejo de error para getOrdenPagoDetailInfo
                     console.error("Error al obtener los datos con getOrdenPagoDetailInfo:", detailError.response?.data || detailError.message);
                     if (!detailError.response) {
                         setError("Error de conexión. Por favor verifica tu conexión a internet e intenta nuevamente.");
+                    } else if (
+                        detailError.response?.data?.message &&
+                        detailError.response?.data?.message.startsWith("No se encontraron áreas para la inscripción con código único")
+                    ) {
+                        const codigo = codigoIntroducido;
+                        Swal.fire({
+                          title: 'Sin áreas inscritas',
+                          text: `No se encontraron áreas para la inscripción con código único: ${codigo}, inscribe al menos un área para crear la orden de pago`,
+                          icon: 'warning',
+                          confirmButtonText: 'Aceptar',
+                          confirmButtonColor: '#3085d6'
+                        });
+                        setError(null);
                     } else {
-                        setError("No se encontró la inscripción con el código proporcionado"); // Este mensaje podría ser más genérico
+                        setError("No se encontró la inscripción con el código proporcionado");
                     }
                     setOrdenData(null);
                 }

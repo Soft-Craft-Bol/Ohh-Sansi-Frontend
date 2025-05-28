@@ -12,62 +12,116 @@ import { format, parseISO } from 'date-fns';
  * @param {Date} fechaInicio 
  * @param {Date} fechaFin 
  */
-export const exportToPDF = (data, title, fechaInicio, fechaFin) => {
-  const doc = new jsPDF();
-  
-  doc.setFontSize(16);
-  doc.text(title, 14, 15);
-  doc.setFontSize(10);
-  doc.text(`Período: ${format(fechaInicio, 'dd/MM/yyyy')} - ${format(fechaFin, 'dd/MM/yyyy')}`, 14, 22);
-  
-  const headers = [
-    'Código',
-    'Fecha Emisión',
-    'Fecha Vencimiento',
-    'Responsable',
-    'Concepto',
-    'Monto (BOB)',
-    'Estado'
-  ];
-  
-  const tableData = data.map(item => [
-    item.codOrdenPago,
-    format(parseISO(item.fechaEmisionOrdenPago), 'dd/MM/yyyy'),
-    format(parseISO(item.fechaVencimiento), 'dd/MM/yyyy'),
-    item.responsablePago || 'N/A',
-    item.concepto,
-    item.montoTotalPago.toFixed(2),
-    'Vigente'
-  ]);
-  
-  autoTable(doc, {  // Cambio en la sintaxis para usar autoTable
-    head: [headers],
-    body: tableData,
-    startY: 25,
-    styles: {
-      fontSize: 8,
-      cellPadding: 2,
-      valign: 'middle'
-    },
-    headStyles: {
-      fillColor: [41, 128, 185],
-      textColor: 255,
-      fontStyle: 'bold'
-    },
-    alternateRowStyles: {
-      fillColor: [240, 240, 240]
+export const exportToPDF = (data, title, fechaInicio, fechaFin, estadosOrden = []) => {
+  try {
+    if (!Array.isArray(data)) {
+      throw new Error('Los datos deben ser un array');
     }
-  });
 
-  const pageCount = doc.internal.getNumberOfPages();
-  for(let i = 1; i <= pageCount; i++) {
-    doc.setPage(i);
-    doc.setFontSize(8);
-    doc.text(`Página ${i} de ${pageCount}`, doc.internal.pageSize.width - 30, doc.internal.pageSize.height - 10);
+    const doc = new jsPDF();
+    
+    // Configuración del documento
+    doc.setFontSize(16);
+    doc.text(title, 14, 15);
+    doc.setFontSize(10);
+    
+    // Función para formatear fechas
+    const formatDate = (date) => {
+  if (!date) return 'N/A';
+  if (date instanceof Date) {
+    return format(date, 'dd/MM/yyyy');
   }
-  
-  // Guardar PDF
-  doc.save(`${title.toLowerCase().replace(/ /g, '_')}_${format(new Date(), 'yyyyMMdd_HHmmss')}.pdf`);
+  try {
+    return format(parseISO(date), 'dd/MM/yyyy');
+  } catch {
+    return 'N/A';
+  }
+};
+    
+    doc.text(`Período: ${formatDate(fechaInicio)} - ${formatDate(fechaFin)}`, 14, 22);
+    
+    // Encabezados
+    const headers = [
+      'Código',
+      'Fecha Emisión',
+      'Fecha Vencimiento',
+      'Responsable',
+      'Concepto',
+      'Monto (BOB)',
+      'Estado'
+    ];
+    
+    // Preparar datos
+     const tableData = data.map(orden => {
+    const estadoObj = estadosOrden.find(e => e.idEstado === orden.idEstado);
+    const estado = estadoObj ? estadoObj.estado : 'DESCONOCIDO';
+    
+    return [
+      orden.codOrdenPago || 'N/A',
+      formatDate(orden.fechaEmisionOrdenPago),
+      formatDate(orden.fechaVencimiento),
+      orden.responsablePago || 'N/A',
+      orden.concepto || 'N/A',
+      orden.montoTotalPago?.toFixed(2) || '0.00',
+      estado  
+    ];
+  });
+    
+    // Generar tabla
+    autoTable(doc, {
+      head: [headers],
+      body: tableData,
+      startY: 25,
+      styles: {
+        fontSize: 8,
+        cellPadding: 2,
+        valign: 'middle'
+      },
+      headStyles: {
+        fillColor: [41, 128, 185],
+        textColor: 255,
+        fontStyle: 'bold'
+      },
+      alternateRowStyles: {
+        fillColor: [240, 240, 240]
+      },
+      columnStyles: {
+        0: { cellWidth: 25 }, // Código
+        1: { cellWidth: 20 }, // Fecha Emisión
+        2: { cellWidth: 20 }, // Fecha Vencimiento
+        3: { cellWidth: 30 }, // Responsable
+        4: { cellWidth: 40 }, // Concepto
+        5: { cellWidth: 15 }, // Monto
+        6: { cellWidth: 20 }  // Estado
+      }
+    });
+
+    // Numeración de páginas
+    const pageCount = doc.internal.getNumberOfPages();
+    for(let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.text(
+        `Página ${i} de ${pageCount}`,
+        doc.internal.pageSize.width - 30,
+        doc.internal.pageSize.height - 10
+      );
+      
+      // Footer
+      doc.text(
+        'Universidad Mayor de San Simón',
+        14,
+        doc.internal.pageSize.height - 10
+      );
+    }
+    
+    // Guardar PDF
+    doc.save(`${title.replace(/ /g, '_')}_${format(new Date(), 'yyyyMMdd_HHmmss')}.pdf`);
+    
+  } catch (error) {
+    console.error('Error al generar PDF:', error);
+    throw new Error(`No se pudo generar el PDF: ${error.message}`);
+  }
 };
 
 /**
@@ -140,15 +194,20 @@ export const exportToCSV = (data, title) => {
  * @param {Array} data - Datos de la API
  * @returns {Array} Datos formateados para visualización
  */
-export const mapDataForTable = (data) => {
-  return data.map(item => ({
-    codigo: item.codOrdenPago,
-    fechaEmision: format(parseISO(item.fechaEmisionOrdenPago), 'dd/MM/yyyy'),
-    fechaVencimiento: format(parseISO(item.fechaVencimiento), 'dd/MM/yyyy'),
-    responsable: item.responsablePago || 'N/A',
-    concepto: item.concepto,
-    monto: item.montoTotalPago.toFixed(2),
-    estado: 'Vigente'
+export const mapDataForTable = (apiResponse) => {
+  if (!apiResponse || !apiResponse.ordenes || !Array.isArray(apiResponse.ordenes)) {
+    return [];
+  }
+
+  return apiResponse.ordenes.map(orden => ({
+    idOrdenPago: orden.idOrdenPago,
+    codOrdenPago: orden.codOrdenPago || 'N/A',
+    fechaEmisionOrdenPago: orden.fechaEmisionOrdenPago,
+    fechaVencimiento: orden.fechaVencimiento,
+    responsablePago: orden.responsablePago || 'N/A',
+    concepto: orden.concepto || 'N/A',
+    montoTotalPago: orden.montoTotalPago || 0,
+    estado: apiResponse.estadosOrden?.find(e => e.idEstado === orden.idEstado)?.estado || 'DESCONOCIDO'
   }));
 };
 
