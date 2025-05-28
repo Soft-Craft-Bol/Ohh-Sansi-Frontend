@@ -54,6 +54,7 @@ const ReporteOrdenPago = () => {
     if (!idOlimpiada) {
       setReportData({ comprobantesPago: [], estadosComprobantePago: [] });
       setComprobantesFiltrados([]);
+      setEstados([]);
       return;
     }
 
@@ -61,24 +62,48 @@ const ReporteOrdenPago = () => {
       setLoading(true);
       const response = await getEstadoPagos(idOlimpiada);
 
-      if (response.data) {
-        setReportData(response.data);
-        setEstados(response.data.estadosComprobantePago);
-        setComprobantesFiltrados(response.data.comprobantesPago || []);
+      if (response?.data) {
+        // Asegurar que siempre tenemos arrays, aunque estén vacíos
+        const comprobantesPago = Array.isArray(response.data.comprobantesPago) 
+          ? response.data.comprobantesPago 
+          : [];
+        const estadosComprobantePago = Array.isArray(response.data.estadosComprobantePago) 
+          ? response.data.estadosComprobantePago 
+          : [];
 
+        const newReportData = {
+          comprobantesPago,
+          estadosComprobantePago
+        };
+
+        setReportData(newReportData);
+        setEstados(estadosComprobantePago);
+        setComprobantesFiltrados(comprobantesPago);
+      } else {
+        // Si no hay datos, establecer arrays vacíos
+        const emptyData = { comprobantesPago: [], estadosComprobantePago: [] };
+        setReportData(emptyData);
+        setEstados([]);
+        setComprobantesFiltrados([]);
       }
     } catch (error) {
       console.error('Error al cargar órdenes:', error);
       Swal.fire('Error', 'No se pudieron cargar las órdenes', 'error');
-      setReportData({ comprobantesPago: [], estadosComprobantePago: [] });
+      
+      // En caso de error, establecer arrays vacíos
+      const emptyData = { comprobantesPago: [], estadosComprobantePago: [] };
+      setReportData(emptyData);
       setComprobantesFiltrados([]);
+      setEstados([]);
     } finally {
       setLoading(false);
     }
   };
 
   const aplicarFiltros = (comprobantes = reportData.comprobantesPago, estadosComprobante = reportData.estadosComprobantePago) => {
-    let resultados = [...comprobantes];
+    // Asegurar que comprobantes es un array
+    const comprobantesArray = Array.isArray(comprobantes) ? comprobantes : [];
+    let resultados = [...comprobantesArray];
 
     if (selectedEstado) {
       resultados = resultados.filter(c => 
@@ -88,6 +113,9 @@ const ReporteOrdenPago = () => {
 
     resultados = resultados.filter(c => {
       try {
+        // Verificar que fechaPago existe
+        if (!c.fechaPago) return false;
+        
         const fechaPago = parseISO(c.fechaPago);
         
         if (!fechaInicio && !fechaFin) return true;
@@ -145,10 +173,10 @@ const ReporteOrdenPago = () => {
             className="rop-select"
             value={selectedEstado}
             onChange={(e) => setSelectedEstado(e.target.value)}
-            disabled={!selectedOlimpiada || estados.length === 0}
+            disabled={!selectedOlimpiada || !Array.isArray(estados) || estados.length === 0}
           >
             <option value="">Todos los estados</option>
-            {estados.map(estadoComprobantePago => (
+            {Array.isArray(estados) && estados.map(estadoComprobantePago => (
               <option key={estadoComprobantePago.idEstadoComprobantePago} value={estadoComprobantePago.idEstadoComprobantePago}>
                 {estadoComprobantePago.nombreEstadoComprobante}
               </option>
@@ -191,8 +219,15 @@ const ReporteOrdenPago = () => {
         </div>
       </div>
 
+      {/* Loading indicator */}
+      {loading && (
+        <div className="rop-loading">
+          Cargando datos...
+        </div>
+      )}
+
       {/* Resultados */}
-      {comprobantesFiltrados.length > 0 ? (
+      {!loading && Array.isArray(comprobantesFiltrados) && comprobantesFiltrados.length > 0 ? (
         <div className="rop-results">
           <div className="rop-results-header">
             <h3 className="rop-results-title">Resultados: {comprobantesFiltrados.length} comprobantes encontrados</h3>
@@ -206,7 +241,7 @@ const ReporteOrdenPago = () => {
                 excel: exportComprobantesToExcel,
                 csv: exportComprobantesToCSV
               }}
-              estados={reportData.estadosComprobantePago} />
+              estados={Array.isArray(reportData.estadosComprobantePago) ? reportData.estadosComprobantePago : []} />
           </div>
 
           <div className="rop-table-container">
@@ -223,15 +258,23 @@ const ReporteOrdenPago = () => {
               </thead>
               <tbody>
                 {comprobantesFiltrados.map((comprobante) => {
-                  const estadoObj = reportData.estadosComprobantePago.find(e => e.idEstadoComprobantePago === comprobante.idEstadoComprobante);
+                  const estadoObj = Array.isArray(reportData.estadosComprobantePago) 
+                    ? reportData.estadosComprobantePago.find(e => e.idEstadoComprobantePago === comprobante.idEstadoComprobante)
+                    : null;
                   const estado = estadoObj ? estadoObj.nombreEstadoComprobante : 'DESCONOCIDO';
+                  
                   return (
                     <tr key={comprobante.idComprobantePago}>
-                      <td>{comprobante.codTransaccion}</td>
-                      <td>{format(parseISO(comprobante.fechaPago), 'dd/MM/yyyy')}</td>
-                      <td>{comprobante.nombreReceptor}</td>
-                      <td>{comprobante.notasAdicionales}</td>
-                      <td>{comprobante.montoPagado?.toFixed(2)}</td>
+                      <td>{comprobante.codTransaccion || 'N/A'}</td>
+                      <td>
+                        {comprobante.fechaPago 
+                          ? format(parseISO(comprobante.fechaPago), 'dd/MM/yyyy')
+                          : 'N/A'
+                        }
+                      </td>
+                      <td>{comprobante.nombreReceptor || 'N/A'}</td>
+                      <td>{comprobante.notasAdicionales || 'N/A'}</td>
+                      <td>{comprobante.montoPagado?.toFixed(2) || '0.00'}</td>
                       <td>{estado}</td>
                     </tr>
                   );
@@ -240,11 +283,15 @@ const ReporteOrdenPago = () => {
             </table>
           </div>
         </div>
-      ) : (
+      ) : !loading && selectedOlimpiada ? (
         <div className="rop-empty">
-          {selectedOlimpiada ? 'No se encontraron órdenes con los filtros aplicados' : 'Seleccione una olimpiada para comenzar'}
+          No se encontraron órdenes con los filtros aplicados
         </div>
-      )}
+      ) : !loading ? (
+        <div className="rop-empty">
+          Seleccione una olimpiada para comenzar
+        </div>
+      ) : null}
     </div>
   );
 };

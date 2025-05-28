@@ -1,50 +1,51 @@
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import './CatalogModal.css';
+import { formatGrados, formatGradosParaSelect } from '../../../utils/GradesOrder';
 
 const CatalogModal = ({ areas, categories, onClose, onSubmit, isEditing, itemData }) => {
 
-  //POR QUE NO AGREGARON idCategoria dentro del Object en vez del nombreCategoria hdlgpt, toca mappear
   // Obtener el idCategoria de una categoría dado su nombre
   const getCategoryIdByName = (categoryName, categoriesList) => {
     const category = categoriesList.find(cat => cat.nombreCategoria === categoryName);
     return category ? category.idCategoria : '';
   };
 
-  // si estamos en modo edición
-  const initialCategoryId = isEditing && itemData
-    ? getCategoryIdByName(itemData.nombreCategoria, categories)
-    : '';
+  // Calcular los valores iniciales usando useMemo para evitar recálculos innecesarios
+  const initialValues = useMemo(() => {
+    if (isEditing && itemData) {
+      const categoryId = getCategoryIdByName(itemData.nombreCategoria, categories);
+      return {
+        idArea: itemData.idArea || '',
+        idCategoria: categoryId,
+      };
+    }
+    return {
+      idArea: '',
+      idCategoria: '',
+    };
+  }, [isEditing, itemData, categories]);
 
   const formik = useFormik({
-    initialValues: {
-      idArea: itemData?.idArea || '',
-      idCategoria: initialCategoryId,
-    },
+    initialValues,
+    enableReinitialize: true,
     validationSchema: Yup.object({
       idArea: Yup.string().required('Selecciona un área'),
       idCategoria: Yup.string().required('Selecciona una categoría'),
     }),
-    onSubmit: (values) => { 
+    onSubmit: (values) => {
       onSubmit(values);
     }
   });
 
-  // Usamos useEffect para actualizar los valores de Formik cuando itemData cambie
+
   useEffect(() => {
-    if (isEditing && itemData) {
-      const categoryId = getCategoryIdByName(itemData.nombreCategoria, categories);
-      formik.setValues({
-        idArea: itemData.idArea || '',
-        idCategoria: categoryId,
-      });
+    if (!isEditing) {
       formik.setTouched({});
       formik.setErrors({});
-    } else {
-      formik.resetForm();
     }
-  }, [isEditing, itemData, categories]);
+  }, [isEditing]);
 
   return (
     <div className="modal-overlay">
@@ -86,11 +87,14 @@ const CatalogModal = ({ areas, categories, onClose, onSubmit, isEditing, itemDat
               className={formik.touched.idCategoria && formik.errors.idCategoria ? 'error' : ''}
             >
               <option value="">Seleccionar categoría</option>
-              {categories.map(cat => (
-                <option key={cat.idCategoria} value={cat.idCategoria}>
-                  {cat.nombreCategoria}
-                </option>
-              ))}
+              {categories.map(cat => {
+                const gradosFormateados = formatGrados(Array.isArray(cat.grados) ? cat.grados.map(g => typeof g === 'object' ? g.nombreGrado : g): [] );
+                return (
+                  <option key={cat.idCategoria} value={cat.idCategoria}>
+                    {cat.nombreCategoria} - {gradosFormateados}
+                  </option>
+                );
+              })}
             </select>
             {formik.touched.idCategoria && formik.errors.idCategoria && (
               <div className="error-message">{formik.errors.idCategoria}</div>
