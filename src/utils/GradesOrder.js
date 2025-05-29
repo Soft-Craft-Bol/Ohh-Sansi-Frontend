@@ -77,3 +77,19 @@ export const formatGrados = (grados) => {
 
 // Alias para mantener compatibilidad
 export const formatGradosParaSelect = formatGrados;
+
+
+export const formatGrades = (grades) => {
+    if (!grades || grades.length === 0) return 'Sin grados';
+
+    const normalizedGrades = grades.map(grade =>
+      typeof grade === 'string' ? { nombreGrado: grade } : grade
+    );
+
+    const sortedGrades = ordenarGrados(normalizedGrades);
+    const gradeNames = sortedGrades.map(g => g.nombreGrado || g);
+
+    if (gradeNames.length === 1) return gradeNames[0];
+    if (gradeNames.length === 2) return gradeNames.join(' - ');
+    return `${gradeNames[0]} - ${gradeNames[gradeNames.length - 1]}`;
+  };

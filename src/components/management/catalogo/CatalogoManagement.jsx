@@ -6,12 +6,14 @@ import {
   getAreas,
   getCatalogoOlimpiada,
   getGradosCategorias,
+  getGrados,
   getOlimpiadas,
   saveCatalogoOlimpiada
 } from '../../../api/api';
-import { ordenarGrados, GRADO_ORDEN, normalizarGrado } from '../../../utils/GradesOrder';
+import { ordenarGrados } from '../../../utils/GradesOrder';
 import './CatalogoManagement.css';
 import Swal from 'sweetalert2';
+import { FaEdit, FaLock } from 'react-icons/fa';
 
 const CatalogoManagement = () => {
   const [state, setState] = useState({
@@ -19,53 +21,108 @@ const CatalogoManagement = () => {
     categories: [],
     olimpiadas: [],
     catalogo: [],
+    grados: [], // Agregamos el array de grados
     selectedOlimpiada: null,
     loading: true,
     modalOpen: false,
     error: null,
-    isEditing: false, 
-    itemToEdit: null, 
+    isEditing: false,
+    itemToEdit: null,
   });
 
+  // Función para mapear IDs de grados a nombres
+  const mapGradosIdsToNames = (gradosIds, gradosData) => {
+    if (!Array.isArray(gradosIds) || !Array.isArray(gradosData)) return [];
+    
+    return gradosIds.map(gradoId => {
+      const grado = gradosData.find(g => g.idGrado === gradoId);
+      return grado ? { 
+        idGrado: grado.idGrado,
+        nombreGrado: grado.nombreGrado 
+      } : null;
+    }).filter(Boolean); // Filtrar elementos null
+  };
 
+  // Función para procesar las categorías y mapear los grados
+  const processCategoriesWithGrades = (categories, grados) => {
+    if (!Array.isArray(categories)) return [];
 
-  const fetchData = async () => {
+    return categories.map(category => ({
+      ...category,
+      grados: mapGradosIdsToNames(category.grados, grados)
+    }));
+  };
+
+  const fetchData = async (preserveSelection = false) => {
     try {
       setState(prev => ({ ...prev, loading: true, error: null }));
+      const currentSelectedOlimpiada = preserveSelection ? state.selectedOlimpiada : null;
 
-      const [olimpiadasRes, areasRes, categoriesRes, catalogoRes] = await Promise.all([
+      const [olimpiadasRes, areasRes, categoriesRes, catalogoRes, gradosRes] = await Promise.all([
         getOlimpiadas(),
         getAreas(),
         getGradosCategorias(),
         getCatalogoOlimpiada(),
+        getGrados()
       ]);
 
-      const processCatalogoData = (data) => {
+      const processCatalogoData = (data, gradosData) => {
         if (!Array.isArray(data)) return [];
 
         return data.map(item => ({
           ...item,
           grados: Array.isArray(item.grados)
-            ? item.grados.map(grado => (typeof grado === 'string' ? { nombreGrado: grado } : grado))
+            ? item.grados.map(grado => {
+                // Si ya es un objeto con nombreGrado, lo mantenemos
+                if (typeof grado === 'object' && grado.nombreGrado) {
+                  return grado;
+                }
+                // Si es un ID, lo buscamos en gradosData
+                if (typeof grado === 'number') {
+                  const gradoEncontrado = gradosData.find(g => g.idGrado === grado);
+                  return gradoEncontrado ? {
+                    idGrado: gradoEncontrado.idGrado,
+                    nombreGrado: gradoEncontrado.nombreGrado
+                  } : null;
+                }
+                // Si es string, asumimos que es nombreGrado
+                if (typeof grado === 'string') {
+                  return { nombreGrado: grado };
+                }
+                return null;
+              }).filter(Boolean)
             : []
         }));
       };
 
       const olimpiadasData = Array.isArray(olimpiadasRes?.data?.data) ? olimpiadasRes.data.data : [];
       const areasData = Array.isArray(areasRes?.data?.areas) ? areasRes.data.areas : [];
-      const categoriesData = Array.isArray(categoriesRes?.data) ? categoriesRes.data : [];
-      const catalogoData = processCatalogoData(catalogoRes?.data || []);
+      const rawCategoriesData = Array.isArray(categoriesRes?.data) ? categoriesRes.data : [];
+      const gradosData = Array.isArray(gradosRes?.data?.data) ? gradosRes.data.data : [];
+      
+      // Procesar categorías con grados mapeados
+      const categoriesData = processCategoriesWithGrades(rawCategoriesData, gradosData);
+      const catalogoData = processCatalogoData(catalogoRes?.data || [], gradosData);
       const sortedOlimpiadas = [...olimpiadasData].sort((a, b) => b.anio - a.anio);
+
+      // Mantener selección o seleccionar la primera
+      const selectedOlimpiada = currentSelectedOlimpiada &&
+        sortedOlimpiadas.find(o => o.idOlimpiada === currentSelectedOlimpiada)
+        ? currentSelectedOlimpiada
+        : sortedOlimpiadas[0]?.idOlimpiada || null;
 
       setState({
         areas: areasData,
         categories: categoriesData,
         olimpiadas: sortedOlimpiadas,
         catalogo: catalogoData,
-        selectedOlimpiada: sortedOlimpiadas[0]?.idOlimpiada || null,
+        grados: gradosData, // Guardamos los grados para uso posterior
+        selectedOlimpiada: selectedOlimpiada,
         loading: false,
         modalOpen: false,
-        error: null
+        error: null,
+        isEditing: false,
+        itemToEdit: null,
       });
 
     } catch (error) {
@@ -114,72 +171,49 @@ const CatalogoManagement = () => {
     }));
   };
 
-  const processCatalogoData = (data) => {
-    if (!Array.isArray(data)) return [];
-    
-    return data.map(item => {
-        // Procesar grados
-        let gradosProcesados = [];
-        if (Array.isArray(item.grados)) {
-            gradosProcesados = item.grados.map(g => {
-                if (typeof g === 'object' && g.nombreGrado) {
-                    return { ...g, nombreGrado: normalizarGrado(g.nombreGrado) };
-                }
-                return { nombreGrado: normalizarGrado(g) };
-            }).filter(g => GRADO_ORDEN.includes(g.nombreGrado));
-        }
-        
-        return {
-            ...item,
-            grados: gradosProcesados
-        };
-    });
-};
+  const handleAddItem = async (formData) => {
+    try {
+      if (!state.selectedOlimpiada) {
+        throw new Error('No se ha seleccionado una olimpiada');
+      }
 
+      const currentOlimpiada = state.olimpiadas.find(o => o.idOlimpiada === state.selectedOlimpiada);
 
-const handleAddItem = async (formData) => {
-  try {
-    if (!state.selectedOlimpiada) {
-      throw new Error('No se ha seleccionado una olimpiada');
-    }
+      if (currentOlimpiada.nombreEstado !== 'PLANIFICACION') {
+        throw new Error('Solo se puede modificar el catálogo cuando la olimpiada está en estado "PLANIFICACION"');
+      }
 
-    const currentOlimpiada = state.olimpiadas.find(o => o.idOlimpiada === state.selectedOlimpiada);
+      const payload = {
+        ...formData,
+        idOlimpiada: currentOlimpiada.idOlimpiada,
+      };
 
-    if (currentOlimpiada.nombreEstado !== 'PLANIFICACION') {
-      throw new Error('Solo se puede modificar el catálogo cuando la olimpiada está en estado "PLANIFICACION"');
-    }
+      if (state.isEditing && state.itemToEdit?.idCatalogo) {
+        payload.idCatalogo = state.itemToEdit.idCatalogo;
+      }
 
-    const payload = {
-      ...formData,
-      idOlimpiada: currentOlimpiada.idOlimpiada,
-    };
+      const response = await saveCatalogoOlimpiada(payload);
 
-    if (state.isEditing && state.itemToEdit?.idCatalogo) {
-      payload.idCatalogo = state.itemToEdit.idCatalogo;
-    }
-
-    const response = await saveCatalogoOlimpiada(payload);
-
-    if (response?.data?.status === 'success') {
+      if (response?.data?.status === 'success') {
+        Swal.fire({
+          icon: 'success',
+          title: 'Éxito',
+          text: response.data.message || (state.isEditing ? 'Ítem actualizado correctamente' : 'Ítem creado correctamente')
+        });
+        await fetchData(true); // Mantener selección actual
+        closeModal();
+      } else {
+        throw new Error(response?.data?.message || 'Error al guardar el ítem');
+      }
+    } catch (error) {
+      console.error("Error saving catalog item:", error);
       Swal.fire({
-        icon: 'success',
-        title: 'Éxito',
-        text: response.data.message || (state.isEditing ? 'Ítem actualizado correctamente' : 'Ítem creado correctamente')
+        icon: 'error',
+        title: 'Error',
+        text: error.response?.data?.message || error.message || 'Error al procesar la solicitud'
       });
-      await fetchData(); 
-      closeModal(); 
-    } else {
-      throw new Error(response?.data?.message || 'Error al guardar el ítem');
     }
-  } catch (error) {
-    console.error("Error saving catalog item:", error);
-    Swal.fire({
-      icon: 'error',
-      title: 'Error',
-      text: error.response?.data?.message || error.message || 'Error al procesar la solicitud'
-    });
-  }
-};
+  };
 
   const getFilteredCatalogo = () => {
     if (!state.selectedOlimpiada) return [];
@@ -209,18 +243,23 @@ const handleAddItem = async (formData) => {
 
       <div className="control-panel">
         <div className="olimpiada-selector">
-          <label>Olimpiada:</label>
+          <label>Seleccionar Olimpiada:</label>
           <div className="selector-buttons">
-            {state.olimpiadas.map(olimpiada => (
+            {state.olimpiadas.map((olimpiada) => (
               <button
                 key={olimpiada.idOlimpiada}
-                className={`selector-btn ${state.selectedOlimpiada === olimpiada.idOlimpiada ? 'active' : ''}`}
-                onClick={() => setState(prev => ({
-                  ...prev,
-                  selectedOlimpiada: olimpiada.idOlimpiada
-                }))}
+                onClick={() => setState(prev => ({ ...prev, selectedOlimpiada: olimpiada.idOlimpiada }))}
+                className={`selector-btn ${
+                  state.selectedOlimpiada === olimpiada.idOlimpiada ? 'active' : ''
+                } ${olimpiada.nombreEstado === 'EN INSCRIPCION' ? 'inscripcion' : 'planificacion'}`}
               >
-                {olimpiada.nombreOlimpiada}
+                {olimpiada.nombreOlimpiada} ({olimpiada.anio})
+                {state.selectedOlimpiada === olimpiada.idOlimpiada && (
+                  <div className="active-indicator"></div>
+                )}
+                <span className={`status-indicator ${olimpiada.nombreEstado === 'EN INSCRIPCION' ? 'inscripcion' : 'planificacion'}`}>
+                  {olimpiada.nombreEstado === 'EN INSCRIPCION' ? <FaLock /> : <FaEdit/>}
+                </span>
               </button>
             ))}
           </div>
@@ -229,17 +268,18 @@ const handleAddItem = async (formData) => {
         <div className="action-buttons">
           <button
             className="refresh-btn"
-            onClick={fetchData}
+            onClick={() => fetchData(true)}
             disabled={state.loading}
           >
             <FiRefreshCw className={state.loading ? 'spinning' : ''} />
           </button>
           <button
-            className="add-btn"
+            className={`add-btn ${currentOlimpiada?.nombreEstado === 'EN INSCRIPCION' ? 'disabled' : ''}`}
             onClick={() => setState(prev => ({ ...prev, modalOpen: true }))}
-            disabled={!state.selectedOlimpiada || state.loading}
+            disabled={!state.selectedOlimpiada || state.loading || currentOlimpiada?.nombreEstado === 'EN INSCRIPCION'}
+            title={currentOlimpiada?.nombreEstado === 'EN INSCRIPCION' ? 'No se puede agregar durante inscripción' : 'Agregar nuevo ítem'}
           >
-            <FiPlus /> Nuevo Item
+            <FiPlus /> {currentOlimpiada?.nombreEstado === 'EN INSCRIPCION' ? 'Bloqueado' : 'Nuevo Item'}
           </button>
         </div>
       </div>
@@ -277,15 +317,11 @@ const handleAddItem = async (formData) => {
                 </button>
               </div>
             ) : (
-              <div className="catalogo-grid">
-                {filteredCatalogo.map((item, index) => (
-                  <CatalogCard
-                    key={`${item.nombreArea}-${item.nombreCategoria}-${index}`}
-                    item={item}//ahora se envia el item entero
-                    onEdit={handleEdit}
-                  />
-                ))}
-              </div>
+              <CatalogCard
+                items={filteredCatalogo}
+                onEdit={handleEdit}
+                isInscripcion={currentOlimpiada?.nombreEstado === 'EN INSCRIPCION'}
+              />
             )}
           </>
         )}
@@ -295,6 +331,7 @@ const handleAddItem = async (formData) => {
         <CatalogModal
           areas={state.areas}
           categories={state.categories}
+          grados={state.grados} // Pasamos los grados al modal
           onClose={closeModal}
           onSubmit={handleAddItem}
           isEditing={state.isEditing}
