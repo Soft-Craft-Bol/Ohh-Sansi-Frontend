@@ -217,7 +217,6 @@ const OlimpiadaManagement = () => {
                         maxLength={5}
                         min={new Date().getFullYear()}
                         error={touched.anio && errors.anio}
-                        disabled={editMode} 
                       />
                     </div>
 

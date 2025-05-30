@@ -1,198 +1,291 @@
-import React, { useMemo, useCallback, useState } from 'react';
-import { Formik, Form, Field, ErrorMessage } from 'formik';
-import * as yup from 'yup';
-import Swal from 'sweetalert2';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useMutation } from '@tanstack/react-query';
 import { savePeriodoOlimpiada, updatePeriodoOlimpiada } from '../../../../api/api';
-import { PERIOD_TYPES, getPeriodValidationSchema } from '../../../../schemas/PeriodValidationSchema';
-import { formatDateForInput } from '../../../../utils/formatDate';
-import '../PeriodsManagement.css';
+import Swal from 'sweetalert2';
+import './PeriodForm.css';
 
-export default function PeriodForm({ selectedOlimpiada, editing, onClose, onSave, periods = [] }) {
-    const [submitting, setSubmitting] = useState(false);
+export default function PeriodForm({ 
+  selectedOlimpiada, 
+  editing, 
+  periods, 
+  onClose, 
+  onSave, 
+  validateDateOverlap 
+}) {
+  const [formData, setFormData] = useState({
+    nombrePeriodo: '',
+    fechaInicio: '',
+    fechaFin: '',
+    tipoPeriodo: 'INSCRIPCIONES',
+  });
+  const [validationError, setValidationError] = useState('');
 
-    const validationSchema = useMemo(() => {
-        const currentYear = new Date().getFullYear();
-        return getPeriodValidationSchema(
-            periods,
-            currentYear,
-            editing?.idPeriodo
-        );
-    }, [periods, editing]);
+  useEffect(() => {
+    if (editing) {
+      setFormData({
+        nombrePeriodo: editing.nombrePeriodo || '',
+        fechaInicio: editing.fechaInicio || '',
+        fechaFin: editing.fechaFin || '',
+        tipoPeriodo: editing.tipoPeriodo || 'INSCRIPCIONES',
+        estadoActual: editing.estadoActual || 'PENDIENTE'
+      });
+    } else {
+      setFormData({
+        nombrePeriodo: '',
+        fechaInicio: '',
+        fechaFin: '',
+        tipoPeriodo: 'INSCRIPCIONES',
+        estadoActual: 'PENDIENTE'
+      });
+    }
+    setValidationError('');
+  }, [editing]);
 
-    const initial = useMemo(() => ({
-        tipoPeriodo: editing?.tipoPeriodo || 'INSCRIPCIONES',
-        nombrePeriodo: editing?.nombrePeriodo || '',
-        fechaInicio: editing ? formatDateForInput(editing.fechaInicio) : '',
-        fechaFin: editing ? formatDateForInput(editing.fechaFin) : ''
-    }), [editing]);
+  const createMutation = useMutation({
+    mutationFn: async (data) => {
+      const response = await savePeriodoOlimpiada({
+        idOlimpiada: selectedOlimpiada,
+        ...data
+      });
+      
+      if (response.data?.status === 'error') {
+        throw new Error(response.data.message);
+      }
+      
+      return response;
+    },
+    onSuccess: (data) => {
+      Swal.fire({
+        title: '¡Éxito!',
+        text: 'El período ha sido creado correctamente.',
+        icon: 'success',
+        confirmButtonText: 'Aceptar',
+        confirmButtonColor: '#667eea'
+      }).then(() => {
+        onSave();
+      });
+    },
+    onError: (error) => {
+      console.error('Error creando período:', error);
+      Swal.fire({
+        title: 'Error',
+        text: error?.response?.data?.message || error?.message || 'Error al crear el período. Intente nuevamente.',
+        icon: 'error',
+        confirmButtonText: 'Aceptar',
+        confirmButtonColor: '#ef4444'
+      });
+    }
+  });
 
-    const handleSubmit = useCallback(async (values) => {
-        setSubmitting(true);
-        try {
-            if (!editing) {
-                const duplicatePeriod = periods.find(p => p.tipoPeriodo === values.tipoPeriodo);
-                if (duplicatePeriod) {
-                    await Swal.fire({
-                        title: 'Error',
-                        text: 'Ya existe un período con este tipo',
-                        icon: 'error'
-                    });
-                    setSubmitting(false);
-                    return;
-                }
-            } else {
-                const duplicatePeriod = periods.find(
-                    p => p.tipoPeriodo === values.tipoPeriodo && p.idPeriodo !== editing.idPeriodo
-                );
-                if (duplicatePeriod) {
-                    await Swal.fire({
-                        title: 'Error',
-                        text: 'Ya existe un período con este tipo',
-                        icon: 'error'
-                    });
-                    setSubmitting(false);
-                    return;
-                }
-            }
+  const updateMutation = useMutation({
+    mutationFn: async (data) => {
+      console.log('Datos a enviar para actualizar:', data);
+      console.log('ID del período a actualizar:', editing.idPeriodo);
+      const response = await updatePeriodoOlimpiada(editing.idPeriodo, {
+        idPeriodo: editing.idPeriodo, 
+        idOlimpiada: selectedOlimpiada,
+        ...data
+      });
+      console.log('Respuesta del servidor (actualizar):', response);
+      
+      if (response.data?.status === 'error') {
+        throw new Error(response.data.message);
+      }
+      
+      return response;
+    },
+    onSuccess: (data) => {
+      console.log('Período actualizado exitosamente:', data);
+      Swal.fire({
+        title: '¡Actualizado!',
+        text: 'El período ha sido actualizado correctamente.',
+        icon: 'success',
+        confirmButtonText: 'Aceptar',
+        confirmButtonColor: '#667eea'
+      }).then(() => {
+        onSave();
+      });
+    },
+    onError: (error) => {
+      console.error('Error actualizando período:', error);
+      Swal.fire({
+        title: 'Error',
+        text: error?.response?.data?.message || error?.message || 'Error al actualizar el período. Intente nuevamente.',
+        icon: 'error',
+        confirmButtonText: 'Aceptar',
+        confirmButtonColor: '#ef4444'
+      });
+    }
+  });
 
-            let response;
-            const payload = {
-                idPeriodo: editing.idPeriodo,
-                idOlimpiada: selectedOlimpiada,
-                fechaInicio: values.fechaInicio,
-                fechaFin: values.fechaFin,
-                tipoPeriodo: values.tipoPeriodo,
-                nombrePeriodo: values.nombrePeriodo
-            };
-            if (editing) {
-                response = await updatePeriodoOlimpiada(editing.idPeriodo, payload);
-            } else {
-                response = await savePeriodoOlimpiada({
-                    idOlimpiada: selectedOlimpiada,
-                    ...values
-                });
-            }
+  const handleInputChange = useCallback((e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    
+    if (name === 'fechaInicio' || name === 'fechaFin') {
+      setValidationError('');
+    }
+  }, []);
 
-            console.log('Full response:', response);
-
-            if (response.data && response.data.status === 'error') {
-                throw {
-                    response: {
-                        data: {
-                            message: response.data.message || 'Error desconocido',
-                            status: response.data.status
-                        }
-                    }
-                };
-            }
-
-            await Swal.fire({
-                title: 'Éxito',
-                text: editing ? 'Período actualizado correctamente' : 'Período creado correctamente',
-                icon: 'success'
-            });
-
-            onSave();
-
-        } catch (error) {
-            console.error('Error saving period:', error);
-
-            let errorMessage = 'Error al procesar la solicitud';
-
-            if (error?.response?.data?.message) {
-                errorMessage = error.response.data.message;
-            }
-            else if (error?.message) {
-                errorMessage = error.message;
-            }
-            else if (error?.response?.data) {
-                errorMessage = typeof error.response.data === 'string'
-                    ? error.response.data
-                    : JSON.stringify(error.response.data);
-            }
-
-            await Swal.fire({
-                title: 'Error',
-                text: errorMessage,
-                icon: 'error',
-                confirmButtonText: 'Entendido'
-            });
-
-        } finally {
-            setSubmitting(false);
-        }
-    }, [selectedOlimpiada, editing, onSave, periods]);
-
-    return (
-        <div className="gpo-create-form">
-            <h3>{editing ? 'Editar Período' : 'Nuevo Período'}</h3>
-            <Formik
-                initialValues={initial}
-                validationSchema={validationSchema}
-                onSubmit={handleSubmit}
-            >
-                {() => (
-                    <Form>
-                        <div className="gpo-form-row">
-                            <div className="gpo-form-group">
-                                <label>Tipo de Período</label>
-                                <Field as="select" name="tipoPeriodo">
-                                    <option value="">-- Seleccione tipo --</option>
-                                    {Object.entries(PERIOD_TYPES).map(([value, config]) => (
-                                        <option
-                                            key={value}
-                                            value={value}
-                                            disabled={value === 'AMPLIACION'}
-                                        >
-                                            {config.label}
-                                            {value === 'AMPLIACION'}
-                                        </option>
-                                    ))}
-                                </Field>
-                                <ErrorMessage name="tipoPeriodo" component="div" className="gpo-error-message" />
-                            </div>
-
-                            <div className="gpo-form-group">
-                                <label>Nombre del Período</label>
-                                <Field
-                                    type="text"
-                                    name="nombrePeriodo"
-                                    placeholder="Ej: Inscripción General"
-                                />
-                                <ErrorMessage name="nombrePeriodo" component="div" className="gpo-error-message" />
-                            </div>
-                        </div>
-
-                        <div className="gpo-form-row">
-                            <div className="gpo-form-group">
-                                <label>Fecha Inicio</label>
-                                <Field type="date" name="fechaInicio" />
-                                <ErrorMessage name="fechaInicio" component="div" className="gpo-error-message" />
-                            </div>
-
-                            <div className="gpo-form-group">
-                                <label>Fecha Fin</label>
-                                <Field type="date" name="fechaFin" />
-                                <ErrorMessage name="fechaFin" component="div" className="gpo-error-message" />
-                            </div>
-                        </div>
-
-                        <div className="gpo-form-actions">
-                            <button type="submit" className="gpo-save-btn" >
-                                Guardar Período
-                            </button>
-                            {/*  <button
-                                type="button"
-                                className="gpo-cancel-btn"
-                                onClick={handleCancelForm}
-                                disabled={isSubmitting}
-                            >
-                                Cancelar
-                            </button> */}
-                        </div>
-                    </Form>
-                )}
-            </Formik>
-        </div>
+  const handleSubmit = useCallback(async (e) => {
+    e.preventDefault();
+    
+    if (!formData.nombrePeriodo.trim()) {
+      setValidationError('El nombre del período es requerido');
+      return;
+    }
+    
+    if (!formData.fechaInicio || !formData.fechaFin) {
+      setValidationError('Las fechas de inicio y fin son requeridas');
+      return;
+    }
+    
+    if (new Date(formData.fechaInicio) >= new Date(formData.fechaFin)) {
+      setValidationError('La fecha de inicio debe ser anterior a la fecha de fin');
+      return;
+    }
+    
+    const validation = validateDateOverlap(
+      formData, 
+      editing?.idPeriodo || null
     );
+    
+    if (!validation.isValid) {
+      setValidationError(validation.message);
+      Swal.fire({
+        title: 'Error de Validación',
+        text: validation.message,
+        icon: 'warning',
+        confirmButtonText: 'Entendido',
+        confirmButtonColor: '#f59e0b'
+      });
+      return;
+    }
+
+    const dataToSend = {
+      nombrePeriodo: formData.nombrePeriodo.trim(),
+      fechaInicio: formData.fechaInicio,
+      fechaFin: formData.fechaFin,
+      tipoPeriodo: formData.tipoPeriodo,
+    };
+    
+    try {
+      if (editing && editing.idPeriodo) {
+        await updateMutation.mutateAsync(dataToSend);
+      } else {
+        await createMutation.mutateAsync(dataToSend);
+      }
+    } catch (error) {
+      console.error('Error en mutación:', error);
+    }
+  }, [formData, editing, validateDateOverlap, createMutation, updateMutation, selectedOlimpiada]);
+
+  const handleClose = () => {
+    if (createMutation.isPending || updateMutation.isPending) {
+      return;
+    }
+    onClose();
+  };
+
+  const isLoading = createMutation.isPending || updateMutation.isPending;
+
+  return (
+    <div className="pf-period-form-container">
+      <div className="pf-period-form-modal">
+        <div className="pf-period-form-header">
+          <h3>{editing ? 'Editar Período' : 'Nuevo Período'}</h3>
+          <button 
+            onClick={handleClose} 
+            className="pf-btn-close"
+            disabled={isLoading}
+          >
+            ×
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="pf-period-form">
+          <div className="pf-form-group">
+            <label htmlFor="nombrePeriodo">Nombre del Período:</label>
+            <input
+              type="text"
+              id="nombrePeriodo"
+              name="nombrePeriodo"
+              value={formData.nombrePeriodo}
+              onChange={handleInputChange}
+              required
+              disabled={isLoading}
+              placeholder="Ej: Inscripciones Fase 1"
+            />
+          </div>
+
+          <div className="pf-form-group">
+            <label htmlFor="fechaInicio">Fecha de Inicio:</label>
+            <input
+              type="date"
+              id="fechaInicio"
+              name="fechaInicio"
+              value={formData.fechaInicio}
+              onChange={handleInputChange}
+              required
+              disabled={isLoading}
+            />
+          </div>
+
+          <div className="pf-form-group">
+            <label htmlFor="fechaFin">Fecha de Fin:</label>
+            <input
+              type="date"
+              id="fechaFin"
+              name="fechaFin"
+              value={formData.fechaFin}
+              onChange={handleInputChange}
+              required
+              disabled={isLoading}
+            />
+          </div>
+
+          <div className="pf-form-group">
+            <label htmlFor="tipoPeriodo">Tipo de Período:</label>
+            <select
+              id="tipoPeriodo"
+              name="tipoPeriodo"
+              value={formData.tipoPeriodo}
+              onChange={handleInputChange}
+              disabled={isLoading}
+            >
+              <option value="INSCRIPCIONES">INSCRIPCIONES</option>
+              <option value="AMPLIACION">AMPLIACION</option>
+            </select>
+          </div>
+
+          {validationError && (
+            <div className="pf-validation-error">
+              {validationError}
+            </div>
+          )}
+
+          <div className="pf-form-actions">
+            <button
+              type="button"
+              onClick={handleClose}
+              disabled={isLoading}
+              className="pf-btn-cancel"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={isLoading}
+              className={`pf-btn-save ${isLoading ? 'loading' : ''}`}
+            >
+              {isLoading ? 'Guardando...' : (editing ? 'Actualizar' : 'Crear')}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
 }
