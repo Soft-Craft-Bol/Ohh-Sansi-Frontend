@@ -4,42 +4,47 @@ import { savePeriodoOlimpiada, updatePeriodoOlimpiada } from '../../../../api/ap
 import Swal from 'sweetalert2';
 import './PeriodForm.css';
 
-export default function PeriodForm({ 
-  selectedOlimpiada, 
-  editing, 
-  periods, 
-  onClose, 
-  onSave, 
-  validateDateOverlap 
+export default function PeriodForm({
+  selectedOlimpiada,
+  editing,
+  periods,
+  onClose,
+  onSave,
+  validateDateOverlap
 }) {
   const [formData, setFormData] = useState({
     nombrePeriodo: '',
     fechaInicio: '',
     fechaFin: '',
-    tipoPeriodo: 'INSCRIPCIONES',
+    tipoPeriodo: '',
   });
   const [validationError, setValidationError] = useState('');
+  const [hasInscripcionPeriod, setHasInscripcionPeriod] = useState(false);
 
   useEffect(() => {
+    const inscripcionExists = periods.some(p =>
+      p.tipoPeriodo === 'INSCRIPCION' &&
+      (!editing || p.idPeriodo !== editing.idPeriodo)
+    );
+    setHasInscripcionPeriod(inscripcionExists);
+
     if (editing) {
       setFormData({
         nombrePeriodo: editing.nombrePeriodo || '',
         fechaInicio: editing.fechaInicio || '',
         fechaFin: editing.fechaFin || '',
-        tipoPeriodo: editing.tipoPeriodo || 'INSCRIPCIONES',
-        estadoActual: editing.estadoActual || 'PENDIENTE'
+        tipoPeriodo: editing.tipoPeriodo || '',
       });
     } else {
       setFormData({
         nombrePeriodo: '',
         fechaInicio: '',
         fechaFin: '',
-        tipoPeriodo: 'INSCRIPCIONES',
-        estadoActual: 'PENDIENTE'
+        tipoPeriodo: inscripcionExists ? 'AMPLIACION' : 'INSCRIPCION',
       });
     }
     setValidationError('');
-  }, [editing]);
+  }, [editing, periods]);
 
   const createMutation = useMutation({
     mutationFn: async (data) => {
@@ -47,11 +52,11 @@ export default function PeriodForm({
         idOlimpiada: selectedOlimpiada,
         ...data
       });
-      
+
       if (response.data?.status === 'error') {
         throw new Error(response.data.message);
       }
-      
+
       return response;
     },
     onSuccess: (data) => {
@@ -82,16 +87,16 @@ export default function PeriodForm({
       console.log('Datos a enviar para actualizar:', data);
       console.log('ID del período a actualizar:', editing.idPeriodo);
       const response = await updatePeriodoOlimpiada(editing.idPeriodo, {
-        idPeriodo: editing.idPeriodo, 
+        idPeriodo: editing.idPeriodo,
         idOlimpiada: selectedOlimpiada,
         ...data
       });
       console.log('Respuesta del servidor (actualizar):', response);
-      
+
       if (response.data?.status === 'error') {
         throw new Error(response.data.message);
       }
-      
+
       return response;
     },
     onSuccess: (data) => {
@@ -124,7 +129,7 @@ export default function PeriodForm({
       ...prev,
       [name]: value
     }));
-    
+
     if (name === 'fechaInicio' || name === 'fechaFin') {
       setValidationError('');
     }
@@ -132,27 +137,27 @@ export default function PeriodForm({
 
   const handleSubmit = useCallback(async (e) => {
     e.preventDefault();
-    
+
     if (!formData.nombrePeriodo.trim()) {
       setValidationError('El nombre del período es requerido');
       return;
     }
-    
+
     if (!formData.fechaInicio || !formData.fechaFin) {
       setValidationError('Las fechas de inicio y fin son requeridas');
       return;
     }
-    
+
     if (new Date(formData.fechaInicio) >= new Date(formData.fechaFin)) {
       setValidationError('La fecha de inicio debe ser anterior a la fecha de fin');
       return;
     }
-    
+
     const validation = validateDateOverlap(
-      formData, 
+      formData,
       editing?.idPeriodo || null
     );
-    
+
     if (!validation.isValid) {
       setValidationError(validation.message);
       Swal.fire({
@@ -171,7 +176,7 @@ export default function PeriodForm({
       fechaFin: formData.fechaFin,
       tipoPeriodo: formData.tipoPeriodo,
     };
-    
+
     try {
       if (editing && editing.idPeriodo) {
         await updateMutation.mutateAsync(dataToSend);
@@ -197,8 +202,8 @@ export default function PeriodForm({
       <div className="pf-period-form-modal">
         <div className="pf-period-form-header">
           <h3>{editing ? 'Editar Período' : 'Nuevo Período'}</h3>
-          <button 
-            onClick={handleClose} 
+          <button
+            onClick={handleClose}
             className="pf-btn-close"
             disabled={isLoading}
           >
@@ -254,11 +259,21 @@ export default function PeriodForm({
               name="tipoPeriodo"
               value={formData.tipoPeriodo}
               onChange={handleInputChange}
-              disabled={isLoading}
+              disabled={isLoading || (hasInscripcionPeriod && !editing)}
             >
-              <option value="INSCRIPCIONES">INSCRIPCIONES</option>
+              <option
+                value="INSCRIPCION"
+                disabled={hasInscripcionPeriod && !editing}
+              >
+                INSCRIPCION {hasInscripcionPeriod && !editing && '(Ya existe)'}
+              </option>
               <option value="AMPLIACION">AMPLIACION</option>
             </select>
+            {hasInscripcionPeriod && !editing && (
+              <p className="pf-form-hint">
+                Solo puede haber un período de INSCRIPCIONES. Puedes agregar múltiples AMPLIACIONES.
+              </p>
+            )}
           </div>
 
           {validationError && (

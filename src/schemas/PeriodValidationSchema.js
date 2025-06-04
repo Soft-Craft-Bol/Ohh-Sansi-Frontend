@@ -1,7 +1,7 @@
 import * as yup from 'yup';
 
 export const PERIOD_TYPES = {
-  INSCRIPCIONES: { label: 'INSCRIPCIONES', color: 'blue' },
+  INSCRIPCION: { label: 'INSCRIPCION', color: 'blue' },
   AMPLIACION: { label: 'AMPLIACION', color: 'orange' }
 };
 

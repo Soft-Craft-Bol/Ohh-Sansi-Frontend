@@ -5,25 +5,39 @@ import { PERIOD_TYPES } from '../../../../schemas/PeriodValidationSchema';
 import '../PeriodsManagement.css';
 
 export default function PeriodsList({ periods, onEdit, onCancel }) {
-  // Check if we have any INSCRIPCIONES period that has FINALIZADO
-  const hasFinishedInscripcionPeriod = useMemo(() => {
-    if (!Array.isArray(periods)) return false;
-    return periods.some(p => 
-      p.tipoPeriodo === 'INSCRIPCIONES' && 
-      p.estadoActual === 'FINALIZADO'
-    );
+  const validPeriods = useMemo(() => {
+    if (!Array.isArray(periods)) {
+      console.warn('PeriodsList: periods no es un array:', periods);
+      return [];
+    }
+    
+    const valid = periods.filter(p => 
+      p && 
+      p.idPeriodo && 
+      p.nombrePeriodo && 
+      p.fechaInicio && 
+      p.fechaFin
+    );    
+    return valid;
   }, [periods]);
 
-  // Filter out AMPLIACION periods if no INSCRIPCIONES period has FINALIZADO
   const filteredPeriods = useMemo(() => {
-    if (!Array.isArray(periods)) return [];
-    return periods.filter(p => 
-      p.tipoPeriodo !== 'AMPLIACION' || 
-      (p.tipoPeriodo === 'AMPLIACION' && hasFinishedInscripcionPeriod)
+    return validPeriods;
+    
+    /* FILTRO ORIGINAL - descomentado 
+    const hasFinishedInscripcion = validPeriods.some(p => 
+      p.tipoPeriodo === 'INSCRIPCION' && 
+      p.estadoActual === 'FINALIZADO'
     );
-  }, [periods, hasFinishedInscripcionPeriod]);
 
-  if (!Array.isArray(filteredPeriods) || filteredPeriods.length === 0) {
+    return validPeriods.filter(p => 
+      p.tipoPeriodo !== 'AMPLIACION' || 
+      (p.tipoPeriodo === 'AMPLIACION' && hasFinishedInscripcion)
+    );
+    */
+  }, [validPeriods]);
+
+  if (filteredPeriods.length === 0) {
     return (
       <div className="gpo-empty-state">
         <FiCalendar size={48} />
@@ -31,17 +45,17 @@ export default function PeriodsList({ periods, onEdit, onCancel }) {
       </div>
     );
   }
-  
+
   return (
     <div className="gpo-period-cards">
-      {filteredPeriods.map(p => (
+      {filteredPeriods.map((p, index) => (
         <PeriodCard
-          key={p.idPeriodo}
+          key={`period-${p.idPeriodo}-${index}`}
           periodo={p}
           onEdit={onEdit}
           onCancel={onCancel}
           canEdit={typeof onEdit === 'function'}
-          currentStatus={p.estadoActual}
+          currentStatus={p.estadoActual || 'PENDIENTE'} 
         />
       ))}
     </div>

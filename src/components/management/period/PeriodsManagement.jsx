@@ -14,9 +14,13 @@ export default function PeriodsManagement() {
   const queryClient = useQueryClient();
 
   const { data: olimpiadas = [], isLoading: loadingO } = useOlimpiadas();
-  const { data: eventosData = {} } = useOlimpiadasEventos();
+  const { data: eventosData = {}, isLoading: loadingEventos } = useOlimpiadasEventos();
 
-  // Combina olimpiadas con sus eventos
+  const refreshData = useCallback(async () => {
+    await queryClient.invalidateQueries(['olimpiadas-con-eventos']);
+    await queryClient.invalidateQueries(['olimpiadas']);
+  }, [queryClient]);
+
   const olimpiadasCompletas = useMemo(() => {
     if (!Array.isArray(olimpiadas)) return [];
     return olimpiadas.map(o => ({
@@ -25,17 +29,14 @@ export default function PeriodsManagement() {
     }));
   }, [olimpiadas, eventosData]);
 
-  // Períodos de la olimpiada seleccionada
   const periods = useMemo(() => {
-    if (!selectedOlimpiada) return [];
-    const olimpiada = olimpiadasCompletas.find(o => o.idOlimpiada === Number(selectedOlimpiada));
-    return Array.isArray(olimpiada?.eventos) ? olimpiada.eventos : [];
-  }, [selectedOlimpiada, olimpiadasCompletas]);
+    if (!selectedOlimpiada || !eventosData) return [];
+    return eventosData[selectedOlimpiada] || [];
+  }, [selectedOlimpiada, eventosData]);
 
-  // Obtener TODOS los períodos de TODAS las olimpiadas para validación global
   const allPeriods = useMemo(() => {
     if (!Array.isArray(olimpiadas)) return [];
-    
+
     const periods = [];
     olimpiadas.forEach(olimpiada => {
       const eventos = eventosData[olimpiada.idOlimpiada] || [];
@@ -46,43 +47,39 @@ export default function PeriodsManagement() {
         });
       });
     });
-    
+
     return periods;
   }, [olimpiadas, eventosData]);
 
-  // Función para validar solapamiento de fechas (GLOBAL - todas las olimpiadas)
   const validateDateOverlap = useCallback((newPeriod, editingId = null) => {
     const { fechaInicio, fechaFin } = newPeriod;
-    
+
     if (!fechaInicio || !fechaFin) return { isValid: false, message: 'Las fechas son requeridas' };
-    
+
     const startDate = new Date(fechaInicio);
     const endDate = new Date(fechaFin);
-    
+
     if (startDate >= endDate) {
       return { isValid: false, message: 'La fecha de inicio debe ser anterior a la fecha de fin' };
     }
 
-    // Validar contra TODOS los períodos de TODAS las olimpiadas
-    // Filtrar períodos excluyendo el que se está editando (solo si editingId no es null)
-    const periodsToCheck = editingId 
+    const periodsToCheck = editingId
       ? allPeriods.filter(p => p.idPeriodo !== editingId)
       : allPeriods;
-    
+
     for (const period of periodsToCheck) {
       const periodStart = new Date(period.fechaInicio);
       const periodEnd = new Date(period.fechaFin);
-      
-      // Verificar solapamiento: nuevo período inicia antes de que termine el existente
-      // Y nuevo período termina después de que inicie el existente
+
+   
       if (startDate < periodEnd && endDate > periodStart) {
-        return { 
-          isValid: false, 
-          message: `El período se solapa con "${period.nombrePeriodo}" de la olimpiada "${period.nombreOlimpiada}" (${period.fechaInicio} - ${period.fechaFin})` 
+        return {
+          isValid: false,
+          message: `El período se solapa con "${period.nombrePeriodo}" de la olimpiada "${period.nombreOlimpiada}" (${period.fechaInicio} - ${period.fechaFin})`
         };
       }
     }
-    
+
     return { isValid: true, message: '' };
   }, [allPeriods]);
 
@@ -97,11 +94,12 @@ export default function PeriodsManagement() {
     setEditing(null);
   }, []);
 
-  const handleFormSave = useCallback(() => {
+  
+  const handleFormSave = useCallback(async () => {
     setShowForm(false);
     setEditing(null);
-    queryClient.invalidateQueries(['olimpiadas-con-eventos']);
-  }, [queryClient]);
+    await refreshData();
+  }, [refreshData]);
 
   const handleEdit = useCallback(period => {
     setEditing(period);
@@ -160,8 +158,9 @@ export default function PeriodsManagement() {
         />
       )}
 
-      {selectedOlimpiada && (
+       {selectedOlimpiada && !loadingEventos && (
         <PeriodsList
+          key={`periods-${selectedOlimpiada}`} 
           periods={periods}
           onEdit={handleEdit}
         />

@@ -27,7 +27,6 @@ const processReceiptText = (ocrText, attemptId = 'default') => {
     'SANSE': 'SAN SIMON',
     'OECUMATO': 'DECANATO',
     'OECANATO': 'DECANATO',
-    'OlMPLAos': 'OLIMPIADAS',
     'BOLIVIAROS': 'BOLIVIANOS',
     'NEPEA': 'NEREA',
     'LEGECMA': 'LEDEZMA'
