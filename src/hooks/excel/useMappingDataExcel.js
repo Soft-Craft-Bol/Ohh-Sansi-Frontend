@@ -93,7 +93,8 @@ export const combinarDatosHoja2y4 = (hoja2 = [], hoja4 = []) => {
             apellidos_tutor: relacion.apellidos_tutor,
             telefono: relacion.telefono,
             carnet_identidad_tutor: relacion.carnet_identidad_tutor,
-            complemento_ci_tutor: relacion.complemento_ci_tutor
+            complemento_ci_tutor: relacion.complemento_ci_tutor,
+            id_area : relacion.id_area,
           },
           {
             email_tutor: relacion.email_tutor2,
@@ -101,7 +102,8 @@ export const combinarDatosHoja2y4 = (hoja2 = [], hoja4 = []) => {
             apellidos_tutor: relacion.apellidos_tutor2,
             telefono: relacion.telefono2,
             carnet_identidad_tutor: relacion.carnet_identidad_tutor2,
-            complemento_ci_tutor: relacion.complemento_ci_tutor2
+            complemento_ci_tutor: relacion.complemento_ci_tutor2,
+            id_area2: relacion.id_area2,
           }
         ]
       : [];
