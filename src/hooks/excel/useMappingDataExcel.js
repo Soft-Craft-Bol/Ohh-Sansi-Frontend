@@ -18,14 +18,27 @@ export const leerExcelHoja2 = async (file) => {
 
   const datosHoja2 = XLSX.utils.sheet_to_json(hoja2, { defval: "" });
   const datosHoja4 = XLSX.utils.sheet_to_json(hoja4, { defval: "" });
-  //console.log('primero las columnas de hoja2:', datosHoja2)
-  //console.log('Datos en la hoja4', datosHoja4)
   console.log(combinarDatosHoja2y4(datosHoja2, datosHoja4))
   return combinarDatosHoja2y4(datosHoja2, datosHoja4);
 };
 
 export const combinarDatosHoja2y4 = (hoja2 = [], hoja4 = []) => {
-  return hoja2.map((fila, index) => {
+  const limpiarFilasVacias = (filas) => {
+    return filas.filter(fila => {
+      const camposImportantes = ['nombreParticipante', 'apellidoPaterno', 'carnetIdentidadParticipante'];
+      return camposImportantes.some(campo => {
+        const valor = fila[campo];
+        return valor && 
+              valor.toString().trim() !== '' && 
+              valor !== 0 && 
+              valor !== '0';
+      });
+    });
+  };
+
+  const hoja2Limpia = limpiarFilasVacias(hoja2);
+
+  return hoja2Limpia.map((fila, index) => {
     const {
       idDepartamento,
       idMunicipio,
@@ -80,7 +93,7 @@ export const combinarDatosHoja2y4 = (hoja2 = [], hoja4 = []) => {
     const relacion = hoja4[index] || {};
 
     const areas = {
-      id_area: relacion.id_area,
+      id_area: relacion.id_area || "",
       id_area2: relacion.id_area2 && relacion.id_area2 !== 0 ? relacion.id_area2 : ""
     };
 
@@ -118,4 +131,3 @@ export const combinarDatosHoja2y4 = (hoja2 = [], hoja4 = []) => {
     };
   });
 };
-
