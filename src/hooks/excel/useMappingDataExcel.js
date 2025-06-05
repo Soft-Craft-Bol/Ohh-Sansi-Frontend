@@ -18,13 +18,14 @@ export const leerExcelHoja2 = async (file) => {
 
   const datosHoja2 = XLSX.utils.sheet_to_json(hoja2, { defval: "" });
   const datosHoja4 = XLSX.utils.sheet_to_json(hoja4, { defval: "" });
-
+  //console.log('primero las columnas de hoja2:', datosHoja2)
+  //console.log('Datos en la hoja4', datosHoja4)
   console.log(combinarDatosHoja2y4(datosHoja2, datosHoja4))
   return combinarDatosHoja2y4(datosHoja2, datosHoja4);
 };
 
 export const combinarDatosHoja2y4 = (hoja2 = [], hoja4 = []) => {
-  return hoja2.map((fila) => {
+  return hoja2.map((fila, index) => {
     const {
       idDepartamento,
       idMunicipio,
@@ -76,37 +77,38 @@ export const combinarDatosHoja2y4 = (hoja2 = [], hoja4 = []) => {
       id_tutor_parentesco
     };
 
-    const relacion = hoja4.find(() => true);
+    const relacion = hoja4[index] || {};
 
-    const areas = relacion
-      ? {
-          id_area: relacion.id_area,
-          id_area2: relacion.id_area2
-        }
-      : {};
+    const areas = {
+      id_area: relacion.id_area,
+      id_area2: relacion.id_area2 && relacion.id_area2 !== 0 ? relacion.id_area2 : ""
+    };
 
-    const profesor = relacion
-      ? [
-          {
-            email_tutor: relacion.email_tutor,
-            nombres_tutor: relacion.nombres_tutor,
-            apellidos_tutor: relacion.apellidos_tutor,
-            telefono: relacion.telefono,
-            carnet_identidad_tutor: relacion.carnet_identidad_tutor,
-            complemento_ci_tutor: relacion.complemento_ci_tutor,
-            id_area : relacion.id_area,
-          },
-          {
-            email_tutor: relacion.email_tutor2,
-            nombres_tutor: relacion.nombres_tutor2,
-            apellidos_tutor: relacion.apellidos_tutor2,
-            telefono: relacion.telefono2,
-            carnet_identidad_tutor: relacion.carnet_identidad_tutor2,
-            complemento_ci_tutor: relacion.complemento_ci_tutor2,
-            id_area2: relacion.id_area2,
-          }
-        ]
-      : [];
+    const profesor = [];
+
+    if (relacion.email_tutor || relacion.nombres_tutor || relacion.apellidos_tutor) {
+      profesor.push({
+        email_tutor: relacion.email_tutor,
+        nombres_tutor: relacion.nombres_tutor,
+        apellidos_tutor: relacion.apellidos_tutor,
+        telefono: relacion.telefono,
+        carnet_identidad_tutor: relacion.carnet_identidad_tutor,
+        complemento_ci_tutor: relacion.complemento_ci_tutor && relacion.complemento_ci_tutor !== 0 ? relacion.complemento_ci_tutor : "",
+        id_area: relacion.id_area || ""
+      });
+    }
+
+    if (relacion.email_tutor2 || relacion.nombres_tutor2 || relacion.apellidos_tutor2) {
+      profesor.push({
+        email_tutor: relacion.email_tutor2,
+        nombres_tutor: relacion.nombres_tutor2,
+        apellidos_tutor: relacion.apellidos_tutor2,
+        telefono: relacion.telefono2,
+        carnet_identidad_tutor: relacion.carnet_identidad_tutor2,
+        complemento_ci_tutor: relacion.complemento_ci_tutor2 && relacion.complemento_ci_tutor2 !== 0 ? relacion.complemento_ci_tutor2 : "",
+        id_area2: relacion.id_area2 && relacion.id_area2 !== 0 ? relacion.id_area2 : ""
+      });
+    }
 
     return {
       participante,
