@@ -230,7 +230,6 @@ const UpdateExcel = () => {
         hojaAreasRaw = limpiarFilasVacias(hojaAreasRaw);
 
         const hojaDatos = hojaDatosRaw.filter(fila => !esFilaInvalida(fila));
-        const hojaAreas = hojaAreasRaw.filter(fila => !esFilaInvalida(fila));
 
         // Convertir fechas
         const convertirFechas = (fila) => {
@@ -245,10 +244,9 @@ const UpdateExcel = () => {
         };
 
         const filasConHojaDatos = hojaDatos.map(fila => ({ ...convertirFechas(fila), _hoja: 'Datos' }));
-        const filasConHojaAreas = hojaAreas.map(fila => ({ ...convertirFechas(fila), _hoja: 'Datos' }));
 
         const erroresDatos = await validarFilasDatos(filasConHojaDatos);
-        const erroresAreas = await validarFilasAreas(filasConHojaAreas);
+        const erroresAreas = await validarFilasAreas(filasConHojaDatos);
         
         const erroresTotales = [...erroresDatos, ...erroresAreas];
         resolve(erroresTotales);
@@ -442,7 +440,7 @@ const UpdateExcel = () => {
 
       // Mostrar formulario para ingresar CI del tutor
       const { value: ciTutor } = await Swal.fire({
-        title: 'Ingrese CI del tutor',
+        title: 'Ingrese el CI del Responsable de pago',
         input: 'text',
         inputPlaceholder: 'Número de documento',
         inputAttributes: {
@@ -511,7 +509,7 @@ const UpdateExcel = () => {
                    oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
           `,
           focusConfirm: false,
-          confirmButtonText: 'Registrar Tutor',
+          confirmButtonText: 'Registrar Responsable de pago',
           preConfirm: () => {
             const ci = document.getElementById('ci').value.trim();
             const comp = document.getElementById('comp').value.trim();
@@ -650,7 +648,6 @@ const UpdateExcel = () => {
         );
     }
   };
-  
 
   return (
     <div>
