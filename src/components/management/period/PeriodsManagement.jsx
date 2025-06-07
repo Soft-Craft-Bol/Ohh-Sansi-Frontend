@@ -21,14 +21,6 @@ export default function PeriodsManagement() {
     await queryClient.invalidateQueries(['olimpiadas']);
   }, [queryClient]);
 
-  const olimpiadasCompletas = useMemo(() => {
-    if (!Array.isArray(olimpiadas)) return [];
-    return olimpiadas.map(o => ({
-      ...o,
-      eventos: Array.isArray(eventosData[o.idOlimpiada]) ? eventosData[o.idOlimpiada] : []
-    }));
-  }, [olimpiadas, eventosData]);
-
   const periods = useMemo(() => {
     if (!selectedOlimpiada || !eventosData) return [];
     return eventosData[selectedOlimpiada] || [];

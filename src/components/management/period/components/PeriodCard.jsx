@@ -7,7 +7,6 @@ import '../PeriodsManagement.css'
 export default function PeriodCard ({ periodo, onEdit, currentStatus }){
   const [expanded, setExpanded] = useState(false);
 
-  /* const isEditable = currentStatus === 'PENDIENTE' && canEdit; */
   const statusConfig = PERIOD_STATUS[currentStatus] || PERIOD_STATUS.PENDIENTE;
   const typeConfig = PERIOD_TYPES[periodo.tipoPeriodo] || PERIOD_TYPES.INSCRIPCIONES;
 
