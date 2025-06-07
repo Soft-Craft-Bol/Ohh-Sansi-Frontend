@@ -25,8 +25,6 @@ const useFetchArea = () => {
 
     fetchData();
   }, []);
-  console.log("Areas cargados:", areas);
-
   return { areas, loading, error }; 
 };
 

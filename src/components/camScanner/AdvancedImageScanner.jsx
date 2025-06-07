@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './AdvancedImageScanner.css';
 
-// Variable global para controlar la carga de OpenCV
 let openCvLoading = false;
 
 const AdvancedImageScanner = () => {
@@ -14,9 +13,7 @@ const AdvancedImageScanner = () => {
   const originalCanvasRef = useRef(null);
   const processedCanvasRef = useRef(null);
   
-  // Cargar OpenCV.js de forma segura
   useEffect(() => {
-  // Verificar si ya está cargado o en proceso
   if (window.cv || openCvLoading) {
     if (window.cv) setCvReady(true);
     return;
@@ -25,14 +22,12 @@ const AdvancedImageScanner = () => {
   openCvLoading = true;
   setStatus('Cargando OpenCV...');
 
-  // Verificar si el script ya existe
   const existingScript = document.getElementById('opencv-script');
   if (existingScript) {
     existingScript.onload = () => setStatus('OpenCV listo');
     return;
   }
 
-  // Configuración segura del módulo
   if (!window.Module) window.Module = {};
   const originalOnRuntimeInitialized = window.Module.onRuntimeInitialized;
   
@@ -40,7 +35,6 @@ const AdvancedImageScanner = () => {
     ...window.Module,
     onRuntimeInitialized: () => {
       if (originalOnRuntimeInitialized) originalOnRuntimeInitialized();
-      console.log("OpenCV inicializado");
       setCvReady(true);
       setStatus('OpenCV listo');
       openCvLoading = false;
@@ -116,11 +110,8 @@ const AdvancedImageScanner = () => {
   };
 
   const processWithOpenCV = (canvas) => {
-    // Usamos setTimeout para no bloquear la interfaz
     setTimeout(() => {
-      // Usamos un bloque try-catch global para manejar cualquier error
       try {
-        // Verificaciones de seguridad
         if (!window.cv) {
           throw new Error('OpenCV no está disponible');
         }
@@ -129,37 +120,28 @@ const AdvancedImageScanner = () => {
           throw new Error('Canvas de procesamiento no está listo');
         }
 
-        // ENFOQUE SIMPLIFICADO:
-        // 1. Crear una matriz OpenCV directamente desde el canvas (usar cv.imread en lugar de matFromImageData)
         const src = cv.imread(canvas);
         
-        // Verificar que la matriz tenga datos
         if (src.empty()) {
           throw new Error('No se pudo cargar la imagen en OpenCV');
         }
 
-        // 2. Crear matrices necesarias para el procesamiento
         const dst = new cv.Mat();
         const processed = new cv.Mat();
         
         try {
-          // 3. Convertir a escala de grises
           cv.cvtColor(src, dst, cv.COLOR_RGBA2GRAY);
           
-          // 4. Aplicar desenfoque gaussiano
           cv.GaussianBlur(dst, dst, new cv.Size(5, 5), 0);
           
-          // 5. Detección de bordes con Canny
           cv.Canny(dst, dst, 50, 150, 3, false);
           
-          // 6. Encontrar contornos
           const contours = new cv.MatVector();
           const hierarchy = new cv.Mat();
           
           try {
             cv.findContours(dst, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
             
-            // 7. Encontrar el contorno más grande
             let maxArea = 0;
             let maxContourIndex = -1;
             
@@ -172,22 +154,17 @@ const AdvancedImageScanner = () => {
               }
             }
             
-            // 8. Procesar el contorno si encontramos uno válido
             if (maxContourIndex >= 0) {
-              // Obtener el contorno máximo
               const maxContour = contours.get(maxContourIndex);
               const approx = new cv.Mat();
               
               try {
-                // Aproximar el contorno a un polígono
                 const epsilon = 0.02 * cv.arcLength(maxContour, true);
                 cv.approxPolyDP(maxContour, approx, epsilon, true);
                 
-                // Si tenemos 4 puntos, corregir perspectiva
                 if (approx.rows === 4) {
                   setStatus('Documento detectado, corrigiendo perspectiva...');
                   
-                  // Extraer los puntos del contorno
                   const points = [];
                   for (let i = 0; i < 4; i++) {
                     points.push({
@@ -196,13 +173,11 @@ const AdvancedImageScanner = () => {
                     });
                   }
                   
-                  // Ordenar puntos: top-left, top-right, bottom-right, bottom-left
                   points.sort((a, b) => a.y - b.y);
                   const top = points.slice(0, 2).sort((a, b) => a.x - b.x);
                   const bottom = points.slice(2, 4).sort((a, b) => a.x - b.x);
                   const orderedPoints = [...top, ...bottom.reverse()];
                   
-                  // Calcular dimensiones
                   const width = Math.max(
                     Math.sqrt(Math.pow(orderedPoints[1].x - orderedPoints[0].x, 2) + 
                     Math.pow(orderedPoints[1].y - orderedPoints[0].y, 2)),
@@ -217,7 +192,6 @@ const AdvancedImageScanner = () => {
                     Math.pow(orderedPoints[3].y - orderedPoints[1].y, 2))
                   );
                   
-                  // Crear matrices para los puntos de origen y destino
                   const dstPoints = cv.matFromArray(4, 1, cv.CV_32FC2, [
                     0, 0,
                     width, 0,
@@ -233,28 +207,23 @@ const AdvancedImageScanner = () => {
                   ]);
                   
                   try {
-                    // Transformación de perspectiva
                     const M = cv.getPerspectiveTransform(srcPoints, dstPoints);
                     
                     try {
                       cv.warpPerspective(src, processed, M, new cv.Size(width, height));
                       
-                      // Mejora de imagen: CLAHE para mejorar contraste
                       try {
                         const grayProcessed = new cv.Mat();
                         cv.cvtColor(processed, grayProcessed, cv.COLOR_RGBA2GRAY);
                         
                         try {
-                          // Usar parámetros explícitos para CLAHE
                           const clahe = new cv.CLAHE();
-                          clahe.collectGarbage(); // Limpiar cualquier estado anterior
+                          clahe.collectGarbage(); 
                           clahe.create(2.0, new cv.Size(8, 8));
                           clahe.apply(grayProcessed, grayProcessed);
                           
-                          // Convertir de vuelta a RGB para visualización
                           cv.cvtColor(grayProcessed, processed, cv.COLOR_GRAY2RGBA);
                           
-                          // Mostrar resultado en el canvas
                           cv.imshow(processedCanvasRef.current, processed);
                           setProcessedImage(processedCanvasRef.current.toDataURL('image/jpeg'));
                           setStatus('Documento procesado correctamente');
@@ -263,7 +232,6 @@ const AdvancedImageScanner = () => {
                         }
                       } catch (claheError) {
                         console.error("Error en CLAHE:", claheError);
-                        // Si falla CLAHE, mostrar la imagen perspectiva corregida sin mejora
                         cv.imshow(processedCanvasRef.current, processed);
                         setProcessedImage(processedCanvasRef.current.toDataURL('image/jpeg'));
                         setStatus('Documento procesado (sin mejora de contraste)');
@@ -293,7 +261,6 @@ const AdvancedImageScanner = () => {
             hierarchy.delete();
           }
         } finally {
-          // Liberar memoria de todas las matrices
           dst.delete();
           processed.delete();
           src.delete();

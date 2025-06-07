@@ -11,10 +11,8 @@ const ManagementPage = lazy(() => import("../pages/admin/Management"));
 const NotFound404 = lazy(() => import("../pages/404NotFound/NotFound404").then(module => ({ default: module.NotFound404 })));
 const EstadoDeInscripcion = lazy(() => import('../pages/estadoDeInscripcion/EstadoDeInscripcion'));
 const LoginUser = lazy(() => import("../pages/login/LoginUser"));
-const SubirBoleta = lazy(() => import("../pages/subirComprobante/SubirComprobante"));
 const InscripcionExcel = lazy(() => import("../pages/inscripcion/InscripcionExcel"));
 const AdvancedImageScanner = lazy(() => import("../components/camScanner/AdvancedImageScanner"));
-const ImageScanner = lazy(() => import("../components/camScanner/ImageScanner"));
 import Comprobante from "../pages/subirComprobante/Comprobante";
 
 const AppRoutes = () => {
@@ -107,7 +105,7 @@ const AppRoutes = () => {
         }
       />
       
-      {/* Ruta 404 - DEBE IR AL FINAL */}
+      {/* Ruta 404 */}
       <Route path="*" element={<NotFound404 />} />
     </Routes>
   );

@@ -418,15 +418,16 @@ const UpdateExcel = () => {
       return;
     }
     const {hojita1, hojita2} = leerExcelHoja2(selectedFile);
-      console.log('Participante',hojita1)
-      console.log('Relaciones', hojita2)
     try{
       const response = await getPeriodoInscripcionActal()
       const actualPeriodo = response.data.olimpiada;
-      console.log(actualPeriodo)
       if(actualPeriodo.nombreEstado !== "EN INSCRIPCION"){
-        Swal.fire("No se permiten inscripciones en este momento",
-        'La olimpiada actual no se encuentra en el periodo de "EN INSCRIPCION"', "warning");
+        Swal.fire({
+          icon: "info",
+          title: "Periodo de inscripción cerrado",
+          text: "No se puede registrar participantes en este momento.",
+          confirmButtonText: "Aceptar"
+        });
         return;
       }
     
@@ -438,7 +439,6 @@ const UpdateExcel = () => {
       }
       
 
-      // Mostrar formulario para ingresar CI del tutor
       const { value: ciTutor } = await Swal.fire({
         title: 'Ingrese el CI del Responsable de pago',
         input: 'text',
@@ -454,14 +454,17 @@ const UpdateExcel = () => {
 
       if (!ciTutor) return;
 
-      // Verificar si el tutor existe
       let tutorData = null;
       try {
         tutorData = await new Promise((resolve, reject) => {
           verificarTutor(ciTutor, resolve, reject);
         });
       } catch (error) {
-        console.log('Tutor no encontrado, se procederá a registro manual');
+        Swal.fire({
+          icon: "info",
+          title: "Tutor no encontrado",
+          text: "Se procederá a registro manual"
+        });
       }
 
       let formValues = null;

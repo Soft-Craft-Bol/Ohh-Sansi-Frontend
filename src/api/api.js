@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { CodeSquare } from 'lucide-react';
 
 //const baseURL = "https://ohh-sansi.onrender.com/api/v1";
 const baseURL = "http://localhost:9999/api/v1";
@@ -30,7 +29,7 @@ export const loginUser = (data) => api.post('/auth/login', data);
 export const getUser = () => api.get('/auth/user')
 export const addUser = (data) => api.post('/auth/register', data);
 export const updateUser = (data) => api.put('/auth/user', data);
-export const deletYser = (id) => api.delete(`/auth/user/${id}`);
+export const deleteUser = (id) => api.delete(`/auth/user/${id}`);
 //participantes
 export const getInscripciones = () => api.get('/inscripciones');
 export const addInscripcion = (data) => api.post('/inscripciones', data);

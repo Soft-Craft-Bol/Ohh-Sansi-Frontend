@@ -124,19 +124,15 @@ export default function Comprobante() {
         notasAdicionales: receiptData.notasAdicionales || ''
       };
 
-      // 4. Llamar a verificarPago
       const responsePago = await verificarPago(pagoData);
-      console.log("Respuesta del backend:", responsePago.data);
-      // 5. Mostrar resultado
       if (responsePago.data && responsePago.status === 200) {
-        Swal.fire(
-          '¡Pago verificado!',
-          'Tu comprobante ha sido registrado correctamente.',
-          'success'
-        );
+        Swal.fire({
+          icon: 'success',
+          title: '¡Pago verificado!',
+          text: 'Tu comprobante ha sido registrado correctamente.'
+        });
 
 
-        // Resetear el formulario
         setSelectedImage(null);
         setCroppedImage(null);
         setScanComplete(false);
@@ -160,7 +156,6 @@ export default function Comprobante() {
     }
   }, [croppedImage, receiptData]);
 
-  // ─── Render ─────────────────────────────────jhj────────────────────────────
    if (!estadoPago) {
     return (
       <div className="comprobante-verification">

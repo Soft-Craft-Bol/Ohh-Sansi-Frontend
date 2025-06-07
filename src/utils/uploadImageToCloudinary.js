@@ -24,7 +24,6 @@ const uploadImageToCloudinary = async (file) => {
           const percentCompleted = Math.round(
             (progressEvent.loaded * 100) / progressEvent.total
           );
-          console.log(`Progreso: ${percentCompleted}%`);
         }
       }
     );

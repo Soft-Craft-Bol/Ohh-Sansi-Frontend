@@ -1,7 +1,6 @@
 import React, { useMemo } from 'react';
 import { FiCalendar } from 'react-icons/fi';
 import PeriodCard from './PeriodCard';
-import { PERIOD_TYPES } from '../../../../schemas/PeriodValidationSchema';
 import '../PeriodsManagement.css';
 
 export default function PeriodsList({ periods, onEdit, onCancel }) {
@@ -23,18 +22,6 @@ export default function PeriodsList({ periods, onEdit, onCancel }) {
 
   const filteredPeriods = useMemo(() => {
     return validPeriods;
-    
-    /* FILTRO ORIGINAL - descomentado 
-    const hasFinishedInscripcion = validPeriods.some(p => 
-      p.tipoPeriodo === 'INSCRIPCION' && 
-      p.estadoActual === 'FINALIZADO'
-    );
-
-    return validPeriods.filter(p => 
-      p.tipoPeriodo !== 'AMPLIACION' || 
-      (p.tipoPeriodo === 'AMPLIACION' && hasFinishedInscripcion)
-    );
-    */
   }, [validPeriods]);
 
   if (filteredPeriods.length === 0) {

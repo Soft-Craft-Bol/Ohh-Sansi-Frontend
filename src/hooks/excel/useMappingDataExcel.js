@@ -18,7 +18,6 @@ export const leerExcelHoja2 = async (file) => {
 
   const datosHoja2 = XLSX.utils.sheet_to_json(hoja2, { defval: "" });
   const datosHoja4 = XLSX.utils.sheet_to_json(hoja4, { defval: "" });
-  console.log(combinarDatosHoja2y4(datosHoja2, datosHoja4))
   return combinarDatosHoja2y4(datosHoja2, datosHoja4);
 };
 

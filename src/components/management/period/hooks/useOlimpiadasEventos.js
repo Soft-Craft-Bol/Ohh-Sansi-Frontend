@@ -14,7 +14,6 @@ export default function useOlimpiadasEventos() {
         return acc;
       }, {});
       
-      console.log('Datos de eventos procesados:', eventosData); 
       return eventosData;
     }
   });

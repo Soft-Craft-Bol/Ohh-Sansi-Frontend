@@ -56,7 +56,6 @@ const Step3Only = () => {
               value: p.idTutorParentesco.toString(),
               label: p.parentesco,
             }));
-            console.log(filteredOptions)
           setParentescoOptions(filteredOptions);
         } else {
           setParentescoOptions([]);
@@ -112,14 +111,12 @@ const Step3Only = () => {
         tutors: [tutorData]
       }
 
-      console.log ('intento de envio;', bodyForEndpoint);
       await registerTutor(ciParticipante, bodyForEndpoint);
       Swal.fire({ icon: "success", title: "Éxito", text: "Tutor registrado correctamente" });
       resetForm();
       setMostrarFormulario(false);
       setCiParticipante("");
     } catch (error) {
-      console.log(values)
       console.error("Error al registrar tutor:", error);
       Swal.fire({
         icon: "error",
@@ -200,7 +197,6 @@ const Step3Only = () => {
                 required
                 onChange={(e) => {
                   setFieldValue("idTutorParentesco", e.target.value);
-                  console.log("Parentesco seleccionado:", e.target.value);
                 }}
               />
               <Form className="step3-grid">

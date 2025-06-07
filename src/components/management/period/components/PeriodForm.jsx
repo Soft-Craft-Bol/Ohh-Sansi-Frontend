@@ -84,14 +84,11 @@ export default function PeriodForm({
 
   const updateMutation = useMutation({
     mutationFn: async (data) => {
-      console.log('Datos a enviar para actualizar:', data);
-      console.log('ID del período a actualizar:', editing.idPeriodo);
       const response = await updatePeriodoOlimpiada(editing.idPeriodo, {
         idPeriodo: editing.idPeriodo,
         idOlimpiada: selectedOlimpiada,
         ...data
       });
-      console.log('Respuesta del servidor (actualizar):', response);
 
       if (response.data?.status === 'error') {
         throw new Error(response.data.message);
@@ -100,7 +97,6 @@ export default function PeriodForm({
       return response;
     },
     onSuccess: (data) => {
-      console.log('Período actualizado exitosamente:', data);
       Swal.fire({
         title: '¡Actualizado!',
         text: 'El período ha sido actualizado correctamente.',

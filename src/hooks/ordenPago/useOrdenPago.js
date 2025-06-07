@@ -44,19 +44,25 @@ const useOrdenPago = () => {
             setOrdenExcel(excelResponse.data);
             setMostrarDetalle(false);
             setOrdenGenerada(null);
-            console.log("Datos recibidos de getOrdenPagoExcel:", excelResponse.data);
             return;
         } catch (excelError) {
-            // Verificamos si el error es el específico que indica que debemos intentar con getOrdenPagoDetailInfo
             if (excelError.response?.data?.message === "Error al obtener los detalles de inscripcion" &&
                 excelError.response?.data?.details === "Incorrect result size: expected 1, actual 0") {
-                console.log("Error específico detectado, intentando con getOrdenPagoDetailInfo...");
+                Swal.fire({
+                    icon: "info",
+                    title: "Error específico detectado",
+                    text: "Intentando con getOrdenPagoDetailInfo..."
+                });
                 try {
                     const detailResponse = await getOrdenPagoDetailInfo(codigoIntroducido);
                     setOrdenData(detailResponse.data);
                     setMostrarDetalle(false);
                     setOrdenGenerada(null);
-                    console.log("Datos recibidos de getOrdenPagoDetailInfo:", detailResponse.data);
+                    Swal.fire({
+                        icon: "success",
+                        title: "Datos recibidos",
+                        text: "Los datos se han recibido correctamente."
+                    });
                 } catch (detailError) {
                     console.error("Error al obtener los datos con getOrdenPagoDetailInfo:", detailError.response?.data || detailError.message);
                     if (!detailError.response) {
@@ -101,7 +107,6 @@ const useOrdenPago = () => {
     let  id_inscripcion, cantidadAreas, precioPorArea, montoTotalPago,
      fechaEmision,  fechaVencimientoStr,montoLiteral, centavos, nombreResponsable;
     if(ordenExel){
-      console.log('que orden llega?:',ordenExel)
       id_inscripcion = ordenExel.Responsable?.idInscripcion;
 
       cantidadAreas = ordenExel.Responsable?.cantAreas;
@@ -160,8 +165,6 @@ const useOrdenPago = () => {
         concepto: "Pago de matrícula",
         precio_unitario: precioPorArea,
       };
-
-      console.log("Enviando orden:", nuevaOrden);
 
       const response = await createOrdenPago(nuevaOrden);
       setOrdenGenerada(response.data);

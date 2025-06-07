@@ -20,14 +20,11 @@ const AsignarAreasForm = ({ participanteCI, shouldSearch, onSearchComplete, onCo
 
   useEffect(() => {
     if (!carnet) {
-      console.log("No se ejecuta fetchEstudiante porque carnet es:", carnet);
       return;
     }
     const fetchEstudiante = async (carnet) => {
       try {
-        console.log("Llamando getEstudenteByCi con carnet:", carnet);
         const res = await getEstudenteByCi(carnet);
-        console.log("Respuesta de estudiante:", res.data);
         if (res.data) {
           setDataEstudiante(res.data);
           setCodigoIntroducido(res.data.carnetIdentidadParticipante.toString());
@@ -43,18 +40,16 @@ const AsignarAreasForm = ({ participanteCI, shouldSearch, onSearchComplete, onCo
   }, [carnet]);
 
   useEffect(() => {
-    console.log("Participante CI:", participanteCI);
+  
     if (participanteCI && participanteCI.trim() !== "") {
       if (shouldSearch) {
         buscarEstudiante(participanteCI);
-        //onSearchComplete(); // Notificar que la búsqueda se completó
       }
     }
   }, [participanteCI, shouldSearch, onSearchComplete]);
 
   useEffect(() => {
     if (autoNavigate && seleccionadas.length > 0) {
-      // Esperar un momento para que el usuario vea el mensaje de éxito
       const timer = setTimeout(() => {
         onComplete();
       }, 1500);
@@ -237,7 +232,6 @@ const AsignarAreasForm = ({ participanteCI, shouldSearch, onSearchComplete, onCo
           idOlimpiada: a.idOlimpiada,
           idCatalogo: a.idCatalogo,
         }));
-      console.log("Llamando setCatalogoAreasParticipante con:", estudiante.carnetIdentidadParticipante, dataToSend);
       await setCatalogoAreasParticipante(estudiante.carnetIdentidadParticipante, dataToSend);
 
       Swal.fire({

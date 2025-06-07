@@ -1,14 +1,13 @@
 import { useState } from "react";
-import { FiCalendar, FiChevronDown, FiChevronUp, FiEdit3, FiX, FiClock, FiAlertTriangle, FiLock } from "react-icons/fi";
+import { FiCalendar, FiChevronDown, FiChevronUp, FiEdit3, FiClock, FiAlertTriangle, FiLock } from "react-icons/fi";
 import { PERIOD_TYPES, PERIOD_STATUS } from "../../../../schemas/PeriodValidationSchema";
 import  formatDate  from "../../../../utils/formatDate";
 import '../PeriodsManagement.css'
 
-export default function PeriodCard ({ periodo, onEdit, onCancel, canEdit, currentStatus }){
+export default function PeriodCard ({ periodo, onEdit, currentStatus }){
   const [expanded, setExpanded] = useState(false);
 
-  // Only allow editing in PENDIENTE status
-  const isEditable = currentStatus === 'PENDIENTE' && canEdit;
+  /* const isEditable = currentStatus === 'PENDIENTE' && canEdit; */
   const statusConfig = PERIOD_STATUS[currentStatus] || PERIOD_STATUS.PENDIENTE;
   const typeConfig = PERIOD_TYPES[periodo.tipoPeriodo] || PERIOD_TYPES.INSCRIPCIONES;
 
@@ -56,21 +55,11 @@ export default function PeriodCard ({ periodo, onEdit, onCancel, canEdit, curren
           <div className="gpo-card-actions">
             <button
               className="gpo-edit-btn"
-              onClick={() => onEdit(periodo)}
-              disabled={!isEditable}
-              title={!isEditable ? 'No se puede editar este período' : 'Editar período'}
+              onClick={() => onEdit(periodo)} 
+              title= 'Editar período'
             >
-              {isEditable ? <FiEdit3 /> : <FiLock />} {isEditable ? 'Editar' : 'Bloqueado'}
+               <FiEdit3 /> Editar
             </button>
-            
-           {/*  <button
-              className="gpo-cancel-period-btn"
-              onClick={() => onCancel(periodo)}
-              disabled={!isEditable || currentStatus === 'CANCELADO'}
-              title={!isEditable ? 'No se puede cancelar este período' : 'Cancelar período'}
-            >
-              <FiX /> Cancelar
-            </button> */}
           </div>
         </div>
       )}

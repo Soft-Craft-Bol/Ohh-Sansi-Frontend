@@ -55,7 +55,6 @@ const Convocatoria = () => {
     setMessage('');
     try {
       const response = await uploadConvocatoriaPDF(selectedArea, idOlimpiada, pdfFile);
-      console.log('Respuesta del servidor:', response);
       Swal.fire({
         icon: 'success',
         title: '¡PDF subido correctamente!',
