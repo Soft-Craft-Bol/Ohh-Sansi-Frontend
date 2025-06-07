@@ -53,8 +53,8 @@ const processReceiptText = (ocrText, attemptId = 'default') => {
 
   lines.forEach((line, index) => {
     // Número de transacción
-    if (!receiptData.codTransaccion && /NRO[^\d]*?(\d{6,})/.test(line)) {
-      const match = line.match(/NRO[^\d]*?(\d{6,})/);
+    if (!receiptData.codTransaccion && /Nro[^\d]*?(\d{6,})/.test(line)) {
+      const match = line.match(/Nro[^\d]*?(\d{6,})/);
       if (match) receiptData.codTransaccion = match[1];
     }
 
