@@ -257,7 +257,7 @@ export default function Comprobante() {
                   <svg className="upload-icon" viewBox="0 0 24 24">
                     <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
                   </svg>
-                  <p>Selecciona o arrastra tu comprobante</p>
+                  <p>Selecciona tu comprobante</p>
                   <span className="file-types">Formatos aceptados: JPG, PNG</span>
                   {attempts < 2 && (
                     <p className="attempts-info">Intentos restantes: {attempts}</p>

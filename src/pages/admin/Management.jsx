@@ -13,9 +13,11 @@ import {
   Settings,
   BarChart3,
   Home,
-  FileSliders
+  FileSliders,
+  LogOut
 } from 'lucide-react';
 import "./Management.css";
+import { signOut } from "../../utils/AuthUtils";
 
 const OlimpiadasDashboard = lazy(() => import("../../components/management/dashboard/OlimpiadasDashboard"));
 const FormArea = lazy(() => import("../../components/management/formArea/FormArea"));
@@ -222,17 +224,13 @@ const ManagementPage = () => {
 
         {/* Sidebar Footer */}
         <div className="admin-sidebar-footer">
+         
           <button
-            className="admin-dark-mode-toggle"
-            onClick={toggleDarkMode}
-            title={darkMode ? 'Modo claro' : 'Modo oscuro'}
-          >
-            {darkMode ? <Sun size={20} /> : <Moon size={20} />}
-            {sidebarOpen && (
-              <span className="admin-dark-mode-label">
-                {darkMode ? 'Modo Claro' : 'Modo Oscuro'}
-              </span>
-            )}
+          className="admin-logout-button"
+          onClick={signOut}
+          title="Cerrar sesión">
+            <LogOut size={20} />
+            {sidebarOpen && <span className="admin-logout-label">Cerrar Sesión</span>}
           </button>
         </div>
       </div>

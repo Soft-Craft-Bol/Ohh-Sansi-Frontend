@@ -1,0 +1,907 @@
+/* Sistema de Olimpiadas UMSS - Estilos Minimalistas */
+
+/* Variables CSS */
+:root {
+  --umss-blue: var(--blue);
+  --umss-blue-dark: var(--blue-dark);
+  --umss-blue-light: #dbeafe;
+  --umss-blue-50: #eff6ff;
+  
+  --gray-50: #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-300: #d1d5db;
+  --gray-400: #9ca3af;
+  --gray-500: #6b7280;
+  --gray-600: #4b5563;
+  --gray-700: #374151;
+  --gray-800: #1f2937;
+  --gray-900: #111827;
+  
+  --green: #16a34a;
+  --green-light: #dcfce7;
+  --orange: #ea580c;
+  --orange-light: #fed7aa;
+  --red: #dc2626;
+  --red-light: #fee2e2;
+  
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  
+  --border-radius: 8px;
+  --border-radius-lg: 12px;
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+}
+
+/* Reset y base */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.5;
+  color: var(--gray-800);
+  background-color: var(--gray-50);
+}
+
+/* Contenedor principal */
+.gpo-periods-container {
+  padding: var(--spacing-lg);
+  min-height: 100vh;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Header */
+.gpo-periods-header {
+  margin-bottom: var(--spacing-xl);
+  text-align: center;
+  padding: var(--spacing-lg) 0;
+}
+
+.gpo-periods-header h1 {
+  color: var(--gray-900);
+  font-size: 2.25rem;
+  font-weight: 600;
+  margin: 0 0 var(--spacing-sm) 0;
+  letter-spacing: -0.025em;
+}
+
+.gpo-periods-header p {
+  color: var(--gray-500);
+  font-size: 1rem;
+  margin: 0;
+  font-weight: 400;
+}
+
+/* Panel de selección */
+.gpo-selection-panel {
+  display: flex;
+  gap: var(--spacing);
+  padding: var(--spacing-lg);
+  border-radius: var(--border-radius-lg);
+  background: white;
+  border: 1px solid var(--gray-200);
+  margin-bottom: var(--spacing-lg);
+  align-items: flex-end;
+}
+
+.gpo-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  flex: 1;
+}
+
+.gpo-form-group label {
+  font-weight: 500;
+  color: var(--gray-700);
+  font-size: 0.875rem;
+}
+
+.gpo-olimpiada-select {
+  width: 100%;
+  padding: 12px var(--spacing);
+  font-size: 0.9375rem;
+  color: var(--gray-900);
+  border: 1px solid var(--gray-300);
+  border-radius: var(--border-radius);
+  background: white;
+  transition: all 0.15s ease;
+}
+
+.gpo-olimpiada-select:focus {
+  outline: none;
+  border-color: var(--umss-blue);
+  box-shadow: 0 0 0 3px var(--umss-blue-50);
+}
+
+.gpo-olimpiada-select:disabled {
+  background-color: var(--gray-50);
+  color: var(--gray-400);
+  cursor: not-allowed;
+}
+
+/* Botones de acción */
+.gpo-action-buttons {
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-shrink: 0;
+}
+
+.gpo-add-btn,
+.gpo-config-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: 12px 20px;
+  border-radius: var(--border-radius);
+  font-weight: 500;
+  font-size: 0.875rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.gpo-add-btn {
+  background-color: var(--umss-blue);
+  color: white;
+}
+
+.gpo-add-btn:hover:not(:disabled) {
+  background-color: var(--umss-blue-dark);
+}
+
+.gpo-add-btn:disabled {
+  background-color: var(--gray-300);
+  cursor: not-allowed;
+}
+
+.gpo-config-btn {
+  background-color: white;
+  color: var(--gray-600);
+  border: 1px solid var(--gray-300);
+}
+
+.gpo-config-btn:hover {
+  background-color: var(--gray-50);
+  color: var(--gray-700);
+}
+
+/* Formulario Modal - Período */
+.pf-period-form-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.pf-period-form-modal {
+  background: white;
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-md);
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow: hidden;
+  animation: modalSlideIn 0.2s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.pf-period-form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-lg);
+  border-bottom: 1px solid var(--gray-200);
+  background: white;
+}
+
+.pf-period-form-header h3 {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--gray-900);
+}
+
+.pf-btn-close {
+  background: none;
+  border: none;
+  color: var(--gray-400);
+  font-size: 24px;
+  cursor: pointer;
+  padding: var(--spacing-xs);
+  border-radius: var(--border-radius);
+  transition: all 0.15s ease;
+  line-height: 1;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pf-btn-close:hover {
+  background-color: var(--gray-100);
+  color: var(--gray-600);
+}
+
+.pf-period-form {
+  padding: var(--spacing-lg);
+  max-height: calc(90vh - 140px);
+  overflow-y: auto;
+}
+
+.pf-form-group {
+  margin-bottom: var(--spacing-lg);
+}
+
+.pf-form-group label {
+  display: block;
+  margin-bottom: var(--spacing-sm);
+  font-weight: 500;
+  color: var(--gray-700);
+  font-size: 0.875rem;
+}
+
+.pf-form-group input,
+.pf-form-group select {
+  width: 100%;
+  padding: 12px var(--spacing);
+  border: 1px solid var(--gray-300);
+  border-radius: var(--border-radius);
+  font-size: 0.9375rem;
+  transition: all 0.15s ease;
+  background: white;
+  box-sizing: border-box;
+  color: var(--gray-900);
+}
+
+.pf-form-group input:focus,
+.pf-form-group select:focus {
+  outline: none;
+  border-color: var(--umss-blue);
+  box-shadow: 0 0 0 3px var(--umss-blue-50);
+}
+
+.pf-form-group input:disabled,
+.pf-form-group select:disabled {
+  background-color: var(--gray-50);
+  color: var(--gray-400);
+  cursor: not-allowed;
+}
+
+.pf-form-group input::placeholder {
+  color: var(--gray-400);
+}
+
+.pf-form-group select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 16px center;
+  background-repeat: no-repeat;
+  background-size: 16px;
+  padding-right: 44px;
+}
+
+.pf-validation-error {
+  background-color: var(--red-light);
+  border: 1px solid #fca5a5;
+  color: var(--red);
+  padding: 12px var(--spacing);
+  border-radius: var(--border-radius);
+  margin-bottom: var(--spacing-lg);
+  font-size: 0.875rem;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-sm);
+}
+
+.pf-validation-error::before {
+  content: "⚠";
+  flex-shrink: 0;
+  font-size: 1rem;
+}
+
+.pf-form-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  justify-content: flex-end;
+  margin-top: var(--spacing-xl);
+  padding-top: var(--spacing-lg);
+  border-top: 1px solid var(--gray-200);
+}
+
+.pf-btn-cancel,
+.pf-btn-save {
+  padding: 12px 24px;
+  border-radius: var(--border-radius);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: none;
+  min-width: 100px;
+  position: relative;
+}
+
+.pf-btn-cancel {
+  background-color: white;
+  color: var(--gray-600);
+  border: 1px solid var(--gray-300);
+}
+
+.pf-btn-cancel:hover:not(:disabled) {
+  background-color: var(--gray-50);
+  color: var(--gray-700);
+}
+
+.pf-btn-save {
+  background-color: var(--umss-blue);
+  color: white;
+}
+
+.pf-btn-save:hover:not(:disabled) {
+  background-color: var(--umss-blue-dark);
+}
+
+.pf-btn-cancel:disabled,
+.pf-btn-save:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pf-btn-save.loading {
+  color: transparent;
+}
+
+.pf-btn-save.loading::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 16px;
+  height: 16px;
+  margin: -8px 0 0 -8px;
+  border: 2px solid white;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Formulario de creación */
+.gpo-create-form {
+  background: white;
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--gray-200);
+  margin-bottom: var(--spacing-lg);
+}
+
+.gpo-create-form h3 {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  color: var(--gray-900);
+  margin-bottom: var(--spacing-lg);
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.gpo-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing);
+}
+
+.gpo-form-group input,
+.gpo-form-group select {
+  padding: 12px var(--spacing);
+  border: 1px solid var(--gray-300);
+  border-radius: var(--border-radius);
+  font-size: 0.9375rem;
+  transition: all 0.15s ease;
+  background: white;
+  color: var(--gray-900);
+}
+
+.gpo-form-group input:focus,
+.gpo-form-group select:focus {
+  outline: none;
+  border-color: var(--umss-blue);
+  box-shadow: 0 0 0 3px var(--umss-blue-50);
+}
+
+.gpo-form-group select:disabled {
+  background: var(--gray-50);
+  color: var(--gray-400);
+}
+
+.gpo-error-message {
+  color: var(--red);
+  font-size: 0.75rem;
+  margin-top: var(--spacing-xs);
+}
+
+.gpo-form-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  justify-content: flex-end;
+  margin-top: var(--spacing-lg);
+  padding-top: var(--spacing-lg);
+  border-top: 1px solid var(--gray-200);
+}
+
+.gpo-save-btn,
+.gpo-cancel-btn {
+  padding: 12px 24px;
+  border-radius: var(--border-radius);
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-size: 0.875rem;
+}
+
+.gpo-save-btn {
+  background: var(--green);
+  color: white;
+}
+
+.gpo-save-btn:hover:not(:disabled) {
+  background: #15803d;
+}
+
+.gpo-save-btn:disabled {
+  background: var(--gray-300);
+  cursor: not-allowed;
+}
+
+.gpo-cancel-btn {
+  background: white;
+  color: var(--gray-600);
+  border: 1px solid var(--gray-300);
+}
+
+.gpo-cancel-btn:hover {
+  background: var(--gray-50);
+  color: var(--gray-700);
+}
+
+/* Lista de períodos */
+.gpo-periods-list {
+  background: white;
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--gray-200);
+}
+
+.gpo-periods-list h3 {
+  color: var(--gray-900);
+  margin-bottom: var(--spacing-lg);
+  font-size: 1.125rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+/* Estados de carga y vacío */
+.gpo-loading {
+  text-align: center;
+  padding: 48px;
+  color: var(--gray-500);
+  font-size: 1rem;
+}
+
+.gpo-empty-state {
+  text-align: center;
+  padding: 48px;
+  color: var(--gray-500);
+}
+
+.gpo-empty-state svg {
+  color: var(--gray-300);
+  margin-bottom: var(--spacing);
+}
+
+.gpo-empty-state p {
+  font-size: 1rem;
+  margin-bottom: var(--spacing);
+}
+
+.gpo-text-btn {
+  background: none;
+  border: none;
+  color: var(--umss-blue);
+  font-weight: 500;
+  cursor: pointer;
+  font-size: 0.875rem;
+  padding: var(--spacing-sm) var(--spacing);
+  border-radius: var(--border-radius);
+  transition: all 0.15s ease;
+}
+
+.gpo-text-btn:hover {
+  background: var(--umss-blue-50);
+  color: var(--umss-blue-dark);
+}
+
+/* Tarjetas de períodos */
+.gpo-period-cards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing);
+}
+
+.gpo-period-card {
+  border: 1px solid var(--gray-200);
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+  transition: all 0.15s ease;
+  background: white;
+}
+
+.gpo-period-card:hover {
+  border-color: var(--gray-300);
+  box-shadow: var(--shadow-sm);
+}
+
+.gpo-period-card.gpo-expanded {
+  border-color: var(--umss-blue);
+  box-shadow: 0 0 0 1px var(--umss-blue-light);
+}
+
+/* Estados de período */
+.gpo-period-card.gpo-status-activo {
+  border-left: 4px solid var(--green);
+}
+
+.gpo-period-card.gpo-status-pendiente {
+  border-left: 4px solid var(--gray-400);
+}
+
+.gpo-period-card.gpo-status-finalizado {
+  border-left: 4px solid var(--umss-blue);
+}
+
+.gpo-period-card.gpo-status-cancelado {
+  border-left: 4px solid var(--red);
+  opacity: 0.7;
+}
+
+/* Header de tarjeta */
+.gpo-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-lg);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.gpo-card-header:hover {
+  background: var(--gray-50);
+}
+
+.gpo-period-info {
+  flex: 1;
+}
+
+.gpo-period-badges {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
+}
+
+.gpo-period-type,
+.gpo-period-status {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+/* Tipos de período */
+.gpo-type-blue {
+  background: var(--umss-blue-light);
+  color: var(--umss-blue-dark);
+}
+
+.gpo-type-orange {
+  background: var(--orange-light);
+  color: var(--orange);
+}
+
+/* Estados */
+.gpo-status-gray {
+  background: var(--gray-100);
+  color: var(--gray-600);
+}
+
+.gpo-status-green {
+  background: var(--green-light);
+  color: var(--green);
+}
+
+.gpo-status-blue {
+  background: var(--umss-blue-light);
+  color: var(--umss-blue-dark);
+}
+
+.gpo-status-red {
+  background: var(--red-light);
+  color: var(--red);
+}
+
+.gpo-period-info h4 {
+  color: var(--gray-900);
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.gpo-period-dates {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  color: var(--gray-500);
+  font-size: 0.875rem;
+  margin: var(--spacing-sm) 0 0 0;
+}
+
+.gpo-date-icon {
+  color: var(--gray-400);
+}
+
+.gpo-expand-btn {
+  background: none;
+  border: none;
+  color: var(--gray-400);
+  cursor: pointer;
+  padding: var(--spacing-sm);
+  border-radius: var(--border-radius);
+  transition: all 0.15s ease;
+  margin-left: var(--spacing);
+}
+
+.gpo-expand-btn:hover {
+  background: var(--gray-100);
+  color: var(--gray-600);
+}
+
+/* Detalles de tarjeta */
+.gpo-card-details {
+  border-top: 1px solid var(--gray-200);
+  padding: var(--spacing-lg);
+  background: var(--gray-50);
+}
+
+.gpo-detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing);
+  font-size: 0.875rem;
+}
+
+.gpo-detail-row:last-child {
+  margin-bottom: 0;
+}
+
+.gpo-detail-row span:first-child {
+  color: var(--gray-500);
+  font-weight: 500;
+}
+
+.gpo-current-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+  padding: 4px 8px;
+  border-radius: var(--border-radius);
+}
+
+.gpo-current-status.gpo-status-green {
+  background: var(--green-light);
+  color: var(--green);
+}
+
+.gpo-current-status.gpo-status-gray {
+  background: var(--gray-100);
+  color: var(--gray-600);
+}
+
+.gpo-current-status.gpo-status-blue {
+  background: var(--umss-blue-light);
+  color: var(--umss-blue-dark);
+}
+
+.gpo-current-status.gpo-status-red {
+  background: var(--red-light);
+  color: var(--red);
+}
+
+/* Indicador activo */
+.gpo-active-indicator {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: 12px var(--spacing);
+  background: var(--green-light);
+  border: 1px solid #bbf7d0;
+  border-radius: var(--border-radius);
+  color: var(--green);
+  font-weight: 500;
+  margin-bottom: var(--spacing);
+}
+
+.gpo-pulse {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Acciones de tarjeta */
+.gpo-card-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  justify-content: flex-end;
+  margin-top: var(--spacing);
+  padding-top: var(--spacing);
+  border-top: 1px solid var(--gray-200);
+}
+
+.gpo-edit-btn,
+.gpo-cancel-period-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px var(--spacing);
+  border-radius: var(--border-radius);
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: 1px solid;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.gpo-edit-btn {
+  background: white;
+  color: var(--umss-blue);
+  border-color: var(--umss-blue-light);
+}
+
+.gpo-edit-btn:hover:not(:disabled) {
+  background: var(--umss-blue-50);
+  border-color: var(--umss-blue);
+}
+
+.gpo-edit-btn:disabled {
+  background: var(--gray-50);
+  color: var(--gray-400);
+  border-color: var(--gray-200);
+  cursor: not-allowed;
+}
+
+.gpo-cancel-period-btn {
+  background: white;
+  color: var(--red);
+  border-color: #fca5a5;
+}
+
+.gpo-cancel-period-btn:hover:not(:disabled) {
+  background: var(--red-light);
+  border-color: var(--red);
+}
+
+.gpo-cancel-period-btn:disabled {
+  background: var(--gray-50);
+  color: var(--gray-400);
+  border-color: var(--gray-200);
+  cursor: not-allowed;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .gpo-periods-container {
+    padding: var(--spacing);
+  }
+  
+  .gpo-periods-header h1 {
+    font-size: 1.875rem;
+  }
+  
+  .gpo-selection-panel {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .gpo-action-buttons {
+    justify-content: center;
+  }
+  
+  .gpo-form-row {
+    grid-template-columns: 1fr;
+    gap: var(--spacing);
+  }
+  
+  .gpo-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+  }
+  
+  .gpo-period-dates {
+    margin: 0;
+  }
+  
+  .gpo-expand-btn {
+    margin-left: 0;
+    align-self: flex-end;
+  }
+  
+  .gpo-card-actions {
+    flex-direction: column;
+  }
+  
+  .gpo-form-actions {
+    flex-direction: column;
+  }
+  
+  .pf-period-form-modal {
+    width: 95%;
+    margin: var(--spacing);
+  }
+  
+  .pf-form-actions {
+    flex-direction: column;
+  }
+  
+  .pf-btn-cancel,
+  .pf-btn-save {
+    width: 100%;
+  }
+}

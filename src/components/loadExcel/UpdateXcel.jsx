@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import * as XLSX from 'xlsx';
-import { FaUpload, FaDownload, FaCheck, FaTimes, FaCheckCircle } from 'react-icons/fa';
+import { FaUpload, FaDownload, FaCheck } from 'react-icons/fa';
 import { RiFileExcel2Line } from 'react-icons/ri';
 import { ButtonPrimary } from '../button/ButtonPrimary';
 import './LoadExcel.css';
@@ -13,6 +13,7 @@ import { excelRowSchemaAreas, excelRowSchemaDatos } from '../../schemas/ExcelVal
 import { getInscripcionByID, postOnlyExcelFile, registerTutor, getPeriodoInscripcionActal } from '../../api/api';
 import { useNavigate } from 'react-router-dom';
 import { verificarTutor } from '../../hooks/loaderInfo/LoaderInfo';
+import { leerExcelHoja2 } from '../../hooks/excel/useMappingDataExcel';
 
 const validExtensions = ['.xlsx'];
 const columnasPermitidas = ['Nombres de Participante', 'Carnet Identidad', 'Grado', 'Departamento', 'Colegio'];
@@ -229,7 +230,6 @@ const UpdateExcel = () => {
         hojaAreasRaw = limpiarFilasVacias(hojaAreasRaw);
 
         const hojaDatos = hojaDatosRaw.filter(fila => !esFilaInvalida(fila));
-        const hojaAreas = hojaAreasRaw.filter(fila => !esFilaInvalida(fila));
 
         // Convertir fechas
         const convertirFechas = (fila) => {
@@ -244,10 +244,9 @@ const UpdateExcel = () => {
         };
 
         const filasConHojaDatos = hojaDatos.map(fila => ({ ...convertirFechas(fila), _hoja: 'Datos' }));
-        const filasConHojaAreas = hojaAreas.map(fila => ({ ...convertirFechas(fila), _hoja: 'Datos' }));
 
         const erroresDatos = await validarFilasDatos(filasConHojaDatos);
-        const erroresAreas = await validarFilasAreas(filasConHojaAreas);
+        const erroresAreas = await validarFilasAreas(filasConHojaDatos);
         
         const erroresTotales = [...erroresDatos, ...erroresAreas];
         resolve(erroresTotales);
@@ -418,6 +417,9 @@ const UpdateExcel = () => {
       Swal.fire("Archivo requerido", "Debes cargar un archivo Excel antes de registrar", "warning");
       return;
     }
+    const {hojita1, hojita2} = leerExcelHoja2(selectedFile);
+      console.log('Participante',hojita1)
+      console.log('Relaciones', hojita2)
     try{
       const response = await getPeriodoInscripcionActal()
       const actualPeriodo = response.data.olimpiada;
@@ -434,10 +436,11 @@ const UpdateExcel = () => {
         mostrarErrores(errores);
         return;
       }
+      
 
       // Mostrar formulario para ingresar CI del tutor
       const { value: ciTutor } = await Swal.fire({
-        title: 'Ingrese CI del tutor',
+        title: 'Ingrese el CI del Responsable de pago',
         input: 'text',
         inputPlaceholder: 'Número de documento',
         inputAttributes: {
@@ -506,7 +509,7 @@ const UpdateExcel = () => {
                    oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
           `,
           focusConfirm: false,
-          confirmButtonText: 'Registrar Tutor',
+          confirmButtonText: 'Registrar Responsable de pago',
           preConfirm: () => {
             const ci = document.getElementById('ci').value.trim();
             const comp = document.getElementById('comp').value.trim();
@@ -645,7 +648,6 @@ const UpdateExcel = () => {
         );
     }
   };
-  
 
   return (
     <div>

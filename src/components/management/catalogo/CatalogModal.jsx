@@ -2,7 +2,7 @@ import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import React, { useEffect, useMemo } from 'react';
 import './CatalogModal.css';
-import { formatGrados, formatGradosParaSelect } from '../../../utils/GradesOrder';
+import { formatGrades, formatGrados, formatGradosParaSelect } from '../../../utils/GradesOrder';
 
 const CatalogModal = ({ areas, categories, onClose, onSubmit, isEditing, itemData }) => {
 
@@ -12,7 +12,6 @@ const CatalogModal = ({ areas, categories, onClose, onSubmit, isEditing, itemDat
     return category ? category.idCategoria : '';
   };
 
-  // Calcular los valores iniciales usando useMemo para evitar recálculos innecesarios
   const initialValues = useMemo(() => {
     if (isEditing && itemData) {
       const categoryId = getCategoryIdByName(itemData.nombreCategoria, categories);
@@ -38,7 +37,6 @@ const CatalogModal = ({ areas, categories, onClose, onSubmit, isEditing, itemDat
       onSubmit(values);
     }
   });
-
 
   useEffect(() => {
     if (!isEditing) {
@@ -88,7 +86,7 @@ const CatalogModal = ({ areas, categories, onClose, onSubmit, isEditing, itemDat
             >
               <option value="">Seleccionar categoría</option>
               {categories.map(cat => {
-                const gradosFormateados = formatGrados(Array.isArray(cat.grados) ? cat.grados.map(g => typeof g === 'object' ? g.nombreGrado : g): [] );
+                const gradosFormateados = formatGrades(cat.grados || []);
                 return (
                   <option key={cat.idCategoria} value={cat.idCategoria}>
                     {cat.nombreCategoria} - {gradosFormateados}

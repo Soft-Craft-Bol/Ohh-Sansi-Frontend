@@ -168,7 +168,7 @@ const ListaInscritos = () => {
                 className="ra-select"
                 disabled={!selectedOlimpiada || areas.length === 0}
               >
-                <option value="">Todas las áreas</option>
+                <option value="">Seleccione un área</option>
                 {areas.map((area, index) => (
                   <option key={index} value={area.nombre}>
                     {area.nombre}

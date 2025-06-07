@@ -1,43 +1,87 @@
 import './CatalogCard.css';
-import { ordenarGrados } from '../../../utils/GradesOrder';
-import { FaEdit } from 'react-icons/fa';
+import { formatGrades, ordenarGrados } from '../../../utils/GradesOrder';
+import { FaEdit, FaChevronDown, FaChevronUp, FaLock } from 'react-icons/fa';
+import { useState } from 'react';
 
-const CatalogCard = ({ item, onEdit }) => {
-  const { nombreArea: area, nombreCategoria: category, grados: grades } = item;
-
-  const formatGrades = () => {
-    if (!grades || grades.length === 0) return 'Sin grados especificados';
-
-    const normalizedGrades = grades.map(grade =>
-      typeof grade === 'string' ? { nombreGrado: grade } : grade
-    );
-
-    const sortedGrades = ordenarGrados(normalizedGrades);
-
-    const gradeNames = sortedGrades.map(g => g.nombreGrado || g);
-
-    if (gradeNames.length === 1) return gradeNames[0];
-
-    return `${gradeNames[0]} - ${gradeNames[gradeNames.length - 1]}`;
-  };
+const CatalogCard = ({ items, onEdit, isInscripcion = false }) => {
+  // Agrupar items por área
+  const groupedByArea = items.reduce((acc, item) => {
+    const area = item.nombreArea;
+    if (!acc[area]) {
+      acc[area] = [];
+    }
+    acc[area].push(item);
+    return acc;
+  }, {});
 
   return (
-    <div className="catalog-card">
-      <div className="card-badge">{area}</div>
-      <div className="card-content">
-        <div className="card-header">
-          <h3>{category}</h3>
-          <button
-            className="edit-button"
-            onClick={() => onEdit(item)}
-          >
-            <FaEdit className="edit-icon" />
-          </button>
+    <div className="com-catalog-container">
+      {Object.entries(groupedByArea).map(([area, areaItems]) => (
+        <AreaGroup 
+          key={area} 
+          area={area} 
+          items={areaItems} 
+          onEdit={onEdit}
+          isInscripcion={isInscripcion}
+        />
+      ))}
+    </div>
+  );
+};
+
+const AreaGroup = ({ area, items, onEdit, isInscripcion }) => {
+  const [isExpanded, setIsExpanded] = useState(true);
+
+  return (
+    <div className="com-area-group">
+      <div 
+        className="com-area-header" 
+        onClick={() => setIsExpanded(!isExpanded)}
+      >
+        <div className="com-area-info">
+          <h3 className="com-area-title">{area}</h3>
+          <span className="com-area-count">
+            {items.length} categoría{items.length !== 1 ? 's' : ''}
+          </span>
         </div>
-        <div className="grades-info">
-          <span>Grados:</span>
-          <strong>{formatGrades()}</strong>
-        </div>
+        <button className="com-expand-button">
+          {isExpanded ? <FaChevronUp /> : <FaChevronDown />}
+        </button>
+      </div>
+
+      <div className={`com-categories-container ${isExpanded ? 'com-expanded' : 'com-collapsed'}`}>
+        {items.map((item, index) => (
+          <div key={`${item.nombreCategoria}-${index}`} className="com-category-card">
+            <div className="com-category-content">
+              <div className="com-category-info">
+                <h4 className="com-category-name">{item.nombreCategoria}</h4>
+                <div className="com-grades-info">
+                  <span className="com-grades-label">Grados:</span>
+                  <span className="com-grades-value">{formatGrades(item.grados)}</span>
+                </div>
+              </div>
+              
+              <button 
+                className={`com-edit-button ${isInscripcion ? 'com-disabled' : ''}`}
+                onClick={() => !isInscripcion && onEdit(item)}
+                disabled={isInscripcion}
+                title={isInscripcion ? "No se puede editar durante inscripción" : "Editar categoría"}
+              >
+                {isInscripcion ? (
+                  <>
+                    <FaLock className="com-edit-icon" />
+                    <span className="com-edit-text">Bloqueado</span>
+                  </>
+                ) : (
+                  <>
+                    <FaEdit className="com-edit-icon" />
+                    <span className="com-edit-text">Editar</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
