@@ -1,14 +1,17 @@
 /* Breadcrumbs */
 .breadcrumbs {
-  padding: 0.5rem 1rem;
-  font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    background-color: white;
 }
 
 .breadcrumbs a {
-  color: var(--science-blue);
-  text-decoration: none;
+    color: var(--science-blue);
+    text-decoration: none;
 }
 
 .breadcrumbs a:hover {
-  text-decoration: underline;
+    text-decoration: underline;
 }
