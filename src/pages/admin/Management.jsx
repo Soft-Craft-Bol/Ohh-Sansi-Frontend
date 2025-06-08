@@ -77,13 +77,13 @@ const ManagementPage = () => {
       id: "reportepagos",
       icon: BarChart3,
       label: "Reporte de Ordenes",
-      description: "Genera reportes de pagos"
+      description: "Genera reportes de ordenes de pago"
     },
     {
       id: "ordenespagos",
       icon: Settings,
-      label: "Estado de Pagos",
-      description: "Estado de ordenes de pago"
+      label: "Reporte de Pagos",
+      description: "Genera reportes de comprobantes de pago"
     },
     {
       id: "verificationpagos",

@@ -21,7 +21,7 @@ const CatalogoManagement = () => {
     categories: [],
     olimpiadas: [],
     catalogo: [],
-    grados: [], // Agregamos el array de grados
+    grados: [], 
     selectedOlimpiada: null,
     loading: true,
     modalOpen: false,
@@ -30,7 +30,6 @@ const CatalogoManagement = () => {
     itemToEdit: null,
   });
 
-  // Función para mapear IDs de grados a nombres
   const mapGradosIdsToNames = (gradosIds, gradosData) => {
     if (!Array.isArray(gradosIds) || !Array.isArray(gradosData)) return [];
     
@@ -40,10 +39,9 @@ const CatalogoManagement = () => {
         idGrado: grado.idGrado,
         nombreGrado: grado.nombreGrado 
       } : null;
-    }).filter(Boolean); // Filtrar elementos null
+    }).filter(Boolean);
   };
 
-  // Función para procesar las categorías y mapear los grados
   const processCategoriesWithGrades = (categories, grados) => {
     if (!Array.isArray(categories)) return [];
 
@@ -73,11 +71,9 @@ const CatalogoManagement = () => {
           ...item,
           grados: Array.isArray(item.grados)
             ? item.grados.map(grado => {
-                // Si ya es un objeto con nombreGrado, lo mantenemos
                 if (typeof grado === 'object' && grado.nombreGrado) {
                   return grado;
                 }
-                // Si es un ID, lo buscamos en gradosData
                 if (typeof grado === 'number') {
                   const gradoEncontrado = gradosData.find(g => g.idGrado === grado);
                   return gradoEncontrado ? {
@@ -85,7 +81,6 @@ const CatalogoManagement = () => {
                     nombreGrado: gradoEncontrado.nombreGrado
                   } : null;
                 }
-                // Si es string, asumimos que es nombreGrado
                 if (typeof grado === 'string') {
                   return { nombreGrado: grado };
                 }
@@ -100,12 +95,10 @@ const CatalogoManagement = () => {
       const rawCategoriesData = Array.isArray(categoriesRes?.data) ? categoriesRes.data : [];
       const gradosData = Array.isArray(gradosRes?.data?.data) ? gradosRes.data.data : [];
       
-      // Procesar categorías con grados mapeados
       const categoriesData = processCategoriesWithGrades(rawCategoriesData, gradosData);
       const catalogoData = processCatalogoData(catalogoRes?.data || [], gradosData);
       const sortedOlimpiadas = [...olimpiadasData].sort((a, b) => b.anio - a.anio);
 
-      // Mantener selección o seleccionar la primera
       const selectedOlimpiada = currentSelectedOlimpiada &&
         sortedOlimpiadas.find(o => o.idOlimpiada === currentSelectedOlimpiada)
         ? currentSelectedOlimpiada
@@ -116,7 +109,7 @@ const CatalogoManagement = () => {
         categories: categoriesData,
         olimpiadas: sortedOlimpiadas,
         catalogo: catalogoData,
-        grados: gradosData, // Guardamos los grados para uso posterior
+        grados: gradosData,
         selectedOlimpiada: selectedOlimpiada,
         loading: false,
         modalOpen: false,
@@ -200,7 +193,7 @@ const CatalogoManagement = () => {
           title: 'Éxito',
           text: response.data.message || (state.isEditing ? 'Ítem actualizado correctamente' : 'Ítem creado correctamente')
         });
-        await fetchData(true); // Mantener selección actual
+        await fetchData(true); 
         closeModal();
       } else {
         throw new Error(response?.data?.message || 'Error al guardar el ítem');
@@ -331,7 +324,7 @@ const CatalogoManagement = () => {
         <CatalogModal
           areas={state.areas}
           categories={state.categories}
-          grados={state.grados} // Pasamos los grados al modal
+          grados={state.grados} 
           onClose={closeModal}
           onSubmit={handleAddItem}
           isEditing={state.isEditing}

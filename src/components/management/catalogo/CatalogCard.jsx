@@ -4,7 +4,6 @@ import { FaEdit, FaChevronDown, FaChevronUp, FaLock } from 'react-icons/fa';
 import { useState } from 'react';
 
 const CatalogCard = ({ items, onEdit, isInscripcion = false }) => {
-  // Agrupar items por área
   const groupedByArea = items.reduce((acc, item) => {
     const area = item.nombreArea;
     if (!acc[area]) {
@@ -30,7 +29,7 @@ const CatalogCard = ({ items, onEdit, isInscripcion = false }) => {
 };
 
 const AreaGroup = ({ area, items, onEdit, isInscripcion }) => {
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   return (
     <div className="com-area-group">

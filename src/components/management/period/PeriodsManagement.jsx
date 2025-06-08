@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { FiPlus } from 'react-icons/fi';
+import { FiChevronDown, FiPlus } from 'react-icons/fi';
 import useOlimpiadas from './hooks/useOlimpiadas';
 import useOlimpiadasEventos from './hooks/useOlimpiadasEventos';
 import PeriodForm from './components/PeriodForm';
@@ -111,33 +111,38 @@ export default function PeriodsManagement() {
       </header>
 
       <section className="gpo-selection-panel">
-        <label htmlFor="olimpiada-select">Olimpiada:</label>
-        <select
-          id="olimpiada-select"
-          value={selectedOlimpiada || ''}
-          onChange={handleSelect}
-          disabled={loadingO}
-          className="gpo-olimpiada-select"
-        >
-          <option value="">-- Seleccione --</option>
-          {olimpiadas.map(o => (
-            <option key={o.idOlimpiada} value={o.idOlimpiada}>
-              {o.nombreOlimpiada} ({o.anio}) - {o.estado}
-            </option>
-          ))}
-        </select>
+        <div className="custom-select-wrapper">
+          <label className="select-label">Olimpiada</label>
+          <div className="custom-select">
+            <select
+              id="olimpiada-select"
+              value={selectedOlimpiada || ''}
+              onChange={handleSelect}
+              disabled={loadingO}
+            >
+              <option value="">Seleccione una olimpiada</option>
+              {olimpiadas.map(o => (
+                <option key={o.idOlimpiada} value={o.idOlimpiada}>
+                  {o.nombreOlimpiada} ({o.anio}) - {o.estado}
+                </option>
+              ))}
+            </select>
+            <FiChevronDown className="select-icon" />
+          </div>
+        </div>
 
         {selectedOlimpiada && (
           <button
             onClick={handleAddNew}
-            aria-label={showForm ? 'Cancelar formulario' : 'Agregar nuevo período'}
-            className="btn-add-period"
+            className="elegant-add-button"
+            disabled={loadingO || loadingEventos}
           >
-            <FiPlus />
-            {showForm ? 'Cancelar' : 'Agregar Período'}
+            <FiPlus className="button-icon" />
+            <span>{showForm ? 'Cancelar' : 'Nuevo período'}</span>
           </button>
         )}
       </section>
+
 
       {showForm && selectedOlimpiada && (
         <PeriodForm
