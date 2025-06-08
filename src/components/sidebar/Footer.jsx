@@ -1,7 +1,8 @@
 import React from 'react';
-import { FaFacebookF, FaInstagram, FaTiktok, FaClock } from 'react-icons/fa';
+import { FaFacebookF, FaInstagram, FaTiktok, FaClock, FaMailBulk, FaMailchimp } from 'react-icons/fa';
 import logo from '../../assets/img/logo.png';
 import './Footer.css';
+import { Mail } from 'lucide-react';
 
 const Footer = () => {
   return (
@@ -26,8 +27,14 @@ const Footer = () => {
             <h4 className="footer-title">Contacto</h4>
             <div className="footer-contact-info">
               <div className="footer-contact-item">
-                <FaClock />
-                <span>Lun - Vie: 8:00 - 18:00</span>
+                <a 
+                  href="mailto:ohsansi@umss.edu"
+                >
+                  <Mail className="footer-icon" />
+                  <span>
+                    ohsansi@umss.edu
+                  </span>
+                </a>
               </div>
             </div>
        

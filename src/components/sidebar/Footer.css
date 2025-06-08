@@ -21,6 +21,16 @@
   margin-bottom: 2rem;
 }
 
+.footer-icon {
+  width: 24px;
+  height: 24px;
+  gap: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+}
+
 @media (max-width: 768px) {
   .footer-content {
     grid-template-columns: 1fr;

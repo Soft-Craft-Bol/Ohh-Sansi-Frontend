@@ -18,7 +18,7 @@ const ExportButtons = ({
   const fechaInicio = dateRange?.start || new Date();
   const fechaFin = dateRange?.end || new Date();
 
-  const handleExport = (type) => {
+  const handleExport = async (type) => {
     if (!Array.isArray(data) || data.length === 0) {
       Swal.fire({
         icon: 'error',
@@ -28,23 +28,22 @@ const ExportButtons = ({
       return;
     }
 
-    const sampleItem = data[0];
-    if (!sampleItem || typeof sampleItem !== 'object') {
-      Swal.fire({
-        icon: 'error',
-        title: 'Formato de datos incorrecto',
-        text: 'Los datos deben ser un array de objetos'
-      });
-      return;
-    }
-
     try {
-      // Llamar a la función de exportación pasada desde el componente padre
-      exportFunctions[type](data, title, selectedArea,fechaInicio, fechaFin, estados);
+      const estadosValidos = Array.isArray(estados) ? estados : [];
+      
+      await exportFunctions[type](
+        data, 
+        title, 
+        fechaInicio, 
+        fechaFin, 
+        estadosValidos
+      );
+      
       Swal.fire({
         icon: 'success',
         title: `Exportación a ${type.toUpperCase()} exitosa`,
-        text: `Los datos han sido exportados a ${type.toUpperCase()} correctamente`
+        showConfirmButton: false,
+        timer: 1500
       });
     } catch (error) {
       console.error(`Error al exportar a ${type}:`, error);

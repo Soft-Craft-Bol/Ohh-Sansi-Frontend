@@ -1,6 +1,6 @@
 // src/utils/exportUtils.js
 import { jsPDF } from 'jspdf';
-import autoTable from'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import { format, parseISO } from 'date-fns';
@@ -19,27 +19,27 @@ export const exportToPDF = (data, title, fechaInicio, fechaFin, estadosOrden = [
     }
 
     const doc = new jsPDF();
-    
+
     // Configuración del documento
     doc.setFontSize(16);
     doc.text(title, 14, 15);
     doc.setFontSize(10);
-    
+
     // Función para formatear fechas
     const formatDate = (date) => {
-  if (!date) return 'N/A';
-  if (date instanceof Date) {
-    return format(date, 'dd/MM/yyyy');
-  }
-  try {
-    return format(parseISO(date), 'dd/MM/yyyy');
-  } catch {
-    return 'N/A';
-  }
-};
-    
+      if (!date) return 'N/A';
+      if (date instanceof Date) {
+        return format(date, 'dd/MM/yyyy');
+      }
+      try {
+        return format(parseISO(date), 'dd/MM/yyyy');
+      } catch {
+        return 'N/A';
+      }
+    };
+
     doc.text(`Período: ${formatDate(fechaInicio)} - ${formatDate(fechaFin)}`, 14, 22);
-    
+
     // Encabezados
     const headers = [
       'Código',
@@ -50,23 +50,23 @@ export const exportToPDF = (data, title, fechaInicio, fechaFin, estadosOrden = [
       'Monto (BOB)',
       'Estado'
     ];
-    
+
     // Preparar datos
-     const tableData = data.map(orden => {
-    const estadoObj = estadosOrden.find(e => e.idEstado === orden.idEstado);
-    const estado = estadoObj ? estadoObj.estado : 'DESCONOCIDO';
-    
-    return [
-      orden.codOrdenPago || 'N/A',
-      formatDate(orden.fechaEmisionOrdenPago),
-      formatDate(orden.fechaVencimiento),
-      orden.responsablePago || 'N/A',
-      orden.concepto || 'N/A',
-      orden.montoTotalPago?.toFixed(2) || '0.00',
-      estado  
-    ];
-  });
-    
+    const tableData = data.map(orden => {
+      const estadoObj = estadosOrden.find(e => e.idEstado === orden.idEstado);
+      const estado = estadoObj ? estadoObj.estado : 'DESCONOCIDO';
+
+      return [
+        orden.codOrdenPago || 'N/A',
+        formatDate(orden.fechaEmisionOrdenPago),
+        formatDate(orden.fechaVencimiento),
+        orden.responsablePago || 'N/A',
+        orden.concepto || 'N/A',
+        orden.montoTotalPago?.toFixed(2) || '0.00',
+        estado
+      ];
+    });
+
     // Generar tabla
     autoTable(doc, {
       head: [headers],
@@ -98,7 +98,7 @@ export const exportToPDF = (data, title, fechaInicio, fechaFin, estadosOrden = [
 
     // Numeración de páginas
     const pageCount = doc.internal.getNumberOfPages();
-    for(let i = 1; i <= pageCount; i++) {
+    for (let i = 1; i <= pageCount; i++) {
       doc.setPage(i);
       doc.setFontSize(8);
       doc.text(
@@ -106,7 +106,7 @@ export const exportToPDF = (data, title, fechaInicio, fechaFin, estadosOrden = [
         doc.internal.pageSize.width - 30,
         doc.internal.pageSize.height - 10
       );
-      
+
       // Footer
       doc.text(
         'Universidad Mayor de San Simón',
@@ -114,10 +114,10 @@ export const exportToPDF = (data, title, fechaInicio, fechaFin, estadosOrden = [
         doc.internal.pageSize.height - 10
       );
     }
-    
+
     // Guardar PDF
     doc.save(`${title.replace(/ /g, '_')}_${format(new Date(), 'yyyyMMdd_HHmmss')}.pdf`);
-    
+
   } catch (error) {
     console.error('Error al generar PDF:', error);
     throw new Error(`No se pudo generar el PDF: ${error.message}`);
@@ -141,11 +141,11 @@ export const exportToExcel = (data, title) => {
     'Monto Total (BOB)': item.montoTotalPago,
     'Estado': 'Vigente'
   }));
-  
+
   const worksheet = XLSX.utils.json_to_sheet(formattedData);
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, 'Datos');
-  
+
   // Generar archivo Excel
   XLSX.writeFile(workbook, `${title.toLowerCase().replace(/ /g, '_')}_${format(new Date(), 'yyyyMMdd_HHmmss')}.xlsx`);
 };
@@ -167,7 +167,7 @@ export const exportToCSV = (data, title) => {
     'Monto Total (BOB)',
     'Estado'
   ];
-  
+
   const csvData = data.map(item => [
     item.codOrdenPago,
     format(parseISO(item.fechaEmisionOrdenPago), 'dd/MM/yyyy'),
@@ -179,12 +179,12 @@ export const exportToCSV = (data, title) => {
     item.montoTotalPago,
     'Vigente'
   ]);
-  
+
   let csvContent = headers.join(',') + '\n';
   csvData.forEach(row => {
     csvContent += row.map(field => `"${field}"`).join(',') + '\n';
   });
-  
+
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
   saveAs(blob, `${title.toLowerCase().replace(/ /g, '_')}_${format(new Date(), 'yyyyMMdd_HHmmss')}.csv`);
 };
@@ -219,11 +219,11 @@ export const mapDataForTable = (apiResponse) => {
  */
 export const exportToPDFInscritos = (data, title, area = '') => {
   const doc = new jsPDF();
-  
+
   // Configurar título
   doc.setFontSize(16);
   doc.text(title, 14, 15);
-  
+
   // Información adicional
   doc.setFontSize(10);
   doc.text(`Total de participantes: ${data.length}`, 14, 22);
@@ -231,7 +231,7 @@ export const exportToPDFInscritos = (data, title, area = '') => {
     doc.text(`Área: ${area}`, 14, 28);
   }
   doc.text(`Fecha de generación: ${new Date().toLocaleDateString('es-ES')}`, 14, area ? 34 : 28);
-  
+
   // Preparar headers
   const headers = [
     'ID',
@@ -242,7 +242,7 @@ export const exportToPDFInscritos = (data, title, area = '') => {
     'Municipio',
     'Departamento'
   ];
-  
+
   // Preparar datos para la tabla
   const tableData = data.map(inscrito => [
     inscrito.id_inscripcion || 'N/A',
@@ -253,7 +253,7 @@ export const exportToPDFInscritos = (data, title, area = '') => {
     inscrito.nombre_municipio || 'N/A',
     inscrito.nombre_departamento || 'N/A'
   ]);
-  
+
   // Crear tabla
   autoTable(doc, {
     head: [headers],
@@ -285,27 +285,27 @@ export const exportToPDFInscritos = (data, title, area = '') => {
 
   // Agregar número de páginas
   const pageCount = doc.internal.getNumberOfPages();
-  for(let i = 1; i <= pageCount; i++) {
+  for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
     doc.setFontSize(8);
     doc.text(
-      `Página ${i} de ${pageCount}`, 
-      doc.internal.pageSize.width - 30, 
+      `Página ${i} de ${pageCount}`,
+      doc.internal.pageSize.width - 30,
       doc.internal.pageSize.height - 10
     );
-    
+
     // Footer organizacional
     doc.text(
-      'Universidad Mayor de San Simón', 
-      14, 
+      'Universidad Mayor de San Simón',
+      14,
       doc.internal.pageSize.height - 10
     );
   }
-  
+
   // Generar nombre de archivo
   const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '');
   const filename = `lista_inscritos_${timestamp}.pdf`;
-  
+
   // Guardar PDF
   doc.save(filename);
 };
@@ -329,10 +329,10 @@ export const exportToExcelInscritos = (data, title) => {
     'Municipio': inscrito.nombre_municipio || 'N/A',
     'Departamento': inscrito.nombre_departamento || 'N/A'
   }));
-  
+
   // Crear worksheet
   const worksheet = XLSX.utils.json_to_sheet(formattedData);
-  
+
   // Configurar ancho de columnas
   const columnWidths = [
     { wch: 5 },  // N°
@@ -347,11 +347,11 @@ export const exportToExcelInscritos = (data, title) => {
     { wch: 20 }  // Departamento
   ];
   worksheet['!cols'] = columnWidths;
-  
+
   // Crear workbook
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, 'Inscritos');
-  
+
   // Agregar hoja de resumen
   const resumenData = [
     { 'Información': 'Reporte', 'Valor': title },
@@ -359,15 +359,15 @@ export const exportToExcelInscritos = (data, title) => {
     { 'Información': 'Fecha Generación', 'Valor': new Date().toLocaleDateString('es-ES') },
     { 'Información': 'Organización', 'Valor': 'Universidad Mayor de San Simón' }
   ];
-  
+
   const resumenWorksheet = XLSX.utils.json_to_sheet(resumenData);
   resumenWorksheet['!cols'] = [{ wch: 20 }, { wch: 40 }];
   XLSX.utils.book_append_sheet(workbook, resumenWorksheet, 'Resumen');
-  
+
   // Generar nombre de archivo
   const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '');
   const filename = `lista_inscritos_${timestamp}.xlsx`;
-  
+
   // Guardar archivo Excel
   XLSX.writeFile(workbook, filename);
 };
@@ -391,7 +391,7 @@ export const exportToCSVInscritos = (data, title) => {
     'Municipio',
     'Departamento'
   ];
-  
+
   // Preparar datos CSV
   const csvData = data.map((inscrito, index) => [
     index + 1,
@@ -405,32 +405,32 @@ export const exportToCSVInscritos = (data, title) => {
     inscrito.nombre_municipio || 'N/A',
     inscrito.nombre_departamento || 'N/A'
   ]);
-  
+
   // Crear contenido CSV
   let csvContent = '';
-  
+
   // Agregar información del reporte
   csvContent += `"${title}"\n`;
   csvContent += `"Total de participantes: ${data.length}"\n`;
   csvContent += `"Fecha de generación: ${new Date().toLocaleDateString('es-ES')}"\n`;
   csvContent += `"Universidad Mayor de San Simón"\n`;
   csvContent += '\n'; // Línea vacía
-  
+
   // Agregar headers
   csvContent += headers.map(header => `"${header}"`).join(',') + '\n';
-  
+
   // Agregar datos
   csvData.forEach(row => {
     csvContent += row.map(field => `"${field}"`).join(',') + '\n';
   });
-  
+
   // Crear blob y descargar
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-  
+
   // Generar nombre de archivo
   const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '');
   const filename = `lista_inscritos_${timestamp}.csv`;
-  
+
   saveAs(blob, filename);
 };
 
@@ -470,12 +470,12 @@ export const exportComprobantesToPDF = (data, title, fechaInicio, fechaFin, esta
     }
 
     const doc = new jsPDF();
-    
+
     // Configuración del documento
     doc.setFontSize(16);
     doc.text(title, 14, 15);
     doc.setFontSize(10);
-    
+
     // Función para formatear fechas
     const formatDate = (date) => {
       if (!date) return 'N/A';
@@ -488,9 +488,9 @@ export const exportComprobantesToPDF = (data, title, fechaInicio, fechaFin, esta
         return 'N/A';
       }
     };
-    
+
     doc.text(`Período: ${formatDate(fechaInicio)} - ${formatDate(fechaFin)}`, 14, 22);
-    
+
     // Encabezados
     const headers = [
       'Código',
@@ -500,22 +500,22 @@ export const exportComprobantesToPDF = (data, title, fechaInicio, fechaFin, esta
       'Monto (BOB)',
       'Estado'
     ];
-    
+
     // Preparar datos
     const tableData = data.map(comprobante => {
       const estadoObj = estadosComprobante.find(e => e.idEstadoComprobantePago === comprobante.idEstadoComprobante);
       const estado = estadoObj ? estadoObj.nombreEstadoComprobante : 'DESCONOCIDO';
-      
+
       return [
         comprobante.codTransaccion || 'N/A',
         formatDate(comprobante.fechaPago),
         comprobante.nombreReceptor || 'N/A',
         comprobante.notasAdicionales || 'N/A',
         comprobante.montoPagado?.toFixed(2) || '0.00',
-        estado  
+        estado
       ];
     });
-    
+
     // Generar tabla
     autoTable(doc, {
       head: [headers],
@@ -546,7 +546,7 @@ export const exportComprobantesToPDF = (data, title, fechaInicio, fechaFin, esta
 
     // Numeración de páginas
     const pageCount = doc.internal.getNumberOfPages();
-    for(let i = 1; i <= pageCount; i++) {
+    for (let i = 1; i <= pageCount; i++) {
       doc.setPage(i);
       doc.setFontSize(8);
       doc.text(
@@ -554,7 +554,7 @@ export const exportComprobantesToPDF = (data, title, fechaInicio, fechaFin, esta
         doc.internal.pageSize.width - 30,
         doc.internal.pageSize.height - 10
       );
-      
+
       // Footer
       doc.text(
         'Universidad Mayor de San Simón',
@@ -562,10 +562,10 @@ export const exportComprobantesToPDF = (data, title, fechaInicio, fechaFin, esta
         doc.internal.pageSize.height - 10
       );
     }
-    
+
     // Guardar PDF
     doc.save(`${title.replace(/ /g, '_')}_${format(new Date(), 'yyyyMMdd_HHmmss')}.pdf`);
-    
+
   } catch (error) {
     console.error('Error al generar PDF:', error);
     throw new Error(`No se pudo generar el PDF: ${error.message}`);
@@ -584,7 +584,7 @@ export const exportComprobantesToExcel = (data, title, fechaInicio, fechaFin, es
   const formattedData = data.map(comprobante => {
     const estadoObj = estadosComprobante.find(e => e.idEstadoComprobantePago === comprobante.idEstadoComprobante);
     const estado = estadoObj ? estadoObj.nombreEstadoComprobante : 'DESCONOCIDO';
-    
+
     return {
       'Código': comprobante.codTransaccion || 'N/A',
       'Fecha Pago': format(parseISO(comprobante.fechaPago), 'dd/MM/yyyy'),
@@ -594,11 +594,11 @@ export const exportComprobantesToExcel = (data, title, fechaInicio, fechaFin, es
       'Estado': estado
     };
   });
-  
+
   const worksheet = XLSX.utils.json_to_sheet(formattedData);
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, 'Comprobantes');
-  
+
   // Generar archivo Excel
   XLSX.writeFile(workbook, `${title.toLowerCase().replace(/ /g, '_')}_${format(new Date(), 'yyyyMMdd_HHmmss')}.xlsx`);
 };
@@ -620,11 +620,11 @@ export const exportComprobantesToCSV = (data, title, fechaInicio, fechaFin, esta
     'Monto (BOB)',
     'Estado'
   ];
-  
+
   const csvData = data.map(comprobante => {
     const estadoObj = estadosComprobante.find(e => e.idEstadoComprobantePago === comprobante.idEstadoComprobante);
     const estado = estadoObj ? estadoObj.nombreEstadoComprobante : 'DESCONOCIDO';
-    
+
     return [
       comprobante.codTransaccion || 'N/A',
       format(parseISO(comprobante.fechaPago), 'dd/MM/yyyy'),
@@ -634,12 +634,12 @@ export const exportComprobantesToCSV = (data, title, fechaInicio, fechaFin, esta
       estado
     ];
   });
-  
+
   let csvContent = headers.join(',') + '\n';
   csvData.forEach(row => {
     csvContent += row.map(field => `"${field}"`).join(',') + '\n';
   });
-  
+
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
   saveAs(blob, `${title.toLowerCase().replace(/ /g, '_')}_${format(new Date(), 'yyyyMMdd_HHmmss')}.csv`);
 };

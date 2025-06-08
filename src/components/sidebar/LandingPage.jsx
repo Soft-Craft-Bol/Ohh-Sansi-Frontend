@@ -10,23 +10,51 @@ import { Link } from 'react-router-dom';
 import { getOlimpiadaPreinscripcion, getConvocatoriaArea } from '../../api/api';
 import './LandingPage.css';
 import { formatGrados } from '../../utils/GradesOrder';
+import NetworkErrorAlert from '../../pages/404NotFound/NetworkErrorAlert';
+
+const staticOlimpiadaData = {
+  olimpiada: {
+    nombreOlimpiada: "OLIMPIADA CIENTÍFICA NACIONAL SAN SIMÓN 2024",
+    anio: new Date().getFullYear(),
+    precioOlimpiada: "50",
+    idOlimpiada: "static"
+  },
+  periodoOlimpiada: {
+    nombrePeriodo: "Periodo de Inscripción",
+    fechaInicio: new Date(),
+    fechaFin: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+  },
+  catalogoOlimpiada: [
+    {
+      nombreArea: "Matemática",
+      grados: "6to a 12mo",
+      descripcionArea: "Competencia de resolución de problemas matemáticos",
+      idArea: "static-math"
+    },
+    {
+      nombreArea: "Física",
+      grados: "6to a 12mo",
+      descripcionArea: "Competencia de principios y aplicaciones físicas",
+      idArea: "static-physics"
+    }
+  ]
+};
 
 const LandingPage = () => {
   const [registrationOpen, setRegistrationOpen] = useState(false);
-  const [olimpiadaData, setOlimpiadaData] = useState(null);
-  const [activeTab, setActiveTab] = useState('');
+  const [olimpiadaData, setOlimpiadaData] = useState(staticOlimpiadaData);
+  const [activeTab, setActiveTab] = useState('matematica');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [pdfBase64, setPdfBase64] = useState('');
   const [modalTitle, setModalTitle] = useState('');
+  const [showNetworkError, setShowNetworkError] = useState(false);
 
-  // Función para generar las áreas dinámicas
   const getDynamicAreas = () => {
     if (!olimpiadaData?.catalogoOlimpiada) return [];
 
     return olimpiadaData.catalogoOlimpiada.map(catalogo => {
-      // Asigna iconos según el área
       let icon;
       switch(catalogo.nombreArea.toLowerCase()) {
         case 'matemática':
@@ -49,7 +77,6 @@ const LandingPage = () => {
           icon = <IoMdRibbon />;
       }
 
-      // Define colores por área
       const areaColors = {
         'matemática': '#2563eb',
         'matematica': '#2563eb',
@@ -65,26 +92,24 @@ const LandingPage = () => {
         id: catalogo.nombreArea.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""),
         name: catalogo.nombreArea,
         icon: icon,
-        grades: formatGrados(catalogo.grados),
+        grades: formatGrados(catalogo.grados) || "6to a 12mo",
         color: areaColors[catalogo.nombreArea.toLowerCase()] || '#6b7280',
-        description: catalogo.descripcionArea || `Competencia de ${catalogo.nombreArea}`
+        description: catalogo.descripcionArea || `Competencia de ${catalogo.nombreArea}`,
+        idArea: catalogo.idArea
       };
     });
   };
 
-  // Obtener las áreas dinámicas
   const dynamicAreas = getDynamicAreas();
+
   const handleVerConvocatoria = async (area) => {
     try {
-      const areaObj = olimpiadaData.catalogoOlimpiada.find(
-        a => a.nombreArea.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") === area.id
-      );
-      if (!areaObj) return;
+      if (olimpiadaData.olimpiada.idOlimpiada === "static") {
+        window.alert('Estás viendo información de ejemplo. La convocatoria real no está disponible en este momento.');
+        return;
+      }
 
-      const idArea = areaObj.idArea;
-      const idOlimpiada = olimpiadaData.olimpiada.idOlimpiada;
-
-      const response = await getConvocatoriaArea(idArea, idOlimpiada);
+      const response = await getConvocatoriaArea(area.idArea, olimpiadaData.olimpiada.idOlimpiada);
       const data = response.data;
       if (data.convocatorias && data.convocatorias.length > 0) {
         setPdfBase64(data.convocatorias[0].pdf_base64);
@@ -97,51 +122,40 @@ const LandingPage = () => {
       window.alert('No se pudo obtener la convocatoria.');
     }
   };
-  
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      setShowNetworkError(false);
+      
+      const response = await getOlimpiadaPreinscripcion();
+      const data = response.data;
+
+      const today = new Date();
+      const startDate = new Date(data.periodoOlimpiada.fechaInicio);
+      const endDate = new Date(data.periodoOlimpiada.fechaFin);
+      const isPeriodActive = today >= startDate && today <= endDate;
+
+      setOlimpiadaData(data);
+      setRegistrationOpen(isPeriodActive);
+      
+      if (data?.catalogoOlimpiada?.length > 0) {
+        const firstArea = data.catalogoOlimpiada[0].nombreArea.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        setActiveTab(firstArea);
+      }
+    } catch (err) {
+      setError(err.message || "Error al cargar los datos");
+      setShowNetworkError(true);
+      // Mantenemos los datos estáticos
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await getOlimpiadaPreinscripcion();
-        const data = response.data;
-
-        const today = new Date();
-        const startDate = new Date(data.periodoOlimpiada.fechaInicio);
-        const endDate = new Date(data.periodoOlimpiada.fechaFin);
-        const isPeriodActive = today >= startDate && today <= endDate;
-
-        setOlimpiadaData(data);
-        setRegistrationOpen(isPeriodActive);
-        setError(null);
-        
-        // Establecer la primera pestaña como activa después de cargar los datos
-        if (data?.catalogoOlimpiada?.length > 0) {
-          const firstArea = data.catalogoOlimpiada[0].nombreArea.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-          setActiveTab(firstArea);
-        }
-      } catch (err) {
-        setError(err.message || "Error al cargar los datos");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchData();
   }, []);
-
-  if (loading) {
-    return <div className="loading-container">Cargando información...</div>;
-  }
-
-  if (error) {
-    return <div className="error-container">Error: {error}</div>;
-  }
-
-  if (!olimpiadaData) {
-    return null;
-  }
-
-  const { olimpiada, periodoOlimpiada } = olimpiadaData;
 
   const quickActions = [
     { icon: <FaUserGraduate />, title: "Inscripción Individual", link: "/inscripcion-individual" },
@@ -151,48 +165,85 @@ const LandingPage = () => {
     { icon: <FaUpload />, title: "Subir Comprobante", link: "/subir-boleta" }
   ];
 
+  const { olimpiada, periodoOlimpiada } = olimpiadaData;
+
   return (
     <div className="landing-container">
+      {showNetworkError && (
+        <NetworkErrorAlert 
+          error={error} 
+          onRetry={fetchData}
+        />
+      )}
+
       <main className="landing-main">
         {/* Hero Section */}
         <section className="landing-hero">
           <div className="landing-hero-content">
-            <div className="landing-hero-badge">
-              <IoMdRibbon />
-              <span>Edición {olimpiada.anio}</span>
-            </div>
-
+            {loading ? (
+              <div className="landing-skeleton" style={{width: '150px', height: '30px'}}></div>
+            ) : (
+              <div className="landing-hero-badge">
+                <IoMdRibbon />
+                <span>Edición {olimpiada.anio}</span>
+              </div>
+            )}
+            
             <h1 className="landing-hero-title">
-              <span className="landing-title-main">{olimpiada.nombreOlimpiada}</span>
+              {loading ? (
+                <div className="landing-skeleton landing-skeleton-title"></div>
+              ) : (
+                <span className="landing-title-main">{olimpiada.nombreOlimpiada}</span>
+              )}
             </h1>
 
-            <p className="landing-hero-subtitle">
-              Facultad de Ciencias y Tecnología<br />
-              Universidad Mayor de San Simón
-            </p>
+            {loading ? (
+              <div className="landing-skeleton landing-skeleton-text" style={{width: '70%', margin: '0 auto 2rem'}}></div>
+            ) : (
+              <p className="landing-hero-subtitle">
+                Facultad de Ciencias y Tecnología<br />
+                Universidad Mayor de San Simón
+              </p>
+            )}
 
             <div className="landing-hero-info">
-              <div className="landing-info-item">
-                <FaMoneyCheckAlt />
-                <span>Bs. {olimpiada.precioOlimpiada} por área</span>
-              </div>
-              <div className="landing-info-item">
-                <FaCalendarAlt />
-                <span>Hasta {new Date(periodoOlimpiada.fechaFin).toLocaleDateString()}</span>
-              </div>
+              {loading ? (
+                <>
+                  <div className="landing-skeleton landing-skeleton-text" style={{width: '200px'}}></div>
+                  <div className="landing-skeleton landing-skeleton-text" style={{width: '200px'}}></div>
+                </>
+              ) : (
+                <>
+                  <div className="landing-info-item">
+                    <FaMoneyCheckAlt />
+                    <span>Bs. {olimpiada.precioOlimpiada} por área</span>
+                  </div>
+                  <div className="landing-info-item">
+                    <FaCalendarAlt />
+                    <span>Hasta {new Date(periodoOlimpiada.fechaFin).toLocaleDateString()}</span>
+                  </div>
+                </>
+              )}
             </div>
 
-            {registrationOpen && (
+            {!loading && registrationOpen && olimpiadaData.olimpiada.idOlimpiada !== "static" && (
               <div className="landing-status-active">
                 <FaCheckCircle />
                 <span>Inscripciones abiertas</span>
               </div>
             )}
+
+            {!loading && olimpiadaData.olimpiada.idOlimpiada === "static" && (
+              <div className="landing-status-demo">
+                <FaCheckCircle />
+                <span>Modo demostración - Información de ejemplo</span>
+              </div>
+            )}
           </div>
         </section>
 
-        {/* Quick Actions */}
-        {registrationOpen ? (
+        {/* Quick Actions - Solo muestra si no está cargando y las inscripciones están abiertas */}
+        {!loading && registrationOpen && olimpiadaData.olimpiada.idOlimpiada !== "static" ? (
           <section id="inscripcion" className="landing-actions">
             <div className="landing-section-header">
               <h2 className="landing-section-title">Proceso de Inscripción</h2>
@@ -215,13 +266,23 @@ const LandingPage = () => {
               ))}
             </div>
           </section>
-        ) : (
+        ) : !loading && (
           <div className="landing-closed-message">
-            <h3>Las inscripciones se encuentran cerradas</h3>
+            <h3>
+              {olimpiadaData.olimpiada.idOlimpiada === "static" 
+                ? "Información de demostración - Inscripciones no disponibles" 
+                : "Las inscripciones se encuentran cerradas"}
+            </h3>
             <p>
-              Próximo periodo: {periodoOlimpiada.nombrePeriodo}<br />
-              {new Date(periodoOlimpiada.fechaInicio).toLocaleDateString()} - {' '}
-              {new Date(periodoOlimpiada.fechaFin).toLocaleDateString()}
+              {olimpiadaData.olimpiada.idOlimpiada === "static" ? (
+                "Conéctate a internet para ver la información real"
+              ) : (
+                <>
+                  Próximo periodo: {periodoOlimpiada.nombrePeriodo}<br />
+                  {new Date(periodoOlimpiada.fechaInicio).toLocaleDateString()} - {' '}
+                  {new Date(periodoOlimpiada.fechaFin).toLocaleDateString()}
+                </>
+              )}
             </p>
           </div>
         )}
@@ -229,11 +290,29 @@ const LandingPage = () => {
         {/* Areas Section */}
         <section id="areas" className="landing-areas">
           <div className="landing-section-header">
-            <h2 className="landing-section-title">Áreas de Competencia</h2>
-            <p className="landing-section-subtitle">Elige el área científica que más te apasione</p>
+            <h2 className="landing-section-title">
+              {loading ? (
+                <div className="landing-skeleton landing-skeleton-text" style={{width: '250px', margin: '0 auto'}}></div>
+              ) : (
+                "Áreas de Competencia"
+              )}
+            </h2>
+            <p className="landing-section-subtitle">
+              {loading ? (
+                <div className="landing-skeleton landing-skeleton-text" style={{width: '300px', margin: '0.5rem auto 0'}}></div>
+              ) : (
+                "Elige el área científica que más te apasione"
+              )}
+            </p>
           </div>
 
-          {dynamicAreas.length > 0 ? (
+          {loading ? (
+            <div className="landing-tabs">
+              {[1, 2].map(i => (
+                <div key={i} className="landing-skeleton" style={{width: '100px', height: '40px'}}></div>
+              ))}
+            </div>
+          ) : dynamicAreas.length > 0 ? (
             <>
               <div className="landing-tabs">
                 {dynamicAreas.map(area => (
@@ -283,12 +362,15 @@ const LandingPage = () => {
             </div>
           )}
 
-          <div className="landing-deadline">
-            <FaCalendarAlt />
-            <span>Inscripciones hasta: {new Date(periodoOlimpiada.fechaFin).toLocaleDateString()}</span>
-          </div>
+          {!loading && (
+            <div className="landing-deadline">
+              <FaCalendarAlt />
+              <span>Inscripciones hasta: {new Date(periodoOlimpiada.fechaFin).toLocaleDateString()}</span>
+            </div>
+          )}
         </section>
       </main>
+
       {modalOpen && (
         <div className="convocatoria-modal-overlay" onClick={() => setModalOpen(false)}>
           <div className="convocatoria-modal" onClick={e => e.stopPropagation()}>

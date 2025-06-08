@@ -1,13 +1,18 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { FaSun, FaMoon, FaBars, FaTimes } from 'react-icons/fa';
-import { useTheme } from '../../context/ThemeProvider';
+import React, { useEffect, useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { FaBars, FaTimes } from 'react-icons/fa';
 import logo from '../../assets/img/logo.png';
 import './Navbar.css';
+import { Breadcrumbs } from './Breadcrumbs';
 
 const Navbar = () => {
-  const { isDarkMode, toggleTheme } = useTheme();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const location = useLocation();
+
+  // Cierra el menú al navegar
+  useEffect(() => {
+    setIsMenuOpen(false);
+  }, [location]);
 
   return (
     <header className="navbar">
@@ -21,17 +26,37 @@ const Navbar = () => {
         </Link>
 
         <nav className={`navbar-nav ${isMenuOpen ? 'active' : ''}`}>
-          <a href="#areas" className="navbar-link">Áreas</a>
-          <a href="#inscripcion" className="navbar-link">Inscripción</a>
-          <a href="#contacto" className="navbar-link">Contacto</a>
-          
-          {/* <button 
-            className="navbar-theme-toggle"
-            onClick={toggleTheme}
-            title={isDarkMode ? 'Modo claro' : 'Modo oscuro'}
+          <Link 
+            to="/" 
+            className={`navbar-link ${location.pathname === '/' ? 'active' : ''}`}
+            onClick={() => window.scrollTo(0, 0)}
           >
-            {isDarkMode ? <FaSun /> : <FaMoon />}
-          </button> */}
+            Inicio
+          </Link>
+          
+          <a 
+            href="#areas" 
+            className="navbar-link"
+            onClick={() => setIsMenuOpen(false)}
+          >
+            Áreas
+          </a>
+          
+          <a 
+            href="#inscripcion" 
+            className="navbar-link"
+            onClick={() => setIsMenuOpen(false)}
+          >
+            Inscripción
+          </a>
+          
+          <Link 
+            to="/faq" 
+            className={`navbar-link ${location.pathname === '/faq' ? 'active' : ''}`}
+          >
+            Preguntas Frecuentes
+          </Link>
+          
           
           <button 
             className="navbar-close-menu"
@@ -44,10 +69,12 @@ const Navbar = () => {
         <button 
           className="navbar-hamburger"
           onClick={() => setIsMenuOpen(true)}
+          aria-label="Abrir menú"
         >
           <FaBars />
         </button>
       </div>
+      <Breadcrumbs />
     </header>
   );
 };
