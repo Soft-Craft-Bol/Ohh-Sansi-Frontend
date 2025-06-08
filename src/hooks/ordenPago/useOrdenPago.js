@@ -153,7 +153,7 @@ const useOrdenPago = () => {
       const nuevaOrden = {
         idInscripcion: id_inscripcion,
         idMetodoPago: 1,
-        idEstado: 1,
+        idEstado: 2,
         fechaEmisionOrdenPago: fechaEmision,
         fechaVencimiento: fechaVencimientoStr,
         montoTotalPago: montoTotalPago,

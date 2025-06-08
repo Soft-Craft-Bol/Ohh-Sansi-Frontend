@@ -3,41 +3,27 @@ import { useField } from "formik";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import "./InputText.css";
 
-function InputText({
-  label,
-  required,
-  type = "text",
-  showCounter = false,
-  maxLength,
-  icon: Icon,
-  decimal = false, 
-  decimalPlaces = 2,
-  step = "1", 
-  ...props
-}) {
+function InputText({label,required,type = "text",showCounter = false,maxLength,
+  icon: Icon,decimal = false, decimalPlaces = 2,step = "1", 
+  ...props}) {
   const [field, meta, helpers] = useField(props);
   const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (e) => {
     let value = e.target.value;
 
-    // Validación para números decimales
     if (decimal) {
-      // Permite números y un punto decimal
       value = value.replace(/[^0-9.]/g, '');
       
-      // Asegura máximo un punto decimal
       const parts = value.split('.');
       if (parts.length > 2) {
         value = parts[0] + '.' + parts.slice(1).join('');
       }
       
-      // Limita los decimales
       if (parts.length === 2) {
         value = parts[0] + '.' + parts[1].slice(0, decimalPlaces);
       }
     }
-    // Resto de validaciones existentes
     else if (props.onlyNumbers === true) {
       value = value.replace(/\D/g, "");
     } else if (props.onlyLetters === true) {
@@ -96,7 +82,7 @@ function InputText({
           onKeyDown={handleKeyDown}
           step={decimal ? step || Math.pow(10, -decimalPlaces) : step}
           maxLength={maxLength}
-          onChange={handleChange} // Usamos nuestro manejador personalizado
+          onChange={handleChange} 
           onBlur={(e) => {
             field.onBlur(e);
             helpers.setTouched(true);
