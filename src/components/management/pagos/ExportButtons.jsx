@@ -5,7 +5,8 @@ import Swal from 'sweetalert2';
 
 const ExportButtons = ({ 
   data = [], 
-  title = 'Reporte', 
+  title = 'Reporte',
+  selectedArea, 
   dateRange, 
   exportFunctions = {
     pdf: () => {},
@@ -39,7 +40,7 @@ const ExportButtons = ({
 
     try {
       // Llamar a la función de exportación pasada desde el componente padre
-      exportFunctions[type](data, title, fechaInicio, fechaFin, estados);
+      exportFunctions[type](data, title, selectedArea,fechaInicio, fechaFin, estados);
       Swal.fire({
         icon: 'success',
         title: `Exportación a ${type.toUpperCase()} exitosa`,

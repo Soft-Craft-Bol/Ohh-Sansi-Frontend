@@ -217,7 +217,7 @@ export const mapDataForTable = (apiResponse) => {
  * @param {string} title - Título del reporte
  * @param {string} area - Área seleccionada (opcional)
  */
-export const exportToPDFInscritos = (data, title, area = null) => {
+export const exportToPDFInscritos = (data, title, area = '') => {
   const doc = new jsPDF();
   
   // Configurar título
@@ -237,6 +237,7 @@ export const exportToPDFInscritos = (data, title, area = null) => {
     'ID',
     'Apellidos',
     'Nombres',
+    'Áreas',
     'Colegio',
     'Municipio',
     'Departamento'
@@ -247,6 +248,7 @@ export const exportToPDFInscritos = (data, title, area = null) => {
     inscrito.id_inscripcion || 'N/A',
     `${inscrito.apellido_paterno || ''} ${inscrito.apellido_materno || ''}`.trim(),
     inscrito.nombre_participante || 'N/A',
+    inscrito.areas || 'N/A',
     inscrito.nombre_colegio || 'N/A',
     inscrito.nombre_municipio || 'N/A',
     inscrito.nombre_departamento || 'N/A'
@@ -272,11 +274,12 @@ export const exportToPDFInscritos = (data, title, area = null) => {
     },
     columnStyles: {
       0: { halign: 'center', cellWidth: 20 }, // ID
-      1: { cellWidth: 35 }, // Apellidos
-      2: { cellWidth: 30 }, // Nombres
-      3: { cellWidth: 45 }, // Colegio
-      4: { cellWidth: 30 }, // Municipio
-      5: { cellWidth: 30 }  // Departamento
+      1: { cellWidth: 30 }, // Apellidos
+      2: { cellWidth: 25 }, // Nombres
+      3: { cellWidth: 40 }, // Áreas
+      4: { cellWidth: 35 }, // Colegio
+      5: { cellWidth: 25 }, // Municipio
+      6: { cellWidth: 25 }  // Departamento
     }
   });
 
@@ -320,6 +323,7 @@ export const exportToExcelInscritos = (data, title) => {
     'Apellido Paterno': inscrito.apellido_paterno || '',
     'Apellido Materno': inscrito.apellido_materno || '',
     'Nombres': inscrito.nombre_participante || 'N/A',
+    'Áreas': inscrito.areas || 'N/A',
     'Nombre Completo': `${inscrito.apellido_paterno || ''} ${inscrito.apellido_materno || ''} ${inscrito.nombre_participante || ''}`.trim(),
     'Colegio': inscrito.nombre_colegio || 'N/A',
     'Municipio': inscrito.nombre_municipio || 'N/A',
@@ -336,6 +340,7 @@ export const exportToExcelInscritos = (data, title) => {
     { wch: 18 }, // Apellido Paterno
     { wch: 18 }, // Apellido Materno
     { wch: 20 }, // Nombres
+    { wch: 30 }, // Áreas
     { wch: 35 }, // Nombre Completo
     { wch: 35 }, // Colegio
     { wch: 20 }, // Municipio
@@ -380,6 +385,7 @@ export const exportToCSVInscritos = (data, title) => {
     'Apellido Paterno',
     'Apellido Materno',
     'Nombres',
+    'Áreas',
     'Nombre Completo',
     'Colegio',
     'Municipio',
@@ -393,6 +399,7 @@ export const exportToCSVInscritos = (data, title) => {
     inscrito.apellido_paterno || '',
     inscrito.apellido_materno || '',
     inscrito.nombre_participante || 'N/A',
+    inscrito.areas || 'N/A',
     `${inscrito.apellido_paterno || ''} ${inscrito.apellido_materno || ''} ${inscrito.nombre_participante || ''}`.trim(),
     inscrito.nombre_colegio || 'N/A',
     inscrito.nombre_municipio || 'N/A',
@@ -438,6 +445,7 @@ export const mapInscritosForTable = (data) => {
     id: inscrito.id_inscripcion || 'N/A',
     apellidos: `${inscrito.apellido_paterno || ''} ${inscrito.apellido_materno || ''}`.trim(),
     nombres: inscrito.nombre_participante || 'N/A',
+    areas: inscrito.areas || 'N/A',
     nombreCompleto: `${inscrito.apellido_paterno || ''} ${inscrito.apellido_materno || ''} ${inscrito.nombre_participante || ''}`.trim(),
     colegio: inscrito.nombre_colegio || 'N/A',
     municipio: inscrito.nombre_municipio || 'N/A',

@@ -99,7 +99,7 @@ const ListaInscritos = () => {
       }
 
       const response = await getReporteInscritos(
-        areaSeleccionada?.id || null,
+        areaSeleccionada?.id || 0,
         olimpiadaSeleccionada.idOlimpiada
       );
       setInscritos(response.data || response);
@@ -113,7 +113,7 @@ const ListaInscritos = () => {
     }
   };
 
-  
+
 
   if (loadingCatalogo) {
     return (
@@ -168,7 +168,7 @@ const ListaInscritos = () => {
                 className="ra-select"
                 disabled={!selectedOlimpiada || areas.length === 0}
               >
-                <option value="">Seleccione un área</option>
+                <option value="">Todas las áreas</option>
                 {areas.map((area, index) => (
                   <option key={index} value={area.nombre}>
                     {area.nombre}
@@ -224,6 +224,7 @@ const ListaInscritos = () => {
                   <ExportButtons
                     data={inscritos}
                     title={`Lista de Inscritos - ${selectedOlimpiada}${selectedArea ? ` - ${selectedArea}` : ''}`}
+                    selectedArea={selectedArea}
                     exportFunctions={{
                       pdf: exportToPDFInscritos,
                       excel: exportToExcelInscritos,
@@ -241,6 +242,9 @@ const ListaInscritos = () => {
                   <tr>
                     <th className="ra-table-th">
                       Apellidos y Nombres
+                    </th>
+                    <th className="ra-table-th">
+                      Áreas
                     </th>
                     <th className="ra-table-th">
                       Colegio
@@ -262,6 +266,15 @@ const ListaInscritos = () => {
                         </div>
                         <div className="ra-participant-firstname">
                           {inscrito.nombre_participante}
+                        </div>
+                      </td>
+                      <td className="ra-table-td">
+                        <div className="ra-areas-info">
+                          {inscrito.areas.split(', ').map((area, i) => (
+                            <span key={i} className="ra-area-badge">
+                              {area}
+                            </span>
+                          ))}
                         </div>
                       </td>
                       <td className="ra-table-td">

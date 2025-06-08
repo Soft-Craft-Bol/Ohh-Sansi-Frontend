@@ -16,6 +16,21 @@
   margin: 0 auto;
   padding: 2rem 1rem;
 }
+/* Estilos para las áreas */
+.ra-areas-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.ra-area-badge {
+  background-color: #e2e8f0;
+  color: #4a5568;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  white-space: nowrap;
+}
 
 @media (min-width: 640px) {
   .ra-main-content {
