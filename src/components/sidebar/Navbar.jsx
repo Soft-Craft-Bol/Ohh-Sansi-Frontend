@@ -25,13 +25,13 @@ const Navbar = () => {
           <a href="#inscripcion" className="navbar-link">Inscripción</a>
           <a href="#contacto" className="navbar-link">Contacto</a>
           
-          <button 
+          {/* <button 
             className="navbar-theme-toggle"
             onClick={toggleTheme}
             title={isDarkMode ? 'Modo claro' : 'Modo oscuro'}
           >
             {isDarkMode ? <FaSun /> : <FaMoon />}
-          </button>
+          </button> */}
           
           <button 
             className="navbar-close-menu"
