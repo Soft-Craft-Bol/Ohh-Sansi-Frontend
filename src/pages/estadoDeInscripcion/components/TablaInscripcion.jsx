@@ -125,9 +125,10 @@ const TablaInscripcion = ({
         <div className="table-row">
           <div className="col-etapa">Comprobante de pago</div>
           <div className="col-estado">
-            <span className={`status-chip ${datosInscripcion.comprobantePagoStatus.estado === 'APROBADO' ? 'complete' : datosInscripcion.comprobantePagoStatus.estado === 'PENDIENTE' ? 'pending' : 'rejected'}`}>
-              {datosInscripcion.comprobantePagoStatus.estado === 'APROBADO'
-                ? '✓ Aprobado'
+            {console.log('detalle', datosInscripcion.comprobantePagoStatus)}
+            <span className={`status-chip ${datosInscripcion.comprobantePagoStatus.estado === 'ACEPTADA' ? 'complete' : datosInscripcion.comprobantePagoStatus.estado === 'PENDIENTE' ? 'pending' : 'rejected'}`}>
+              {datosInscripcion.comprobantePagoStatus.estado === 'ACEPTADA'
+                ? '✓ Aceptada'
                 : datosInscripcion.comprobantePagoStatus.estado === 'PENDIENTE'
                 ? '⟳ Pendiente'
                 : '✗ Rechazado'}
