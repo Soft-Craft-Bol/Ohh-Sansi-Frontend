@@ -64,13 +64,13 @@ export default function PeriodForm({
 
       return response;
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       Swal.fire({
         title: '¡Éxito!',
         text: 'El período ha sido creado correctamente.',
         icon: 'success',
         confirmButtonText: 'Aceptar',
-        confirmButtonColor: '#667eea'
+        confirmButtonColor: '#3b82f6'
       }).then(() => {
         onSave();
       });
@@ -82,7 +82,7 @@ export default function PeriodForm({
         text: error?.response?.data?.message || error?.message || 'Error al crear el período. Intente nuevamente.',
         icon: 'error',
         confirmButtonText: 'Aceptar',
-        confirmButtonColor: '#ef4444'
+        confirmButtonColor: '#dc2626'
       });
     }
   });
@@ -108,7 +108,7 @@ export default function PeriodForm({
   }, [formData, originalData]);
 
   const updateMutation = useMutation({
-    mutationFn: async (data) => {
+    mutationFn: async () => {
       const changedFields = getChangedFields();
 
       if (Object.keys(changedFields).length === 0) {
@@ -130,7 +130,6 @@ export default function PeriodForm({
         updatePayload.nombrePeriodo = changedFields.nombre_personalizado;
       }
 
-
       const response = await updatePeriodoOlimpiada(editing.idPeriodo, updatePayload);
 
       if (response.data?.status === 'error') {
@@ -139,13 +138,13 @@ export default function PeriodForm({
 
       return response;
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       Swal.fire({
         title: '¡Actualizado!',
         text: 'El período ha sido actualizado correctamente.',
         icon: 'success',
         confirmButtonText: 'Aceptar',
-        confirmButtonColor: '#667eea'
+        confirmButtonColor: '#3b82f6'
       }).then(() => {
         onSave();
       });
@@ -157,7 +156,7 @@ export default function PeriodForm({
         text: error?.response?.data?.message || error?.message || 'Error al actualizar el período. Intente nuevamente.',
         icon: 'error',
         confirmButtonText: 'Aceptar',
-        confirmButtonColor: '#ef4444'
+        confirmButtonColor: '#dc2626'
       });
     }
   });
@@ -201,7 +200,7 @@ export default function PeriodForm({
           text: 'No se detectaron cambios para actualizar.',
           icon: 'info',
           confirmButtonText: 'Entendido',
-          confirmButtonColor: '#667eea'
+          confirmButtonColor: '#3b82f6'
         });
         return;
       }
@@ -241,17 +240,17 @@ export default function PeriodForm({
     }
   }, [formData, originalData, editing, validateDateOverlap, createMutation, updateMutation, getChangedFields]);
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     if (createMutation.isPending || updateMutation.isPending) {
       return;
     }
     onClose();
-  };
+  }, [createMutation.isPending, updateMutation.isPending, onClose]);
 
   const isLoading = createMutation.isPending || updateMutation.isPending;
 
-  // Función helper para mostrar qué campos han cambiado (opcional, para debugging)
-  const getChangedFieldsDisplay = () => {
+  // Función para mostrar cambios detectados
+  const renderChangesPreview = () => {
     if (!editing || !originalData) return null;
 
     const changes = getChangedFields();
@@ -259,16 +258,15 @@ export default function PeriodForm({
 
     if (changesList.length === 0) return null;
 
+    const changeLabels = {
+      nombre_personalizado: 'Nombre',
+      fecha_inicio: 'Fecha inicio',
+      fecha_fin: 'Fecha fin'
+    };
+
     return (
-      <div className="pf-changes-preview" style={{
-        fontSize: '12px',
-        color: '#666',
-        marginBottom: '10px',
-        padding: '8px',
-        backgroundColor: '#f8f9fa',
-        borderRadius: '4px'
-      }}>
-        <strong>Cambios detectados:</strong> {changesList.join(', ')}
+      <div className="pf-changes-preview">
+        <strong>Cambios detectados:</strong> {changesList.map(key => changeLabels[key] || key).join(', ')}
       </div>
     );
   };
@@ -282,34 +280,35 @@ export default function PeriodForm({
             onClick={handleClose}
             className="pf-btn-close"
             disabled={isLoading}
+            aria-label="Cerrar formulario"
           >
             ×
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="pf-period-form">
-          {/* Mostrar cambios detectados (opcional) */}
-          {getChangedFieldsDisplay()}
+          {renderChangesPreview()}
 
           <div className="pf-form-group">
-            <label htmlFor="nombrePeriodo">Nombre del Período:</label>
+            <label htmlFor="pf-nombrePeriodo">Nombre del Período</label>
             <input
               type="text"
-              id="nombrePeriodo"
+              id="pf-nombrePeriodo"
               name="nombrePeriodo"
               value={formData.nombrePeriodo}
               onChange={handleInputChange}
               required
               disabled={isLoading}
               placeholder="Ej: Inscripciones Fase 1"
+              autoComplete="off"
             />
           </div>
 
           <div className="pf-form-group">
-            <label htmlFor="fechaInicio">Fecha de Inicio:</label>
+            <label htmlFor="pf-fechaInicio">Fecha de Inicio</label>
             <input
               type="date"
-              id="fechaInicio"
+              id="pf-fechaInicio"
               name="fechaInicio"
               value={formData.fechaInicio}
               onChange={handleInputChange}
@@ -319,10 +318,10 @@ export default function PeriodForm({
           </div>
 
           <div className="pf-form-group">
-            <label htmlFor="fechaFin">Fecha de Fin:</label>
+            <label htmlFor="pf-fechaFin">Fecha de Fin</label>
             <input
               type="date"
-              id="fechaFin"
+              id="pf-fechaFin"
               name="fechaFin"
               value={formData.fechaFin}
               onChange={handleInputChange}
@@ -332,9 +331,9 @@ export default function PeriodForm({
           </div>
 
           <div className="pf-form-group">
-            <label htmlFor="tipoPeriodo">Tipo de Período:</label>
+            <label htmlFor="pf-tipoPeriodo">Tipo de Período</label>
             <select
-              id="tipoPeriodo"
+              id="pf-tipoPeriodo"
               name="tipoPeriodo"
               value={formData.tipoPeriodo}
               onChange={handleInputChange}
@@ -356,7 +355,7 @@ export default function PeriodForm({
           </div>
 
           {validationError && (
-            <div className="pf-validation-error">
+            <div className="pf-validation-error" role="alert">
               {validationError}
             </div>
           )}
