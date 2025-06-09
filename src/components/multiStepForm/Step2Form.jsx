@@ -319,7 +319,7 @@ const AsignarAreasForm = ({ participanteCI, shouldSearch, onSearchComplete, onCo
           descripcion="Ingrese el carnet del estudiante para buscar áreas disponibles"
           placeholder="Ej: 123456789"
           codigoIntroducidoTexto="Carnet introducido:"
-          codigoIntroducido={codigoIntroducido}
+          inputValue={codigoIntroducido}
           onInputChange={handleInputChange}
           onKeyPress={handleKeyPress}
           onSearch={() => buscarEstudiante(codigoIntroducido)}
