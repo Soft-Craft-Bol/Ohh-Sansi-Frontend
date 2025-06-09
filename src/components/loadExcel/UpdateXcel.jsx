@@ -9,11 +9,11 @@ import './LoadExcel.css';
 import Swal from 'sweetalert2';
 import plantilla from '../../assets/Plantilla-De-Inscipción-v3.xlsx';
 import Table from '../table/Table';
-import { excelRowSchemaAreas, excelRowSchemaDatos } from '../../schemas/ExcelValidation';
 import { getInscripcionByID, postOnlyExcelFile, registerTutor, getPeriodoInscripcionActal } from '../../api/api';
 import { useNavigate } from 'react-router-dom';
 import { verificarTutor } from '../../hooks/loaderInfo/LoaderInfo';
 import { leerExcelHoja2 } from '../../hooks/excel/useMappingDataExcel';
+import { getSchemas } from '../../schemas/ExcelValidation';
 
 const validExtensions = ['.xlsx'];
 const columnasPermitidas = ['Nombres de Participante', 'Carnet Identidad', 'Grado', 'Departamento', 'Colegio'];
@@ -24,10 +24,25 @@ const columnas = columnasPermitidas.map((col) => ({
 
 const UpdateExcel = () => {
   const fileInputRef = useRef(null);
+  const [schemas, setSchemas] = useState(null);
   const [excelData, setExcelData] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
   const [buttonState, setButtonState] = useState('upload');
   const navigate = useNavigate();
+
+
+useEffect(() => {
+  const loadSchemas = async () => {
+    try {
+      const loadedSchemas = await getSchemas();
+      setSchemas(loadedSchemas);
+    } catch (error) {
+      console.error("Error loading validation schemas:", error);
+    }
+  };
+  
+  loadSchemas();
+}, []);
 
   // Formik configuration
   const formik = useFormik({
@@ -151,50 +166,54 @@ const UpdateExcel = () => {
     };
 
   const validarFilasDatos = async (filas) => {
-    const errores = [];
-    
-    for (let i = 0; i < filas.length; i++) {
-      const fila = filas[i];
-      try {
-
-        await excelRowSchemaDatos.validate(fila, { abortEarly: false });
-      } catch (validationError) {
-        if (validationError.inner) {
-          validationError.inner.forEach(err => {
-            errores.push({
-              hoja: fila._hoja || 'Datos',
-              fila: i + 2,
-              columna: err.path,
-              mensaje: err.message
-            });
+  if (!schemas) return [];
+  
+  const errores = [];
+  
+  for (let i = 0; i < filas.length; i++) {
+    const fila = filas[i];
+    try {
+      await schemas.excelRowSchemaDatos.validate(fila, { abortEarly: false });
+    } catch (validationError) {
+      if (validationError.inner) {
+        validationError.inner.forEach(err => {
+          errores.push({
+            hoja: fila._hoja || 'Datos',
+            fila: i + 2,
+            columna: err.path,
+            mensaje: err.message
           });
-        }
+        });
       }
     }
-    return errores;
-  };
+  }
+  return errores;
+};
 
-  const validarFilasAreas = async (filas) => {
-    const errores = [];
-    for (let i = 0; i < filas.length; i++) {
-      try {
-        await excelRowSchemaAreas.validate(filas[i], { abortEarly: false });
-      } catch (validationError) {
-        if (validationError.inner) {
-          validationError.inner.forEach(err => {
-            errores.push({
-              hoja: filas[i]._hoja || 'Areas',
-              fila: i + 2,
-              columna: err.path,
-              mensaje: err.message
-            });
+const validarFilasAreas = async (filas) => {
+  if (!schemas) return [];
+  
+  const errores = [];
+  for (let i = 0; i < filas.length; i++) {
+    try {
+      await schemas.excelRowSchemaAreas.validate(filas[i], { abortEarly: false });
+    } catch (validationError) {
+      if (validationError.inner) {
+        validationError.inner.forEach(err => {
+          errores.push({
+            hoja: filas[i]._hoja || 'Areas',
+            fila: i + 2,
+            columna: err.path,
+            mensaje: err.message
           });
-        }
+        });
       }
     }
-    return errores;
-  };
+  }
+  return errores;
+};
 
+ 
   const leerExcel = (file) => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
