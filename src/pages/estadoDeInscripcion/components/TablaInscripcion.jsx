@@ -45,7 +45,6 @@ const TablaInscripcion = ({
                 <strong>Nombre completo:</strong> ${getNombreCompleto()}<br/>
                 <strong>Estado:</strong> ${datosInscripcion.registroDatosParticipante.estado}<br/>
                 <strong>Comentarios:</strong> ${datosInscripcion.registroDatosParticipante.comentarios || 'Ninguno'}<br/>
-                <strong>Fecha:</strong> ${datosInscripcion.registroDatosParticipante.fechaRegistro}
               `)
             }>Ver detalles</a>
           </div>
@@ -68,7 +67,6 @@ const TablaInscripcion = ({
                 <strong>Áreas seleccionadas:</strong> ${getNombresAreas()}<br/>
                 <strong>Estado:</strong> ${datosInscripcion.registroAreas.estado}<br/>
                 <strong>Comentarios:</strong> ${datosInscripcion.registroAreas.comentarios || 'Ninguno'}<br/>
-                <strong>Fecha:</strong> ${datosInscripcion.registroAreas.fechaRegistro}
               `)
             }>Ver detalles</a>
           </div>
@@ -91,7 +89,6 @@ const TablaInscripcion = ({
                 <strong>Tutores registrados:</strong> ${getNombresTutores()}<br/>
                 <strong>Estado:</strong> ${datosInscripcion.registroDatosTutor.estado}<br/>
                 <strong>Comentarios:</strong> ${datosInscripcion.registroDatosTutor.comentarios || 'Ninguno'}<br/>
-                <strong>Fecha:</strong> ${datosInscripcion.registroDatosTutor.fechaRegistro}
               `)
             }>Ver detalles</a>
           </div>
@@ -115,7 +112,6 @@ const TablaInscripcion = ({
                 <strong>Código Único:</strong> ${getCodigoUnico()}<br/>
                 <strong>Estado:</strong> ${datosInscripcion.registroOrdenPago.estado}<br/>
                 <strong>Comentarios:</strong> ${datosInscripcion.registroOrdenPago.comentarios || 'Ninguno'}<br/>
-                <strong>Fecha:</strong> ${datosInscripcion.registroOrdenPago.fechaRegistro}
               `)
             }>Ver detalles</a>
           </div>
@@ -125,7 +121,6 @@ const TablaInscripcion = ({
         <div className="table-row">
           <div className="col-etapa">Comprobante de pago</div>
           <div className="col-estado">
-            {console.log('detalle', datosInscripcion.comprobantePagoStatus)}
             <span className={`status-chip ${datosInscripcion.comprobantePagoStatus.estado === 'ACEPTADA' ? 'complete' : datosInscripcion.comprobantePagoStatus.estado === 'PENDIENTE' ? 'pending' : 'rejected'}`}>
               {datosInscripcion.comprobantePagoStatus.estado === 'ACEPTADA'
                 ? '✓ Aceptada'
