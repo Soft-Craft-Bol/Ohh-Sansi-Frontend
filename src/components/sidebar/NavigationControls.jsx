@@ -22,7 +22,7 @@ export const NavigationControls = () => {
         <FaArrowRight />
       </button>
       <button 
-        onClick={() => window.scrollTo(0, 0)} 
+        onClick={() => navigate('/')} 
         className="nav-button"
         aria-label="Ir al inicio"
       >

@@ -30,17 +30,7 @@ const Step3Only = () => {
 
   useEffect(() => {
     if (debouncedCiParticipante.length >= 5 && !ciVerificado) {
-      verificarSerTutor(
-        debouncedCiParticipante,
-        () => {
-          setCiVerificado(true);
-          cargarTutorExistente(debouncedCiParticipante);
-          setMostrarFormulario(true);
-        },
-        () => {
-          setCiVerificado(false);
-        }
-      );
+      verificarTutorExistente(debouncedCiParticipante);
     }
   }, [debouncedCiParticipante]);
 
@@ -51,7 +41,7 @@ const Step3Only = () => {
         const response = await parentescoTutor();
         if (response.data.tutorParentescos) {
           const filteredOptions = response.data.tutorParentescos
-            .filter(parentesco => parentesco.parentesco !== "Profesor") //estamos en tutores Legales
+            .filter(parentesco => parentesco.parentesco !== "Profesor") 
             .map(p => ({
               value: p.idTutorParentesco.toString(),
               label: p.parentesco,
@@ -71,24 +61,44 @@ const Step3Only = () => {
     fetchParentescos();
   }, []);
 
-  const cargarTutorExistente = async (ci) => {
+  const verificarTutorExistente = async (ci) => {
     try {
       const response = await getTutorAsigando(ci);
       if (response.data?.tutoresLegales?.length > 0) {
         Swal.fire({
           icon: "info",
           title: "El participante ya tiene tutor legal registrado",
-          showConfirmButton: false,
-          timer: 3000,
-          timerProgressBar: true,
+          text: "Solo se permite registrar un tutor legal por participante.",
+          showConfirmButton: true,
+          confirmButtonText: "Entendido"
         });
         setMostrarFormulario(false);
-        setCiParticipante("");
+        setCiVerificado(false);
+        return;
       } else {
-        setMostrarFormulario(true);
+        verificarSerTutor(
+          ci,
+          () => {
+            setCiVerificado(true);
+            setMostrarFormulario(true);
+          },
+          () => {
+            setCiVerificado(false);
+            setMostrarFormulario(false);
+          }
+        );
       }
     } catch (error) {
-      console.error("Error al cargar tutor:", error);
+      console.error("Error al verificar tutor existente:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Error de verificación",
+        text: "No se pudo verificar el estado del participante. Intenta nuevamente.",
+        showConfirmButton: true,
+        confirmButtonText: "Entendido"
+      });
+      setMostrarFormulario(false);
+      setCiVerificado(false);
     }
   };
 
@@ -112,10 +122,17 @@ const Step3Only = () => {
       }
 
       await registerTutor(ciParticipante, bodyForEndpoint);
-      Swal.fire({ icon: "success", title: "Éxito", text: "Tutor registrado correctamente" });
+      Swal.fire({ 
+        icon: "success", 
+        title: "Éxito", 
+        text: "Tutor registrado correctamente",
+        showConfirmButton: true,
+        confirmButtonText: "Entendido"
+      });
       resetForm();
       setMostrarFormulario(false);
       setCiParticipante("");
+      setCiVerificado(false);
     } catch (error) {
       console.error("Error al registrar tutor:", error);
       Swal.fire({
@@ -124,6 +141,13 @@ const Step3Only = () => {
         text: error?.response?.data?.message || "No se pudo registrar el tutor",
       });
     }
+  };
+
+  const handleCiChange = (e) => {
+    const newValue = e.target.value;
+    setCiParticipante(newValue);
+    setCiVerificado(false);
+    setMostrarFormulario(false);
   };
 
   return (
@@ -139,11 +163,7 @@ const Step3Only = () => {
           type="text"
           placeholder="Ingrese el CI del participante"
           value={ciParticipante}
-          onChange={(e) => {
-            setCiParticipante(e.target.value);
-            setCiVerificado(false);
-            setMostrarFormulario(false);
-          }}
+          onChange={handleCiChange}
           required
           className="step3-form-group"
           maxLength={10}

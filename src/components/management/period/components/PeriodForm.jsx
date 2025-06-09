@@ -18,6 +18,7 @@ export default function PeriodForm({
     fechaFin: '',
     tipoPeriodo: '',
   });
+  const [originalData, setOriginalData] = useState(null); 
   const [validationError, setValidationError] = useState('');
   const [hasInscripcionPeriod, setHasInscripcionPeriod] = useState(false);
 
@@ -29,19 +30,23 @@ export default function PeriodForm({
     setHasInscripcionPeriod(inscripcionExists);
 
     if (editing) {
-      setFormData({
+      const editingData = {
         nombrePeriodo: editing.nombrePeriodo || '',
         fechaInicio: editing.fechaInicio || '',
         fechaFin: editing.fechaFin || '',
         tipoPeriodo: editing.tipoPeriodo || '',
-      });
+      };
+      setFormData(editingData);
+      setOriginalData(editingData); 
     } else {
-      setFormData({
+      const newData = {
         nombrePeriodo: '',
         fechaInicio: '',
         fechaFin: '',
         tipoPeriodo: inscripcionExists ? 'AMPLIACION' : 'INSCRIPCION',
-      });
+      };
+      setFormData(newData);
+      setOriginalData(null);
     }
     setValidationError('');
   }, [editing, periods]);
@@ -59,13 +64,13 @@ export default function PeriodForm({
 
       return response;
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       Swal.fire({
         title: '¡Éxito!',
         text: 'El período ha sido creado correctamente.',
         icon: 'success',
         confirmButtonText: 'Aceptar',
-        confirmButtonColor: '#667eea'
+        confirmButtonColor: '#3b82f6'
       }).then(() => {
         onSave();
       });
@@ -77,18 +82,55 @@ export default function PeriodForm({
         text: error?.response?.data?.message || error?.message || 'Error al crear el período. Intente nuevamente.',
         icon: 'error',
         confirmButtonText: 'Aceptar',
-        confirmButtonColor: '#ef4444'
+        confirmButtonColor: '#dc2626'
       });
     }
   });
 
+  const getChangedFields = useCallback(() => {
+    if (!originalData) return formData; 
+
+    const changes = {};
+
+    if (formData.nombrePeriodo !== originalData.nombrePeriodo) {
+      changes.nombre_personalizado = formData.nombrePeriodo.trim();
+    }
+
+    if (formData.fechaInicio !== originalData.fechaInicio) {
+      changes.fecha_inicio = formData.fechaInicio;
+    }
+
+    if (formData.fechaFin !== originalData.fechaFin) {
+      changes.fecha_fin = formData.fechaFin;
+    }
+
+    return changes;
+  }, [formData, originalData]);
+
   const updateMutation = useMutation({
-    mutationFn: async (data) => {
-      const response = await updatePeriodoOlimpiada(editing.idPeriodo, {
+    mutationFn: async () => {
+      const changedFields = getChangedFields();
+
+      if (Object.keys(changedFields).length === 0) {
+        throw new Error('No se detectaron cambios para actualizar');
+      }
+
+      const updatePayload = {
         idPeriodo: editing.idPeriodo,
-        idOlimpiada: selectedOlimpiada,
-        ...data
-      });
+        idOlimpiada: selectedOlimpiada
+      };
+
+      if ('fecha_inicio' in changedFields) {
+        updatePayload.fechaInicio = changedFields.fecha_inicio;
+      }
+      if ('fecha_fin' in changedFields) {
+        updatePayload.fechaFin = changedFields.fecha_fin;
+      }
+      if ('nombre_personalizado' in changedFields) {
+        updatePayload.nombrePeriodo = changedFields.nombre_personalizado;
+      }
+
+      const response = await updatePeriodoOlimpiada(editing.idPeriodo, updatePayload);
 
       if (response.data?.status === 'error') {
         throw new Error(response.data.message);
@@ -96,13 +138,13 @@ export default function PeriodForm({
 
       return response;
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       Swal.fire({
         title: '¡Actualizado!',
         text: 'El período ha sido actualizado correctamente.',
         icon: 'success',
         confirmButtonText: 'Aceptar',
-        confirmButtonColor: '#667eea'
+        confirmButtonColor: '#3b82f6'
       }).then(() => {
         onSave();
       });
@@ -114,7 +156,7 @@ export default function PeriodForm({
         text: error?.response?.data?.message || error?.message || 'Error al actualizar el período. Intente nuevamente.',
         icon: 'error',
         confirmButtonText: 'Aceptar',
-        confirmButtonColor: '#ef4444'
+        confirmButtonColor: '#dc2626'
       });
     }
   });
@@ -149,6 +191,21 @@ export default function PeriodForm({
       return;
     }
 
+    // Para edición, verificar si hay cambios
+    if (editing && originalData) {
+      const hasChanges = Object.keys(getChangedFields()).length > 0;
+      if (!hasChanges) {
+        Swal.fire({
+          title: 'Sin cambios',
+          text: 'No se detectaron cambios para actualizar.',
+          icon: 'info',
+          confirmButtonText: 'Entendido',
+          confirmButtonColor: '#3b82f6'
+        });
+        return;
+      }
+    }
+
     const validation = validateDateOverlap(
       formData,
       editing?.idPeriodo || null
@@ -166,32 +223,53 @@ export default function PeriodForm({
       return;
     }
 
-    const dataToSend = {
-      nombrePeriodo: formData.nombrePeriodo.trim(),
-      fechaInicio: formData.fechaInicio,
-      fechaFin: formData.fechaFin,
-      tipoPeriodo: formData.tipoPeriodo,
-    };
-
     try {
       if (editing && editing.idPeriodo) {
-        await updateMutation.mutateAsync(dataToSend);
+        await updateMutation.mutateAsync();
       } else {
+        const dataToSend = {
+          nombrePeriodo: formData.nombrePeriodo.trim(),
+          fechaInicio: formData.fechaInicio,
+          fechaFin: formData.fechaFin,
+          tipoPeriodo: formData.tipoPeriodo,
+        };
         await createMutation.mutateAsync(dataToSend);
       }
     } catch (error) {
       console.error('Error en mutación:', error);
     }
-  }, [formData, editing, validateDateOverlap, createMutation, updateMutation, selectedOlimpiada]);
+  }, [formData, originalData, editing, validateDateOverlap, createMutation, updateMutation, getChangedFields]);
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     if (createMutation.isPending || updateMutation.isPending) {
       return;
     }
     onClose();
-  };
+  }, [createMutation.isPending, updateMutation.isPending, onClose]);
 
   const isLoading = createMutation.isPending || updateMutation.isPending;
+
+  // Función para mostrar cambios detectados
+  const renderChangesPreview = () => {
+    if (!editing || !originalData) return null;
+
+    const changes = getChangedFields();
+    const changesList = Object.keys(changes);
+
+    if (changesList.length === 0) return null;
+
+    const changeLabels = {
+      nombre_personalizado: 'Nombre',
+      fecha_inicio: 'Fecha inicio',
+      fecha_fin: 'Fecha fin'
+    };
+
+    return (
+      <div className="pf-changes-preview">
+        <strong>Cambios detectados:</strong> {changesList.map(key => changeLabels[key] || key).join(', ')}
+      </div>
+    );
+  };
 
   return (
     <div className="pf-period-form-container">
@@ -202,31 +280,35 @@ export default function PeriodForm({
             onClick={handleClose}
             className="pf-btn-close"
             disabled={isLoading}
+            aria-label="Cerrar formulario"
           >
             ×
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="pf-period-form">
+          {renderChangesPreview()}
+
           <div className="pf-form-group">
-            <label htmlFor="nombrePeriodo">Nombre del Período:</label>
+            <label htmlFor="pf-nombrePeriodo">Nombre del Período</label>
             <input
               type="text"
-              id="nombrePeriodo"
+              id="pf-nombrePeriodo"
               name="nombrePeriodo"
               value={formData.nombrePeriodo}
               onChange={handleInputChange}
               required
               disabled={isLoading}
               placeholder="Ej: Inscripciones Fase 1"
+              autoComplete="off"
             />
           </div>
 
           <div className="pf-form-group">
-            <label htmlFor="fechaInicio">Fecha de Inicio:</label>
+            <label htmlFor="pf-fechaInicio">Fecha de Inicio</label>
             <input
               type="date"
-              id="fechaInicio"
+              id="pf-fechaInicio"
               name="fechaInicio"
               value={formData.fechaInicio}
               onChange={handleInputChange}
@@ -236,10 +318,10 @@ export default function PeriodForm({
           </div>
 
           <div className="pf-form-group">
-            <label htmlFor="fechaFin">Fecha de Fin:</label>
+            <label htmlFor="pf-fechaFin">Fecha de Fin</label>
             <input
               type="date"
-              id="fechaFin"
+              id="pf-fechaFin"
               name="fechaFin"
               value={formData.fechaFin}
               onChange={handleInputChange}
@@ -249,9 +331,9 @@ export default function PeriodForm({
           </div>
 
           <div className="pf-form-group">
-            <label htmlFor="tipoPeriodo">Tipo de Período:</label>
+            <label htmlFor="pf-tipoPeriodo">Tipo de Período</label>
             <select
-              id="tipoPeriodo"
+              id="pf-tipoPeriodo"
               name="tipoPeriodo"
               value={formData.tipoPeriodo}
               onChange={handleInputChange}
@@ -273,7 +355,7 @@ export default function PeriodForm({
           </div>
 
           {validationError && (
-            <div className="pf-validation-error">
+            <div className="pf-validation-error" role="alert">
               {validationError}
             </div>
           )}

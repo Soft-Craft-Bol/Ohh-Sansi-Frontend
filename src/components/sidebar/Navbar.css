@@ -461,7 +461,6 @@
 }
 
 .navbar-link:focus,
-.navbar-brand:focus,
 .navbar-hamburger:focus,
 .navbar-close-menu:focus {
   outline: 2px solid #2563eb;
@@ -469,7 +468,6 @@
 }
 
 .dark-theme .navbar-link:focus,
-.dark-theme .navbar-brand:focus,
 .dark-theme .navbar-hamburger:focus,
 .dark-theme .navbar-close-menu:focus {
   outline-color: #60a5fa;
