@@ -6,7 +6,7 @@ import {
 } from 'react-icons/fa';
 import logo from '../../assets/img/logo.png';
 import './Navbar.css';
-import  Breadcrumbs  from './Breadcrumbs';
+import  {Breadcrumbs}  from './Breadcrumbs';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);

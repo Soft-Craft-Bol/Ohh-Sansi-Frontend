@@ -460,10 +460,6 @@
   animation: slideInFromRight 0.3s ease-out;
 }
 
-body {
-  padding-top: 70px;
-}
-
 .navbar-link:focus,
 .navbar-brand:focus,
 .navbar-hamburger:focus,
