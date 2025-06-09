@@ -48,11 +48,7 @@ const useOrdenPago = () => {
         } catch (excelError) {
             if (excelError.response?.data?.message === "Error al obtener los detalles de inscripcion" &&
                 excelError.response?.data?.details === "Incorrect result size: expected 1, actual 0") {
-                Swal.fire({
-                    icon: "info",
-                    title: "Error específico detectado",
-                    text: "Intentando con getOrdenPagoDetailInfo..."
-                });
+                console.log("No es inscripción masiva, intentando individual")
                 try {
                     const detailResponse = await getOrdenPagoDetailInfo(codigoIntroducido);
                     setOrdenData(detailResponse.data);
