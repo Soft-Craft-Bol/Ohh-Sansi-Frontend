@@ -18,6 +18,7 @@ export default function PeriodForm({
     fechaFin: '',
     tipoPeriodo: '',
   });
+  const [originalData, setOriginalData] = useState(null); 
   const [validationError, setValidationError] = useState('');
   const [hasInscripcionPeriod, setHasInscripcionPeriod] = useState(false);
 
@@ -29,19 +30,23 @@ export default function PeriodForm({
     setHasInscripcionPeriod(inscripcionExists);
 
     if (editing) {
-      setFormData({
+      const editingData = {
         nombrePeriodo: editing.nombrePeriodo || '',
         fechaInicio: editing.fechaInicio || '',
         fechaFin: editing.fechaFin || '',
         tipoPeriodo: editing.tipoPeriodo || '',
-      });
+      };
+      setFormData(editingData);
+      setOriginalData(editingData); 
     } else {
-      setFormData({
+      const newData = {
         nombrePeriodo: '',
         fechaInicio: '',
         fechaFin: '',
         tipoPeriodo: inscripcionExists ? 'AMPLIACION' : 'INSCRIPCION',
-      });
+      };
+      setFormData(newData);
+      setOriginalData(null);
     }
     setValidationError('');
   }, [editing, periods]);
@@ -82,13 +87,51 @@ export default function PeriodForm({
     }
   });
 
+  const getChangedFields = useCallback(() => {
+    if (!originalData) return formData; 
+
+    const changes = {};
+
+    if (formData.nombrePeriodo !== originalData.nombrePeriodo) {
+      changes.nombre_personalizado = formData.nombrePeriodo.trim();
+    }
+
+    if (formData.fechaInicio !== originalData.fechaInicio) {
+      changes.fecha_inicio = formData.fechaInicio;
+    }
+
+    if (formData.fechaFin !== originalData.fechaFin) {
+      changes.fecha_fin = formData.fechaFin;
+    }
+
+    return changes;
+  }, [formData, originalData]);
+
   const updateMutation = useMutation({
     mutationFn: async (data) => {
-      const response = await updatePeriodoOlimpiada(editing.idPeriodo, {
+      const changedFields = getChangedFields();
+
+      if (Object.keys(changedFields).length === 0) {
+        throw new Error('No se detectaron cambios para actualizar');
+      }
+
+      const updatePayload = {
         idPeriodo: editing.idPeriodo,
-        idOlimpiada: selectedOlimpiada,
-        ...data
-      });
+        idOlimpiada: selectedOlimpiada
+      };
+
+      if ('fecha_inicio' in changedFields) {
+        updatePayload.fechaInicio = changedFields.fecha_inicio;
+      }
+      if ('fecha_fin' in changedFields) {
+        updatePayload.fechaFin = changedFields.fecha_fin;
+      }
+      if ('nombre_personalizado' in changedFields) {
+        updatePayload.nombrePeriodo = changedFields.nombre_personalizado;
+      }
+
+
+      const response = await updatePeriodoOlimpiada(editing.idPeriodo, updatePayload);
 
       if (response.data?.status === 'error') {
         throw new Error(response.data.message);
@@ -149,6 +192,21 @@ export default function PeriodForm({
       return;
     }
 
+    // Para edición, verificar si hay cambios
+    if (editing && originalData) {
+      const hasChanges = Object.keys(getChangedFields()).length > 0;
+      if (!hasChanges) {
+        Swal.fire({
+          title: 'Sin cambios',
+          text: 'No se detectaron cambios para actualizar.',
+          icon: 'info',
+          confirmButtonText: 'Entendido',
+          confirmButtonColor: '#667eea'
+        });
+        return;
+      }
+    }
+
     const validation = validateDateOverlap(
       formData,
       editing?.idPeriodo || null
@@ -166,23 +224,22 @@ export default function PeriodForm({
       return;
     }
 
-    const dataToSend = {
-      nombrePeriodo: formData.nombrePeriodo.trim(),
-      fechaInicio: formData.fechaInicio,
-      fechaFin: formData.fechaFin,
-      tipoPeriodo: formData.tipoPeriodo,
-    };
-
     try {
       if (editing && editing.idPeriodo) {
-        await updateMutation.mutateAsync(dataToSend);
+        await updateMutation.mutateAsync();
       } else {
+        const dataToSend = {
+          nombrePeriodo: formData.nombrePeriodo.trim(),
+          fechaInicio: formData.fechaInicio,
+          fechaFin: formData.fechaFin,
+          tipoPeriodo: formData.tipoPeriodo,
+        };
         await createMutation.mutateAsync(dataToSend);
       }
     } catch (error) {
       console.error('Error en mutación:', error);
     }
-  }, [formData, editing, validateDateOverlap, createMutation, updateMutation, selectedOlimpiada]);
+  }, [formData, originalData, editing, validateDateOverlap, createMutation, updateMutation, getChangedFields]);
 
   const handleClose = () => {
     if (createMutation.isPending || updateMutation.isPending) {
@@ -192,6 +249,29 @@ export default function PeriodForm({
   };
 
   const isLoading = createMutation.isPending || updateMutation.isPending;
+
+  // Función helper para mostrar qué campos han cambiado (opcional, para debugging)
+  const getChangedFieldsDisplay = () => {
+    if (!editing || !originalData) return null;
+
+    const changes = getChangedFields();
+    const changesList = Object.keys(changes);
+
+    if (changesList.length === 0) return null;
+
+    return (
+      <div className="pf-changes-preview" style={{
+        fontSize: '12px',
+        color: '#666',
+        marginBottom: '10px',
+        padding: '8px',
+        backgroundColor: '#f8f9fa',
+        borderRadius: '4px'
+      }}>
+        <strong>Cambios detectados:</strong> {changesList.join(', ')}
+      </div>
+    );
+  };
 
   return (
     <div className="pf-period-form-container">
@@ -208,6 +288,9 @@ export default function PeriodForm({
         </div>
 
         <form onSubmit={handleSubmit} className="pf-period-form">
+          {/* Mostrar cambios detectados (opcional) */}
+          {getChangedFieldsDisplay()}
+
           <div className="pf-form-group">
             <label htmlFor="nombrePeriodo">Nombre del Período:</label>
             <input
