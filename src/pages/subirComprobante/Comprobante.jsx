@@ -120,10 +120,10 @@ export default function Comprobante() {
         codTransaccion: receiptData.codTransaccion || '',
         imagenComprobante: imageUrl,
         nombreReceptor: receiptData.nombreReceptor || '',
-        estadoOrden: "PAGADO",
+        estadoOrden: "GENERADO",
         notasAdicionales: receiptData.notasAdicionales || ''
       };
-
+      console.log('enviando', pagoData)
       const responsePago = await verificarPago(pagoData);
       if (responsePago.data && responsePago.status === 200) {
         Swal.fire({
