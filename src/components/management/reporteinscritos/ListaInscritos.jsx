@@ -97,11 +97,6 @@ const ListaInscritos = () => {
         throw new Error('No se encontró la olimpiada seleccionada');
       }
 
-      console.log('Haciendo petición con:', {
-        areaId: areaSeleccionada?.id || 0,
-        olimpiadaId: olimpiadaSeleccionada.idOlimpiada
-      });
-
       const response = await getReporteInscritos(
         areaSeleccionada?.id || 0,
         olimpiadaSeleccionada.idOlimpiada

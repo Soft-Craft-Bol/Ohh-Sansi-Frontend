@@ -123,7 +123,6 @@ export default function Comprobante() {
         estadoOrden: "GENERADO",
         notasAdicionales: receiptData.notasAdicionales || ''
       };
-      console.log('enviando', pagoData)
       const responsePago = await verificarPago(pagoData);
       if (responsePago.data && responsePago.status === 200) {
         Swal.fire({
