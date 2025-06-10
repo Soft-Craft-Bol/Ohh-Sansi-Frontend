@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, Download, Filter, Users, MapPin, GraduationCap } from 'lucide-react';
+import { FileText, Filter, Users, MapPin, GraduationCap } from 'lucide-react';
 import { getCatalogoOlimpiada, getReporteInscritos } from '../../../api/api';
 import { exportToPDFInscritos, exportToExcelInscritos, exportToCSVInscritos } from '../../../utils/exportUtils';
 import './ListaInscritos.css';
@@ -52,7 +52,6 @@ const ListaInscritos = () => {
       const response = await getCatalogoOlimpiada();
       const data = response?.data || response;
 
-
       if (data && Array.isArray(data)) {
         setCatalogoCompleto(data);
 
@@ -98,22 +97,100 @@ const ListaInscritos = () => {
         throw new Error('No se encontró la olimpiada seleccionada');
       }
 
+      console.log('Haciendo petición con:', {
+        areaId: areaSeleccionada?.id || 0,
+        olimpiadaId: olimpiadaSeleccionada.idOlimpiada
+      });
+
       const response = await getReporteInscritos(
         areaSeleccionada?.id || 0,
         olimpiadaSeleccionada.idOlimpiada
       );
-      setInscritos(response.data || response);
+            
+      const rawData = response?.data || response || [];
+      
+      if (!Array.isArray(rawData)) {
+        console.error('Los datos no son un array:', rawData);
+        throw new Error('Los datos recibidos no tienen el formato esperado');
+      }
+      
+      const datosLimpios = rawData.map((inscrito, index) => {
+        
+        if (!inscrito || typeof inscrito !== 'object') {
+          return null;
+        }
+        
+        let areasProcessed = '';
+        if (inscrito.areas !== null && inscrito.areas !== undefined) {
+          if (typeof inscrito.areas === 'string') {
+            areasProcessed = inscrito.areas;
+          } else {
+            areasProcessed = String(inscrito.areas);
+          }
+        }
+        
+        const cleaned = {
+          ...inscrito,
+          areas: areasProcessed,
+          apellido_materno: inscrito.apellido_materno || '',
+          apellido_paterno: inscrito.apellido_paterno || '',
+          nombre_participante: inscrito.nombre_participante || '',
+          nombre_colegio: inscrito.nombre_colegio || 'Sin especificar',
+          nombre_municipio: inscrito.nombre_municipio || 'Sin especificar',
+          nombre_departamento: inscrito.nombre_departamento || 'Sin especificar',
+          id_inscripcion: inscrito.id_inscripcion || index
+        };
+        
+        return cleaned;
+      }).filter(inscrito => inscrito !== null);
+      
+      setInscritos(datosLimpios);
 
     } catch (error) {
-      console.error('Error al generar reporte:', error);
-      Swal.fire('Error al generar el reporte');
+      console.error('Error detallado al generar reporte:', error);
+      Swal.fire({
+        title: 'Error al generar el reporte',
+        text: error.message || 'Error desconocido',
+        icon: 'error'
+      });
       setInscritos([]);
     } finally {
       setLoading(false);
     }
   };
 
+  const formatParticipantName = (inscrito) => {
+    const apellidoPaterno = inscrito.apellido_paterno || '';
+    const apellidoMaterno = inscrito.apellido_materno && inscrito.apellido_materno.trim() !== '' 
+      ? ` ${inscrito.apellido_materno}` 
+      : '';
+    return `${apellidoPaterno}${apellidoMaterno}`.trim();
+  };
 
+  const formatAreas = (areas) => {
+    if (areas === null || areas === undefined) {
+      return ['Sin áreas'];
+    }
+
+    if (typeof areas !== 'string') {
+      areas = String(areas);
+    }
+
+    if (areas.trim() === '') {
+      return ['Sin áreas'];
+    }
+
+    try {
+      const areasArray = areas.split(',')
+        .map(area => area.trim())
+        .filter(area => area !== '' && area.length > 0);
+
+      return areasArray.length > 0 ? areasArray : ['Sin áreas'];
+    } catch (error) {
+      console.error('Error en formatAreas:', error, 'con areas:', areas);
+      return ['Sin áreas'];
+    }
+  };
 
   if (loadingCatalogo) {
     return (
@@ -262,7 +339,7 @@ const ListaInscritos = () => {
                     <tr key={inscrito.id_inscripcion || index} className="ra-table-row">
                       <td className="ra-table-td">
                         <div className="ra-participant-name">
-                          {inscrito.apellido_paterno} {inscrito.apellido_materno}
+                          {formatParticipantName(inscrito)}
                         </div>
                         <div className="ra-participant-firstname">
                           {inscrito.nombre_participante}
@@ -270,7 +347,7 @@ const ListaInscritos = () => {
                       </td>
                       <td className="ra-table-td">
                         <div className="ra-areas-info">
-                          {inscrito.areas.split(', ').map((area, i) => (
+                          {formatAreas(inscrito.areas).map((area, i) => (
                             <span key={i} className="ra-area-badge">
                               {area}
                             </span>
