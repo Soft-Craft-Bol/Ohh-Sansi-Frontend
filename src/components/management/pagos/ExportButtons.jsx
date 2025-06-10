@@ -34,8 +34,9 @@ const ExportButtons = ({
       await exportFunctions[type](
         data, 
         title, 
+         selectedArea,
         fechaInicio, 
-        fechaFin, 
+        fechaFin,
         estadosValidos
       );
       
