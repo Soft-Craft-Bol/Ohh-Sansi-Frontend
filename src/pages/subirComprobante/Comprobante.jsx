@@ -6,6 +6,7 @@ import Header from '../../components/header/Header';
 import ImageEditor from '../../components/imageEditor/ImageEditorKonva';
 import ImageScanner from '../../components/camScanner/ImageScanner';
 import uploadImageToCloudinary from '../../utils/uploadImageToCloudinary';
+import { useNavigate } from 'react-router-dom';
 import './Comprobante.css';
 
 export default function Comprobante() {
@@ -20,7 +21,7 @@ export default function Comprobante() {
   const [extractedText, setExtractedText] = useState('');
   const [receiptData, setReceiptData] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
-
+  const navigate = useNavigate()
   // ─── Funciones ──────────────────────────────────────────────────────────
 
   const handleVerifyCodigo = useCallback(async () => {
@@ -40,6 +41,13 @@ export default function Comprobante() {
           'Este código ya tiene un pago verificado, no es necesario subir comprobante.',
           'info'
         );
+      } else if (response.data.estadoPago === 'Pago rechazado') {
+      Swal.fire(
+        'Pago rechazado',
+        'Tu comprobante fue rechazado. Por favor, vuelve a subir un comprobante válido.',
+        'warning'
+      );
+      // Aquí podrías habilitar el formulario para subir nuevamente el comprobante si lo tenías deshabilitado
       } else if (response.data.mensaje === 'El participante no generó orden de pago') {
         Swal.fire(
           'Sin orden de pago',
@@ -138,6 +146,7 @@ export default function Comprobante() {
         setAttempts(2);
         setExtractedText('');
         setReceiptData(null);
+        navigate('/')
       } else {
         throw new Error('No se pudo verificar el pago. Inténtalo nuevamente.');
       }
