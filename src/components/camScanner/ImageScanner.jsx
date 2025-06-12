@@ -310,7 +310,6 @@ const ImageScanner = ({ initialImage, onComplete, onRetry, attemptsLeftm, allowM
               <div className="action-buttons">
                 {allowManualEdit ? ( 
                   <ButtonPrimary
-                    buttonStyle="success"
                     onClick={handleConfirm}
                   >
                     Confirmar datos manuales

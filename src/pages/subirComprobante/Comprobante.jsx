@@ -317,14 +317,15 @@ export default function Comprobante() {
                   </div>
                 )}
                 <button
-                  className="submit-button"
+                className='enviar-btn'
                   onClick={handleSubmitReceipt}
                   disabled={isUploading}
                 >
                   {isUploading ? 'Verificando pago...' : 'Confirmar y verificar pago'}
+                  <span></span>
                 </button>
                 <button
-                  className="new-scan-button"
+                  className="repeat-btn"
                   onClick={() => {
                     setSelectedImage(null);
                     setCroppedImage(null);
