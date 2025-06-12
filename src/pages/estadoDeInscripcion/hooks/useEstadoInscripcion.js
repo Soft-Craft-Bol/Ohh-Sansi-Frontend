@@ -26,21 +26,19 @@ const useEstadoInscripcion = () => {
     setError('');
     
     try {
-      console.log('Buscando información para el documento:', documento);
       const response = await getEstadoInscripcion(documento);
-      console.log('Respuesta recibida:', response.data);
       setDatosInscripcion(response.data);
       setMostrarDetalles(true);
     } catch (err) {
       console.error('Error al obtener datos de inscripción:', err);
-      setError('Error de conexión, inténtalo más tarde');
-      setMostrarDetalles(false);
+      const backendMsg = err?.response?.data?.message || err?.message || 'Error al obtener datos de inscripción. Intenta nuevamente.';
+      setError(backendMsg);
       Swal.fire({
-        icon: "error",
-        title: "Error de conexión",
-        text: "No se pudo conectar al servidor. Intenta más tarde.",
-        showConfirmButton: false
-      })
+        icon: 'error',
+        title: 'Error',
+        text: backendMsg,
+        color: 'var(--dark)'
+      });
     } finally {
       setCargando(false);
     }

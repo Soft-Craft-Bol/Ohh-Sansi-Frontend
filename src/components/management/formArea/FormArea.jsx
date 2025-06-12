@@ -8,6 +8,7 @@ import { areaValidationSchema } from "../../../schemas/areaValidation";
 import "./FormArea.css";
 import InputTextarea from "../../inputs/InputTextArea";
 import ManagementCard from "../../cards/ManagementCard";
+import { FaAtom, FaBookOpen, FaLightbulb, FaMedal, FaRegLightbulb, FaSpinner } from "react-icons/fa";
 
 const FormArea = () => {
   const [areas, setAreas] = useState([]);
@@ -42,7 +43,7 @@ const FormArea = () => {
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "")
       .trim()
-      .replace(/\s+/g, " "); 
+      .replace(/\s+/g, " ");
   };
 
   const generateShortName = (nombreArea) => {
@@ -84,25 +85,25 @@ const FormArea = () => {
 
       const response = await addArea(nuevaArea);
       setAreas(prev => [...prev, response.data]);
-        Swal.fire({
-          icon: 'success',
-          title: '¡Éxito!',
-          text: 'Área registrada correctamente',
-          timer: 2000,
-          showConfirmButton: false
-        });
-        fetchAreas();
+      Swal.fire({
+        icon: 'success',
+        title: '¡Éxito!',
+        text: 'Área registrada correctamente',
+        timer: 2000,
+        showConfirmButton: false
+      });
+      fetchAreas();
       resetForm();
     } catch (error) {
       console.error("Error submitting form:", error);
       const errorMessage = error.response?.data?.message ||
         error.message || "Error al registrar el área";
 
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: errorMessage,
-        });
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: errorMessage,
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -114,60 +115,84 @@ const FormArea = () => {
   };
 
   return (
-    <div className="form-area-wrapper page-padding">
-      <div className="form-container-area">
-        <div className="tabs">
-          <h2>Áreas de Competencia</h2>
-          <p>Añada nuevas áreas de competencia</p>
+    <div className="form-management-container">
+      <div className="form-container">
+        <div className="form-header">
+          <FaAtom className="header-icon" />
+          <h2>Gestión de Áreas Olímpicas</h2>
+          <p>Registre nuevas áreas de competencia científica</p>
         </div>
+
         <Formik
           initialValues={initialValues}
           validationSchema={areaValidationSchema}
           onSubmit={handleSubmit}
         >
           {(formik) => (
-            <Form>
-              <InputText
-                label="Nombre del área"
-                name="name"
-                type="text"
-                required
-                placeholder="Ej: Matemáticas"
-                maxLength={30}
-                showCounter={true}
-              />
-              <InputTextarea
-                label="Descripción del área"
-                name="description"
-                placeholder="Breve descripción del área"
-                maxLength={200}
-                value={formik.values.description}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                touched={formik.touched.description}
-                error={formik.errors.description}
-                required
-              />
+            <Form className="area-form">
+              <div className="form-group">
+                <InputText
+                  label="Nombre del área"
+                  name="name"
+                  type="text"
+                  required
+                  placeholder="Ej: Matemáticas"
+                  maxLength={30}
+                  showCounter={true}
+                  icon={FaBookOpen}
+                  onlyLetters={true}
+                />
+              </div>
+              <div className="form-group">
+                <InputTextarea
+                  label="Descripción del área"
+                  name="description"
+                  placeholder="Breve descripción del área"
+                  maxLength={200}
+                  value={formik.values.description}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  touched={formik.touched.description}
+                  error={formik.errors.description}
+                  required
+                  icon={FaLightbulb}
+                />
+              </div>
               <ButtonPrimary
                 type="submit"
-                className="btn-submit-azul"
+                className="cf-submit-btn"
                 disabled={!formik.isValid || isSubmitting}
               >
-                Añadir área
+                {isSubmitting ? (
+                  <>
+                    <FaSpinner className="spin-icon" /> Procesando...
+                  </>
+                ) : (
+                  "Registrar Área"
+                )}
               </ButtonPrimary>
             </Form>
           )}
         </Formik>
       </div>
 
-      <div className="area-list">
-        <h3>Áreas registradas</h3>
+      <div className="list-container">
+        <div className="list-header">
+          <h3>Áreas Registradas</h3>
+          <p>Lista completa de áreas de competencia</p>
+        </div>
         {isLoading ? (
-          <p>Cargando áreas...</p>
+          <div className="loading-state">
+            <FaSpinner className="loading-spinner" />
+            <p>Cargando áreas...</p>
+          </div>
         ) : areas.length === 0 ? (
-          <p>No hay áreas registradas aún.</p>
+          <div className="empty-state">
+            <FaAtom className="empty-icon" />
+            <p>No hay áreas registradas aún</p>
+          </div>
         ) : (
-          <div className="card-list">
+          <div className="areas-grid">
             {areas.map((area) => (
               <ManagementCard
                 key={area.idArea}
@@ -180,6 +205,7 @@ const FormArea = () => {
                   {
                     label: "Código",
                     value: area.nombreCortoArea || "—",
+                    highlight: true,
                   },
                 ]}
               />

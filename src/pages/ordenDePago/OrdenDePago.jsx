@@ -13,6 +13,7 @@ const OrdenDePago = () => {
     setInputValue,
     codigoIntroducido,
     ordenData,
+    ordenExel,
     mostrarDetalle,
     ordenGenerada,
     error,
@@ -35,35 +36,42 @@ const OrdenDePago = () => {
 
   const containerVariants = {
     hidden: { opacity: 0, y: 50 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }, 
+    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
   };
-  
+
   const renderInfoSection = () => {
-    if (!ordenData) return null;
+    let areas,participante,tutores,olimpiadas,totalParticipantes,
+    totalAreas,primerTutor,nombreResponsable,correoResponsable, costoPorArea, totalAPagar;
+    if(ordenExel){
+      participante = 'Participantes registrados por Excel'
+      totalParticipantes = ordenExel.Responsable?.cantPaticipantes
+      totalAreas = ordenExel.Responsable?.cantAreas
+      nombreResponsable = `${ordenExel.Responsable.nombreTut || ""} ${ordenExel.Responsable.apellidoTut || ""}`.trim()
+      correoResponsable = ordenExel.Responsable.correoTut
+      costoPorArea = ordenExel.olimpiadas?.olimpiada?.precioOlimpiada || 0;
+      totalAPagar = totalAreas * costoPorArea;
+    }else{
+      if (!ordenData) return null;
+      const participantes = ordenData.participantes || [];
+      tutores = ordenData.tutores || [];
+      olimpiadas = ordenData.olimpiada || [];
+      areas = ordenData.areas || [];
 
-    const participantes = ordenData.participantes || [];
-    const areas = ordenData.areas || [];
-    const tutores = ordenData.tutores || [];
+      totalParticipantes = participantes.length;
+      totalAreas = areas.length;
 
-    const totalParticipantes = participantes.length;
-    const totalAreas = areas.length;
+      primerTutor = tutores.length > 0 ? tutores[0] : null;
+      nombreResponsable = primerTutor
+        ? `${primerTutor.nombres_tutor || ""} ${primerTutor.apellidos_tutor || ""}`.trim()
+        : "No disponible";
+      correoResponsable = primerTutor?.email_tutor || "No disponible";
 
-    const primerTutor = tutores.length > 0 ? tutores[0] : null;
-    const nombreResponsable = primerTutor
-      ? `${primerTutor.nombres_tutor || ""} ${primerTutor.apellidos_tutor || ""}`.trim()
-      : "No disponible";
-    const correoResponsable = primerTutor?.email_tutor || "No disponible";
-
-    const costoPorArea = ordenData.olimpiadas[0]?.precio_olimpiada || 'Error';
-    const totalAPagar = totalAreas * costoPorArea;
-
+      costoPorArea = olimpiadas?.olimpiada?.precioOlimpiada || 0;
+      totalAPagar = totalAreas * costoPorArea;
+    }
+    
     return (
-      <motion.div
-        className="info-box"
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-      >
+      <motion.div className="info-box" variants={containerVariants} initial="hidden" animate="visible">
         <div className="resumen">
           <h3>Resumen de la inscripción</h3>
           <p>Total de participantes: <span className="bold-blue">{totalParticipantes}</span></p>
@@ -83,6 +91,7 @@ const OrdenDePago = () => {
       </motion.div>
     );
   };
+
   const showSuccessMessage = () => {
     Swal.fire({
       title: '¡Éxito!',
@@ -136,7 +145,7 @@ const OrdenDePago = () => {
           descripcion="Genera la orden de pago referente a la inscripción, introduciendo el código"
           placeholder="Introduce el código"
           codigoIntroducidoTexto="Código introducido:"
-          codigoIntroducido={codigoIntroducido}
+          /*  codigoIntroducido={codigoIntroducido} */
           inputValue={inputValue} // Pasando inputValue al componente
           onInputChange={(e) => {
             const value = e.target.value;
@@ -157,21 +166,21 @@ const OrdenDePago = () => {
         animate="visible"
       >
         {renderInfoSection()}
-        {ordenData && !mostrarDetalle && (
+        {(ordenData || ordenExel) && !mostrarDetalle && (
           <motion.div
             className="boton-generar"
             variants={containerVariants}
             initial="hidden"
             animate="visible"
           >
-            <button 
-              onClick={handleGenerarOrdenWithFeedback} 
+            <button
+              onClick={handleGenerarOrdenWithFeedback}
               className="btn-generar"
               disabled={isLoading}
             >
               {isLoading ? 'Generando...' : 'Generar Orden de Pago'}
             </button>
-        </motion.div>
+          </motion.div>
         )}
       </motion.div>
       {mostrarDetalle && ordenGenerada && (
@@ -181,9 +190,13 @@ const OrdenDePago = () => {
           initial="hidden"
           animate="visible"
         >
-          <OrdenPagoDetalle 
+          <OrdenPagoDetalle
             data={ordenGenerada}
-            nit_tutor={ordenData.tutores[0]?.carnet_identidad_tutor || '000000000' }
+            nit_tutor={
+              ordenExel 
+                ? (ordenExel.Responsable?.ciTut || '000000000')
+                : (ordenData?.tutores?.[0]?.carnet_identidad_tutor || '000000000')
+            }
           />
         </motion.div>
       )}

@@ -1,210 +1,736 @@
-.periodos-wrapper {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 30px;
-  animation: fadeIn 0.8s ease-in;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.periodos-header {
-  margin-bottom: 30px;
-}
-
-.periodos-header h1 {
-  font-size: 32px;
-  color: var(--blue-color);
-  font-weight: 600;
-  text-align: center;
-}
-
-.periodos-header p { 
-  text-align: center;
-}
-
-.periodos-management {
-  display: flex;
-  gap: 40px;
-  flex-wrap: wrap;
-  margin: 0 auto; 
-  
-}
-
-.side-form {
-  flex: 1;
-  border-radius: 16px;
+/* Contenedor principal */
+.gpo-periods-container {
   padding: 24px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease;
+  min-height: 100vh;
 }
 
-.side-form:hover {
-  transform: scale(1.02);
+/* Header */
+.gpo-periods-header {
+  margin-bottom: 32px;
+  text-align: center;
 }
 
-.side-form h2{
-  font-size: 28px;
-  color: var(--blue-color);
-  margin-bottom: 10px;
+.gpo-periods-header h1 {
+  color: #1e293b;
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 8px;
 }
 
-.periodos-list {
-  flex: 2;
+.gpo-periods-header p {
+  color: #64748b;
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+/* Contenido principal */
+.gpo-periods-content {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Estilos para el selector personalizado */
+.custom-select-wrapper {
+  flex: 1;
+  min-width: 0;
+}
+
+.select-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 0.875rem;
+  color: #4b5563;
+  font-weight: 500;
+}
+
+.custom-select {
+  position: relative;
+}
+
+.custom-select select {
+  width: 100%;
+  padding: 12px 16px;
+  padding-right: 40px;
+  font-size: 0.9375rem;
+  color: #111827;
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  appearance: none;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.custom-select select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.custom-select select:disabled {
+  background-color: #f9fafb;
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.select-icon {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: #6b7280;
+}
+
+/* Estilo para el botón elegante */
+.elegant-add-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: white;
+  background: var(--blue);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.elegant-add-button:hover:not(:disabled) {
+  background-color: var(--science-blue);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.elegant-add-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  background-color: #9ca3af;
+}
+
+.elegant-add-button .button-icon {
+  transition: transform 0.2s ease;
+}
+
+.elegant-add-button:hover .button-icon {
+  transform: rotate(90deg);
+}
+
+.gpo-selection-panel {
+  display: flex;
+  gap: 16px;
+  align-items: flex-end;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 640px) {
+  .gpo-selection-panel {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  
+  .custom-select-wrapper {
+    width: 100%;
+  }
+  
+  .elegant-add-button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+.gpo-form-group {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-}
-.periodos-list h2 {
-  font-size: 24px;
-  color: var(--blue-color);
-  margin-bottom: 10px;
+  gap: 8px;
+  flex: 1;
 }
 
-.form-group {
+.gpo-form-group label {
+  font-weight: 600;
+  color: #374151;
+  font-size: 0.9rem;
+}
+
+.gpo-olimpiada-select {
+  padding: 12px 16px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.2s;
+  background: white;
+}
+
+.gpo-olimpiada-select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.gpo-olimpiada-select:disabled {
+  background: #f3f4f6;
+  cursor: not-allowed;
+}
+
+/* Botones de acción */
+.gpo-action-buttons {
+  display: flex;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.gpo-add-btn, .gpo-config-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.9rem;
+}
+
+.gpo-add-btn {
+  background: #3b82f6;
+  color: white;
+}
+
+.gpo-add-btn:hover:not(:disabled) {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+.gpo-add-btn:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.gpo-config-btn {
+  background: #f59e0b;
+  color: white;
+}
+
+.gpo-config-btn:hover {
+  background: #d97706;
+  transform: translateY(-1px);
+}
+
+/* Contenido principal */
+.gpo-main-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Formulario de creación */
+.gpo-create-form {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border-left: 4px solid #3b82f6;
+}
+
+.gpo-create-form h3 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #1e293b;
+  margin-bottom: 24px;
+  font-size: 1.25rem;
+}
+
+.gpo-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
   margin-bottom: 20px;
 }
 
-.form-group label {
+.gpo-form-group input,
+.gpo-form-group select {
+  padding: 12px 16px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.2s;
+}
+
+.gpo-form-group input:focus,
+.gpo-form-group select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.gpo-form-group select:disabled {
+  background: #f3f4f6;
+  color: #9ca3af;
+}
+
+.gpo-error-message {
+  color: #dc2626;
+  font-size: 0.875rem;
+  margin-top: 4px;
+}
+
+/* Acciones del formulario */
+.gpo-form-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.gpo-save-btn, .gpo-cancel-btn {
+  padding: 12px 24px;
+  border-radius: 8px;
   font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.9rem;
 }
 
-.form-group input {
-  width: 100%;
-  padding: 8px;
-  margin-top: 6px;
-  border: 1px solid #ccc;
+.gpo-save-btn {
+  background: #10b981;
+  color: white;
+}
+
+.gpo-save-btn:hover:not(:disabled) {
+  background: #059669;
+  transform: translateY(-1px);
+}
+
+.gpo-save-btn:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.gpo-cancel-btn {
+  background: #6b7280;
+  color: white;
+}
+
+.gpo-cancel-btn:hover {
+  background: #4b5563;
+  transform: translateY(-1px);
+}
+
+/* Lista de períodos */
+.gpo-periods-list {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.gpo-periods-list h3 {
+  color: #1e293b;
+  margin-bottom: 20px;
+  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Estados de carga y vacío */
+.gpo-loading {
+  text-align: center;
+  padding: 48px;
+  color: #6b7280;
+  font-size: 1.1rem;
+}
+
+.gpo-empty-state {
+  text-align: center;
+  padding: 48px;
+  color: #6b7280;
+}
+
+.gpo-empty-state svg {
+  color: #d1d5db;
+  margin-bottom: 16px;
+}
+
+.gpo-empty-state p {
+  font-size: 1.1rem;
+  margin-bottom: 16px;
+}
+
+.gpo-text-btn {
+  background: none;
+  border: none;
+  color: #3b82f6;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 8px 16px;
   border-radius: 6px;
+  transition: all 0.2s;
 }
 
-.form-group small {
-  color: #777;
-  font-size: 12px;
+.gpo-text-btn:hover {
+  background: #eff6ff;
+  color: #1d4ed8;
 }
 
-.switch-group {
+/* Tarjetas de períodos */
+.gpo-period-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.gpo-period-card {
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.2s;
+  background: white;
+}
+
+.gpo-period-card:hover {
+  border-color: #d1d5db;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.gpo-period-card.gpo-expanded {
+  border-color: #3b82f6;
+  box-shadow: 0 4px 6px rgba(59, 130, 246, 0.1);
+}
+
+/* Estados de período */
+.gpo-period-card.gpo-status-activo {
+  border-left: 4px solid #10b981;
+  background: linear-gradient(to right, #ecfdf5, white);
+}
+
+.gpo-period-card.gpo-status-pendiente {
+  border-left: 4px solid #6b7280;
+}
+
+.gpo-period-card.gpo-status-finalizado {
+  border-left: 4px solid #3b82f6;
+  opacity: 0.8;
+}
+
+.gpo-period-card.gpo-status-cancelado {
+  border-left: 4px solid #dc2626;
+  opacity: 0.6;
+  background: #fef2f2;
+}
+
+/* Header de tarjeta */
+.gpo-card-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 10px;
-}
-
-.custom-switch {
-  width: 40px;
-  height: 20px;
-  background-color: #ccc;
-  border-radius: 999px;
-  position: relative;
+  padding: 20px 24px;
   cursor: pointer;
-  display: inline-block;
-  transition: background-color 0.3s ease;
+  transition: background-color 0.2s;
+}
+
+.gpo-card-header:hover {
+  background: #f9fafb;
+}
+
+.gpo-period-info {
+  flex: 1;
+}
+
+.gpo-period-badges {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.gpo-period-type, .gpo-period-status {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Tipos de período */
+.gpo-type-blue {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.gpo-type-orange {
+  background: #fed7aa;
+  color: #c2410c;
+}
+
+/* Estados */
+.gpo-status-gray {
+  background: #f3f4f6;
+  color: #4b5563;
+}
+
+.gpo-status-green {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.gpo-status-blue {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.gpo-status-red {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.gpo-period-info h4 {
+  color: #1e293b;
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.gpo-period-dates {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #6b7280;
+  font-size: 0.9rem;
+  margin: 0 24px;
+}
+
+.gpo-date-icon {
+  color: #9ca3af;
+}
+
+.gpo-expand-btn {
+  background: none;
   border: none;
-  padding: 0;
-}
-
-.custom-slider {
-  content: "";
-  position: absolute;
-  height: 16px;
-  width: 16px;
-  top: 2px;
-  left: 2px;
-  background-color: white;
-  border-radius: 50%;
-  transition: transform 0.3s ease;
-  display: block;
-}
-
-.custom-slider.on {
-  transform: translateX(20px);
-}
-
-.custom-switch:focus {
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
-}
-
-.custom-switch.on {
-  background-color: var(--blue-color);
-}
-
-.empty-event-box {
-  border: 2px dashed var(--blue-color);
-  padding: 12px;
-  border-radius: 8px;
-  animation: pulseBox 2s infinite;
-}
-
-.event-preview-list {
-  list-style: none;
-  padding: 0;
-  margin: 10px 0;
-  font-size: 14px;
-}
-
-.add-btn,
-.register-btn {
-  background-color: var(--blue-color);
-  color: white;
-  padding: 10px 14px;
-  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 8px;
   border-radius: 6px;
+  transition: all 0.2s;
+  margin-left: 16px;
+}
+
+.gpo-expand-btn:hover {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+/* Detalles de tarjeta */
+.gpo-card-details {
+  border-top: 1px solid #e5e7eb;
+  padding: 20px 24px;
+  background: #f9fafb;
+}
+
+.gpo-detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  font-size: 0.9rem;
+}
+
+.gpo-detail-row span:first-child {
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.gpo-current-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.gpo-current-status.gpo-status-green {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.gpo-current-status.gpo-status-gray {
+  background: #f3f4f6;
+  color: #4b5563;
+}
+
+.gpo-current-status.gpo-status-blue {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.gpo-current-status.gpo-status-red {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* Indicador activo */
+.gpo-active-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: #dcfce7;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  color: #166534;
+  font-weight: 500;
+  margin-bottom: 16px;
+}
+
+.gpo-pulse {
+  animation: gpo-pulse 2s infinite;
+}
+
+@keyframes gpo-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Acciones de tarjeta */
+.gpo-card-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.gpo-edit-btn, .gpo-cancel-period-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: 1px solid;
   cursor: pointer;
-  margin-top: 10px;
-  width: 100%;
+  transition: all 0.2s;
 }
 
-.add-btn:hover, .register-btn:hover {
-  background: linear-gradient(90deg, var(--blue-color), var(--science-blue));
-  transform: scale(1.02);
+.gpo-edit-btn {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-color: #bfdbfe;
 }
 
-@keyframes pulseBox {
-  0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4); }
-  70% { box-shadow: 0 0 0 10px rgba(99, 102, 241, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
+.gpo-edit-btn:hover:not(:disabled) {
+  background: #dbeafe;
+  border-color: #93c5fd;
+  transform: translateY(-1px);
 }
 
+.gpo-edit-btn:disabled {
+  background: #f3f4f6;
+  color: #9ca3af;
+  border-color: #e5e7eb;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.gpo-cancel-period-btn {
+  background: #fef2f2;
+  color: #dc2626;
+  border-color: #fecaca;
+}
+
+.gpo-cancel-period-btn:hover:not(:disabled) {
+  background: #fee2e2;
+  border-color: #fca5a5;
+  transform: translateY(-1px);
+}
+
+.gpo-cancel-period-btn:disabled {
+  background: #f3f4f6;
+  color: #9ca3af;
+  border-color: #e5e7eb;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Personalización de SweetAlert2 */
+.gpo-swal-popup {
+  border-radius: 12px !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+}
+
+.gpo-swal-popup .swal2-title {
+  color: #1e293b !important;
+  font-weight: 600 !important;
+}
+
+.gpo-swal-popup .swal2-content {
+  color: #4b5563 !important;
+}
+
+/* Responsive */
 @media (max-width: 768px) {
-  .periodos-management {
+  .gpo-periods-container {
+    padding: 16px;
+  }
+  
+  .gpo-periods-header h1 {
+    font-size: 2rem;
+  }
+  
+  .gpo-selection-panel {
     flex-direction: column;
-    gap: 20px;
+    align-items: stretch;
   }
-
-  .side-form {
-    max-width: 100%;
+  
+  .gpo-action-buttons {
+    justify-content: center;
   }
-
-  .periodos-list {
-    min-width: 100%;
+  
+  .gpo-form-row {
+    grid-template-columns: 1fr;
+    gap: 16px;
   }
-
-  .gestion-title {
-    font-size: 24px;
+  
+  .gpo-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
   }
-
-  .gestion-subtitle {
-    font-size: 14px;
+  
+  .gpo-period-dates {
+    margin: 0;
   }
-}
-
-@media (max-width: 480px) {
-  .gestion-title {
-    font-size:18px;
+  
+  .gpo-expand-btn {
+    margin-left: 0;
+    align-self: flex-end;
   }
-
-  .side-form{
-    padding: 16px;
+  
+  .gpo-card-actions {
+    flex-direction: column;
   }
-  .periodos-list {
-    padding: 16px;
-  }
-
-  .add-btn,
-  .register-btn {
-    font-size: 14px;
-    padding: 10px;
+  
+  .gpo-form-actions {
+    flex-direction: column;
   }
 }

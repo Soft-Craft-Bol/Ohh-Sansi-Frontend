@@ -8,6 +8,7 @@ export const verificarParticipante = async (ci, onComplete, onError) => {
 
     const res = await getEstudianteByCarnet(ci);
 
+
     if (res.data.fechaNacimiento) { //if exists
       const { value: valuePermit } = await Swal.fire({
         title: "Participante encontrado",
@@ -23,16 +24,12 @@ export const verificarParticipante = async (ci, onComplete, onError) => {
       });
 
       if (!valuePermit) {
-        console.log("Verificación cancelada o correo vacío");
         return;
       }
 
       const result = await verifyEstudiante({ ci, valuePermit });
-      console.log("Resultado de la verificación:", result);
-
       onComplete?.(result.data);
     } else {
-      console.log("CI no encontrado");
       onError?.("No se encontró el participante con el CI proporcionado.");
     }
   } catch (error) {
@@ -71,8 +68,16 @@ export const verificarSerTutor = async (ci, onSuccess, onError) => {
       });
 
       if (!emailConfirm) {
+        Swal.fire({
+          icon: "info",
+          title: "Verificación cancelada",
+          text: "No se completó la verificación como tutor.",
+        });
+      
+        onError?.(); // Notifica al componente para detener el flujo
         return;
       }
+      
 
       const result = await verifyEstudiante({ ci, valuePermit: emailConfirm });
 
@@ -145,16 +150,18 @@ export const verificarTutor = async (ci, onComplete, onError) => {
       });
 
       if (!valuePermit) {
-        console.log("Verificación cancelada o correo vacío");
+        Swal.fire({
+          icon: "info",
+          title: "Verificación cancelada",
+          text: "No se completó la verificación como tutor.",
+        });
+        onError?.(); 
         return;
       }
 
       const result = await verifyTutor({ ci, valuePermit });
-      console.log("Resultado de la verificación del tutor:", result);
-
       onComplete?.(result.data);
     } else {
-      console.log("CI de tutor no encontrado");
       onError?.("No se encontró un tutor con el CI proporcionado.");
     }
   } catch (error) {

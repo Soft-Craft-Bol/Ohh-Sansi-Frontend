@@ -1,390 +1,549 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import "./Step4Form.css";
-import BuscadorCodigo from "../buscadorCodigo/BuscadorCodigo";
-import { getTutorAreaParticipanteInfo, setTutorAreaParticipante } from "../../api/api";
+import { useState, useEffect } from "react";
+import "./Step3Form.css";
+import InputText from "../inputs/InputText";
+import { ButtonPrimary } from "../button/ButtonPrimary";
+import { registerTutorAcademico, getParticipantesWithAreas } from "../../api/api";
+import registerTutorValidationSchema from "../../schemas/registerTutorValidate";
+import { Formik, Form } from "formik";
 import Swal from "sweetalert2";
+import useDebounce from "../../hooks/WriteInputs/useDebounce";
+import { verificarTutor } from "../../hooks/loaderInfo/LoaderInfo";
+import SelectInputStandalone from "../selected/SelectInputSecundary";
 
-const Step4Form = ({ formData, updateFormData, onNext, onPrev }) => {
-  const [codigoIntroducido, setCodigoIntroducido] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
+const Step4Form = () => {
+  const [tutoresLocales, setTutoresLocales] = useState([]);
+  const [ciParticipante, setCiParticipante] = useState("");
+  const [selectedAreas, setSelectedAreas] = useState({});
+  let debouncedCiParticipante = useDebounce(ciParticipante, 1000);
+  const [ciVerificado, setCiVerificado] = useState(false);
   const [participanteData, setParticipanteData] = useState(null);
-  const [tutoresAsignaciones, setTutoresAsignaciones] = useState([]);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [selectedIndex, setSelectedIndex] = useState(null);
-  const navigator = useNavigate();
-  const containerVariants = {
-    hidden: { opacity: 0, y: -20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
+  const [loading, setLoading] = useState(false);
+
+  // Función para obtener el máximo de tutores según las áreas disponibles
+  const getMaxTutores = () => {
+    return participanteData ? participanteData.idsAreas.length : 0;
   };
 
-  const handleInputChange = (e) => {
-    const value = e.target.value;
-    if (value.length <= 11 && /^\d*$/.test(value)) {
-      setCodigoIntroducido(value);
-      setError("");
-    } else if (value.length > 11) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'El carnet no puede tener más de 11 dígitos'
-      });
-    }
-  };
-
-  const handleKeyPress = (e) => {
-    if (e.key === "Enter") {
-      handleSearch();
-    }
-  };
-
-  const handleSearch = async () => {
-    if (!codigoIntroducido.trim()) {
-      setError("Por favor, introduce un código válido");
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'Por favor, introduce un código válido',
-        timer: 3000,
-        timerProgressBar: true
-      });
-      return;
-    }
-
-    const carnetNumerico = parseInt(codigoIntroducido, 10);
-  if (isNaN(carnetNumerico)) {
-    setError("El carnet debe ser un número válido");
-    Swal.fire({
-      icon: 'error',
-      title: 'Error',
-      text: 'El carnet debe ser un número válido',
-    });
-    return;
-  }
-
-  if (carnetNumerico > 2147483647) {
-    setError("El carnet excede el valor máximo permitido");
-    Swal.fire({
-      icon: 'error',
-      title: 'Error',
-      text: 'El carnet excede el valor máximo permitido (2,147,483,647)',
-    });
-    return;
-  }
-    
-    setLoading(true);
-    setError("");
-    setParticipanteData(null);
-    setTutoresAsignaciones([]);
-    
-    try {
-      const response = await getTutorAreaParticipanteInfo(codigoIntroducido);
-      const data = response.data;
-      
-      if (data.status === "success") {
-        const nombreCompleto = `${data.participante.nombreParticipante} ${data.participante.apellidoPaterno} ${data.participante.apellidoMaterno || ''}`.trim();
-        const tutoresFormateados = data.tutoresParticipante.map(tutor => {
-          const tipoTutor = data.tipoTutores.find(tipo => tipo.idTipoTutor === tutor.idTipoTutor);
-          const esTutorLegal = tipoTutor && tipoTutor.nombreTipoTutor === "LEGAL";
-          
-          return {
-            id: tutor.idTutor,
-            nombre: `${tutor.nombresTutor} ${tutor.apellidosTutor}`,
-            ci: `${tutor.carnetIdentidadTutor}${tutor.complementoCiTutor ? tutor.complementoCiTutor : ''}`,
-            tipo: tipoTutor ? tipoTutor.nombreTipoTutor : "DESCONOCIDO",
-            area: esTutorLegal ? "NO CORRESPONDE" : "",
-            areaId: null,
-            esTutorLegal
-          };
-        });
-        
-        setParticipanteData({
-          nombre: nombreCompleto,
-          tutores: data.tutoresParticipante.length,
-          academicos: data.tutoresParticipante.filter(tutor => {
-            const tipoTutor = data.tipoTutores.find(tipo => tipo.idTipoTutor === tutor.idTipoTutor);
-            return tipoTutor && tipoTutor.nombreTipoTutor === "ACADEMICO";
-          }).length,
-          areas: data.areasParticipante.map(area => area.nombreArea),
-          areasData: data.areasParticipante,
-          idParticipante: data.participante.idParticipante,
-        });
-        
-        setTutoresAsignaciones(tutoresFormateados);
-        // Swal.fire({
-        //   icon: 'success',
-        //   title: 'Éxito',
-        //   text: 'Datos del participante cargados correctamente',
-        //   timer: 2000,
-        //   timerProgressBar: true
-        // });
-      } else {
-        setError("No se encontraron datos para el código ingresado");
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'No se encontraron datos para el código ingresado',
-        });
-      }
-    } catch (err) {
-      console.error("Error al buscar los datos:", err);
-      if (err.response) {
-        const statusCode = err.response.status;
-        const errorData = err.response.data;
-        
-        let errorMessage;
-        if (statusCode === 404) {
-          errorMessage = errorData.message || "No se encontró el participante con el CI proporcionado";
-        } else if (errorData.message) {
-          errorMessage = errorData.message;
-        } else {
-          errorMessage = "Error al buscar los datos del participante. Intente nuevamente.";
-        }
-        
-        setError(errorMessage);
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: errorMessage,
-        });
-      } else if (err.message && err.message.includes("Network Error")) {
-        const errorMessage = "Error de conexión. Verifique su conexión a internet.";
-        setError(errorMessage);
-        Swal.fire({
-          icon: 'error',
-          title: 'Error de conexión',
-          text: errorMessage,
-        });
-      } else {
-        const errorMessage = "Error al buscar los datos del participante. Intente nuevamente.";
-        setError(errorMessage);
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: errorMessage,
-        });
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const toggleDropdown = (index) => {
-    setSelectedIndex(index);
-    setDropdownOpen(!dropdownOpen);
-  };
-
-  const selectArea = (areaId, nombreArea) => {
-    const updatedTutores = [...tutoresAsignaciones];
-    updatedTutores[selectedIndex].area = nombreArea;
-    updatedTutores[selectedIndex].areaId = areaId;
-    
-    setTutoresAsignaciones(updatedTutores);
-    setDropdownOpen(false);
-  };
-
-  const handleSubmitAsignaciones = async () => {
-    const tutoresSinAsignar = tutoresAsignaciones.filter(tutor => !tutor.esTutorLegal && !tutor.area);
-    
-    if (tutoresSinAsignar.length > 0) {
-      Swal.fire({
-        icon: 'warning',
-        title: 'Atención',
-        text: 'Existen tutores académicos sin área asignada',
-      });
-      return;
-    }
-    const asignaciones = tutoresAsignaciones
-      .filter(tutor => !tutor.esTutorLegal && tutor.areaId)
-      .map(tutor => ({
-        idTutor: tutor.id,
-        idArea: tutor.areaId,
-        idParticipante: participanteData.idParticipante
-      }));
-
-    console.log("Asignaciones a enviar:", asignaciones);
-    
-    if (asignaciones.length === 0) {
-      Swal.fire({
-        icon: 'warning',
-        title: 'Atención',
-        text: 'No hay asignaciones para guardar',
-      });
-      return;
-    }
-    
-    try {
-      const confirmResult = await Swal.fire({
-        icon: 'question',
-        title: 'Confirmar asignación',
-        text: '¿Estás seguro de que deseas asignar estas áreas a los tutores?',
-        showCancelButton: true,
-        confirmButtonText: 'Confirmar',
-        cancelButtonText: 'Cancelar'
-      });
-      
-      if (confirmResult.isConfirmed) {
-        setSubmitting(true);
-        await setTutorAreaParticipante(asignaciones);
-        
-        Swal.fire({
-          icon: 'success',
-          title: 'Éxito',
-          text: 'Áreas asignadas correctamente a los tutores',
-          timer: 2000,
-          timerProgressBar: true
-        });
-        if (onNext) {
-          onNext();
-        }
-        navigator("/home");
-      }
-    } catch (err) {
-      console.error("Error al asignar áreas:", err);
-      
-      let errorMessage = "Error al asignar áreas a los tutores. Intente nuevamente.";
-      if (err.response && err.response.data) {
-        if (err.response.data.message) {
-          errorMessage = err.response.data.message;
-        } else if (err.response.data.errors) {
-          errorMessage = err.response.data.errors;
-        }
-      }
-      
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: errorMessage,
-      });
-    } finally {
-      setSubmitting(false);
-    }
+  const initialValues = {
+    idTipoTutor: 1, // Académico
+    emailTutor: "",
+    nombresTutor: "",
+    apellidosTutor: "",
+    telefono: "",
+    carnetIdentidadTutor: "",
+    complementoCiTutor: "",
   };
 
   useEffect(() => {
-    if (codigoIntroducido === "666666") {
-      handleSearch();
+    if (debouncedCiParticipante.length >= 5 && !ciVerificado) {
+      const timer = setTimeout(async () => {
+        setLoading(true);
+        try {
+          const response = await getParticipantesWithAreas(debouncedCiParticipante);
+          if (response.data) {
+            setParticipanteData(response.data);
+            
+            const tutoresExistentes = response.data.areasTutores
+              .filter(areaTutor => areaTutor.nombresTutor || areaTutor.apellidosTutor || areaTutor.emailTutor || areaTutor.telefono)
+              .map(areaTutor => ({
+                emailTutor: areaTutor.emailTutor || "No especificado",
+                nombresTutor: areaTutor.nombresTutor || "Tutor asignado",
+                apellidosTutor: areaTutor.apellidosTutor || "",
+                telefono: areaTutor.telefono?.toString() || "No especificado",
+                carnetIdentidadTutor: areaTutor.carnetIdentidadTutor?.toString() || "No especificado",
+                complementoCiTutor: areaTutor.complementoCiTutor || "",
+                idArea: areaTutor.idArea,
+                nombreArea: areaTutor.nombreArea,
+                fromBackend: true,
+                tutorAsignado: true
+              }));
+
+            setTutoresLocales(tutoresExistentes);
+
+            const selecciones = {};
+            tutoresExistentes.forEach((tutor, index) => {
+              if (tutor.idArea) {
+                selecciones[index] = tutor.idArea;
+              }
+            });
+            setSelectedAreas(selecciones);
+
+            const Toast = Swal.mixin({
+              toast: true,
+              position: "top-end",
+              showConfirmButton: false,
+              timer: 3000,
+              timerProgressBar: true,
+              didOpen: (toast) => {
+                toast.onmouseenter = Swal.stopTimer;
+                toast.onmouseleave = Swal.resumeTimer;
+              }
+            });
+            Toast.fire({
+              icon: "success",
+              title: "Datos del participante cargados"
+            });
+          } else {
+            setParticipanteData(null);
+            setTutoresLocales([]);
+            Swal.fire({
+              icon: 'warning',
+              title: 'Atención',
+              text: 'No se encontró el participante.',
+            });
+          }
+        } catch (error) {
+          console.error("Error al cargar datos:", error);
+          setParticipanteData(null);
+          setTutoresLocales([]);
+          setCiVerificado(false);
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'No se pudieron cargar los datos del participante.'
+          });
+        } finally {
+          setLoading(false);
+        }
+      }, 500);
+
+      return () => clearTimeout(timer);
     }
-  }, []);
-  
-  const getErrorMessage = (errorText) => {
-    if (errorText.includes("Ci de participante no encontrado")) {
-      return "CI de participante no encontrado, documento inválido";
-    } else if (errorText.includes("No se encontraron areas de competencia")) {
-      return "No se encontraron áreas de competencia registradas para el participante";
-    } else if (errorText.includes("No se encontraron tutores académicos")) {
-      return "No hay tutores académicos registrados para este participante";
-    } else if (errorText.includes("No se encontraron tutores registrados")) {
-      return "No se encontraron tutores registrados para el participante";
-    } else {
-      return errorText || "Error al procesar la solicitud";
+  }, [debouncedCiParticipante]);
+
+  const agregarTutor = (values, { resetForm }) => {
+    const maxTutores = getMaxTutores();
+    if (tutoresLocales.length >= maxTutores) {
+      Swal.fire({
+        icon: 'error',
+        title: "Error",
+        text: `Solo puede registrar un máximo de ${maxTutores} ${maxTutores === 1 ? 'tutor' : 'tutores'} académico${maxTutores === 1 ? '' : 's'}`
+      });
+      return;
+    }
+
+    const existe = tutoresLocales.some((t) => t.carnetIdentidadTutor === values.carnetIdentidadTutor);
+
+    if (existe) {
+      Swal.fire({
+        icon: 'error',
+        title: "Error",
+        text: "Ya existe un tutor con este número de documento"
+      });
+      return;
+    }
+
+    const nuevoTutor = {
+      ...values,
+      fromBackend: false,
+      tutorAsignado: false
+    };
+
+    setTutoresLocales([...tutoresLocales, nuevoTutor]);
+    resetForm();
+
+    Swal.fire({
+      icon: 'success',
+      title: "Éxito",
+      text: "Tutor académico agregado correctamente",
+      timer: 2000
+    });
+  };
+
+  const eliminarTutor = (index) => {
+    if (tutoresLocales[index].tutorAsignado) {
+      Swal.fire({
+        icon: 'error',
+        title: "Error",
+        text: "No puede eliminar un tutor ya asignado"
+      });
+      return;
+    }
+
+    const nuevosTutores = [...tutoresLocales];
+    nuevosTutores.splice(index, 1);
+    setTutoresLocales(nuevosTutores);
+
+    const nuevasSelecciones = { ...selectedAreas };
+    delete nuevasSelecciones[index];
+    setSelectedAreas(nuevasSelecciones);
+
+    Swal.fire({
+      icon: 'success',
+      title: "Éxito",
+      text: "Tutor eliminado",
+      timer: 2000
+    });
+  };
+
+  const handleSelectArea = (tutorIndex, areaId) => {
+    const areaYaAsignada = Object.values(selectedAreas).some(
+      (area, index) => area === areaId && index !== tutorIndex
+    );
+
+    if (areaYaAsignada) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Esta área ya está asignada a otro tutor'
+      });
+      return;
+    }
+
+    setSelectedAreas(prev => ({
+      ...prev,
+      [tutorIndex]: areaId
+    }));
+  };
+
+  const handleRegistrarTutores = async () => {
+    if (!ciParticipante) {
+      Swal.fire({
+        icon: 'error',
+        title: "Error",
+        text: "Debe ingresar el CI del participante antes de registrar tutores"
+      });
+      return;
+    }
+
+    if (!participanteData || participanteData.idsAreas.length === 0) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: "El participante no tiene áreas asignadas"
+      });
+      return;
+    }
+
+    if (tutoresLocales.length === 0) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: "Debe agregar al menos un tutor antes de registrar"
+      });
+      return;
+    }
+
+    const tutoresSinArea = tutoresLocales.filter((_, index) => !selectedAreas[index] && !tutoresLocales[index].tutorAsignado);
+    if (tutoresSinArea.length > 0) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Todos los tutores académicos nuevos deben tener un área asignada'
+      });
+      return;
+    }
+
+    const areasAsignadas = Object.values(selectedAreas);
+    const areasUnicas = new Set(areasAsignadas);
+    if (areasAsignadas.length !== areasUnicas.size) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No puede asignar la misma área a múltiples tutores'
+      });
+      return;
+    }
+
+    try {
+      for (const [index, tutor] of tutoresLocales.entries()) {
+        if (!tutor.fromBackend) {
+          const idArea = selectedAreas[index];
+          
+          const tutorData = {
+            carnetIdentidadTutor: tutor.carnetIdentidadTutor,
+            complementoCiTutor: tutor.complementoCiTutor,
+            nombresTutor: tutor.nombresTutor,
+            apellidosTutor: tutor.apellidosTutor,
+            emailTutor: tutor.emailTutor,
+            telefono: tutor.telefono
+          };
+
+          await registerTutorAcademico(ciParticipante, idArea, tutorData);
+        }
+      }
+
+      Swal.fire({
+        icon: 'success',
+        title: "Éxito",
+        text: "Tutores académicos registrados correctamente"
+      });
+
+      const response = await getParticipantesWithAreas(ciParticipante);
+      if (response.data) {
+        setParticipanteData(response.data);
+        const tutoresActualizados = response.data.areasTutores
+          .filter(areaTutor => areaTutor.idTutor !== null)
+          .map(areaTutor => ({
+            emailTutor: areaTutor.emailTutor,
+            nombresTutor: areaTutor.nombresTutor,
+            apellidosTutor: areaTutor.apellidosTutor,
+            telefono: areaTutor.telefono?.toString(),
+            carnetIdentidadTutor: areaTutor.idTutor?.toString(),
+            complementoCiTutor: areaTutor.complementoCiTutor || "",
+            idArea: areaTutor.idArea,
+            nombreArea: areaTutor.nombreArea,
+            fromBackend: true,
+            tutorAsignado: true
+          }));
+
+        setTutoresLocales(tutoresActualizados);
+        setSelectedAreas({});
+      }
+    } catch (error) {
+      console.error("Error al registrar los tutores:", error);
+      const errorMessage = error?.response?.data?.message || "Error al registrar los tutores";
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: errorMessage
+      });
     }
   };
 
   return (
-    <div>
-      <h2>Asociar áreas a tutores</h2>
-      
-      <BuscadorCodigo
-        descripcion="Introduce el carnet del participante para obtener los tutores."
-        placeholder="Introduce el CI del participante"
-        codigoIntroducidoTexto="Carnet introducido:"
-        codigoIntroducido={codigoIntroducido}
-        onInputChange={handleInputChange}
-        onKeyPress={handleKeyPress}
-        onSearch={handleSearch}
-        error={error}
-        containerVariants={containerVariants}
-      />
-      
-      {loading && <div className="loading">Cargando datos...</div>}
-      
-      {participanteData && tutoresAsignaciones.length > 0 && !loading && (
-        <div className="detail-info-cont">
-          <div className="info-card">
-            <div className="info-header">
-              <div className="info-user">
-                <h3>{participanteData.nombre}</h3>
-                <p>Cantidad de tutores registrados: {participanteData.tutores}</p>
-                <p>Cantidad de académicos registrados: {participanteData.academicos}</p>
-              </div>
-              <div className="status-badge">
-                {participanteData.areas.map((area, index) => (
-                  <span key={index} className="status-complete area-badge">{area}</span>
-                ))}
+    <div className="step3-container page-padding">
+      <h2 className="step3-title">Registro de Profesores</h2>
+      <p className="step3-description">
+        Registre un máximo de {getMaxTutores()} {getMaxTutores() === 1 ? 'tutor académico' : 'tutores académicos'} a un participante.
+      </p>
+
+      <div className="step3-content">
+        <div className="step3-form-container">
+          <div className="step3-form-group">
+            <label className="ci-participante" htmlFor="ciParticipante">CI del Participante</label>
+            <input
+              id="ciParticipante"
+              name="ciParticipante"
+              type="text"
+              placeholder="Ingrese el CI del participante"
+              value={ciParticipante}
+              onChange={(e) => {
+                setCiParticipante(e.target.value);
+                setCiVerificado(false);
+                setParticipanteData(null);
+                setSelectedAreas({});
+              }}
+              required
+              className="step3-input"
+              maxLength={10}
+              disabled={loading}
+            />
+            {loading && <div className="loading-indicator">Cargando datos...</div>}
+          </div>
+
+          {participanteData && (
+            <div className="participante-info-container">
+              <h4>Datos del Participante</h4>
+              <p><strong>Nombre:</strong> {participanteData.nombreCompleto}</p>
+              <p><strong>CI:</strong> {participanteData.carnetIdentidad}</p>
+              <p><strong>Grado:</strong> {participanteData.grado}</p>
+              <div className="areas-list">
+                <h5>Áreas de participación:</h5>
+                <ul>
+                  {participanteData.nombresAreas.map((area, index) => (
+                    <li key={participanteData.idsAreas[index]}>{area}</li>
+                  ))}
+                </ul>
               </div>
             </div>
-            
-            <div className="info-table">
-              <div className="table-header">
-                <div className="col-nombre">NOMBRE DEL TUTOR</div>
-                <div className="col-ci">CI TUTOR</div>
-                <div className="col-tipo">TIPO TUTOR</div>
-                <div className="col-area">SELECCION AREA</div>
-              </div>
-              
-              <div className="table-body">
-                {tutoresAsignaciones.map((tutor, index) => (
-                  <div key={index} className="table-row">
-                    <div className="col-nombre">{tutor.nombre}</div>
-                    <div className="col-ci">{tutor.ci}</div>
-                    <div className="col-tipo">{tutor.tipo}</div>
-                    <div className="col-area">
-                      {tutor.esTutorLegal ? (
-                        <div className="no-corresponde status-chip pending">NO CORRESPONDE</div>
-                      ) : (
-                        <div className="area-selector-container">
-                          <div 
-                            className={`area-selector status-chip ${tutor.area ? 'complete' : 'generado'}`}
-                            onClick={() => toggleDropdown(index)}
-                          >
-                            {tutor.area || "Seleccionar"}
-                            <span className="dropdown-arrow">▼</span>
-                          </div>
-                          
-                          {dropdownOpen && selectedIndex === index && (
-                            <div className="area-dropdown">
-                              {participanteData.areasData.map((area) => (
-                                <div 
-                                  key={area.idArea} 
-                                  className="dropdown-item" 
-                                  onClick={() => selectArea(area.idArea, area.nombreArea)}
-                                >
-                                  {area.nombreArea}
-                                </div>
-                              ))}
-                              {participanteData.areasData.length > 1 && (
-                                <div 
-                                  className="dropdown-item"
-                                  onClick={() => selectArea(0, participanteData.areasData.map(a => a.nombreArea).join(" y "))}
-                                >
-                                  {participanteData.areasData.map(a => a.nombreArea).join(" y ")}
-                                </div>
-                              )}
-                            </div>
+          )}
+
+          <Formik
+            initialValues={initialValues}
+            validationSchema={registerTutorValidationSchema}
+            onSubmit={agregarTutor}
+            enableReinitialize
+          >
+            {({ values, setFieldValue, isValid, isSubmitting }) => {
+              let debouncedCI = useDebounce(values.carnetIdentidadTutor, 1000);
+
+              useEffect(() => {
+                if (debouncedCI && debouncedCI !== "completed") {
+                  verificarTutor(debouncedCI, (data) => {
+                    setFieldValue("nombresTutor", data.nombresTutor || "");
+                    setFieldValue("apellidosTutor", data.apellidosTutor || "");
+                    setFieldValue("emailTutor", data.emailTutor || "");
+                    setFieldValue("telefono", data.telefono?.toString() || "");
+                    setFieldValue("carnetIdentidadTutor", data.carnetIdentidadTutor?.toString() || "");
+                    setFieldValue("complementoCiTutor", data.complementoCiTutor || "");
+
+                    debouncedCI = "completed";
+                  }, (errorMsg) => {
+                    console.warn("No se encontró como tutor:", errorMsg);
+                  });
+                }
+              }, [debouncedCI, setFieldValue]);
+
+              return (
+                <Form className="step3-form">
+                  <div className="step3-form-group">
+                    <InputText
+                      name="carnetIdentidadTutor"
+                      label="N° de documento"
+                      type="text"
+                      placeholder="Documento del tutor"
+                      required
+                      onlyNumbers
+                      maxLength={9}
+                    />
+                  </div>
+
+                  <div className="step3-form-group">
+                    <InputText
+                      name="complementoCiTutor"
+                      label="Complemento CI"
+                      type="text"
+                      placeholder="Complemento del documento"
+                      maxLength={2}
+                      onlyAlphaNumeric
+                    />
+                  </div>
+
+                  <div className="step3-form-group">
+                    <InputText
+                      name="nombresTutor"
+                      label="Nombres"
+                      type="text"
+                      placeholder="Nombres del tutor"
+                      required
+                      onlyLetters={true}
+                      maxLength={50}
+                    />
+                  </div>
+
+                  <div className="step3-form-group">
+                    <InputText
+                      name="apellidosTutor"
+                      label="Apellidos"
+                      type="text"
+                      placeholder="Apellidos del tutor"
+                      required
+                      onlyLetters={true}
+                      maxLength={50}
+                    />
+                  </div>
+
+                  <div className="step3-form-group">
+                    <InputText
+                      name="emailTutor"
+                      label="Correo electrónico"
+                      type="email"
+                      placeholder="Correo del tutor"
+                      required
+                    />
+                  </div>
+
+                  <div className="step3-form-group">
+                    <InputText
+                      name="telefono"
+                      label="Teléfono"
+                      type="text"
+                      placeholder="Teléfono del tutor"
+                      required
+                      onlyNumbers
+                      maxLength={8}
+                    />
+                  </div>
+
+                  <div className="step3-button-container">
+                    <ButtonPrimary
+                      type="submit"
+                      buttonStyle="primary"
+                      disabled={!isValid || tutoresLocales.length >= getMaxTutores()}
+                    >
+                      {tutoresLocales.length >= getMaxTutores() ? 
+                        `Límite de ${getMaxTutores()} ${getMaxTutores() === 1 ? 'tutor' : 'tutores'} alcanzado` : 
+                        "Agregar Tutor"}
+                    </ButtonPrimary>
+                  </div>
+                </Form>
+              );
+            }}
+          </Formik>
+        </div>
+
+        <div className="step3-tutores-list">
+          <h3>Profesores Actuales ({tutoresLocales.length}/{getMaxTutores()})</h3>
+
+          {tutoresLocales.length === 0 ? (
+            <p className="no-tutores-message">No hay tutores agregados aún</p>
+          ) : (
+            <ul className="tutores-container">
+              {tutoresLocales.map((tutor, index) => (
+                <li key={index} className={`tutor-card ${tutor.tutorAsignado ? 'tutor-asignado' : ''}`}>
+                  <div className="tutor-info">
+                    <p><strong>Nombre:</strong> {tutor.nombresTutor} {tutor.apellidosTutor}</p>
+                    <p><strong>Email:</strong> {tutor.emailTutor}</p>
+                    <p><strong>Teléfono:</strong> {tutor.telefono}</p>
+                    <p><strong>Documento:</strong> {tutor.carnetIdentidadTutor}</p>
+                    <p><strong>Complemento CI:</strong> {tutor.complementoCiTutor || "N/A"}</p>
+
+                    <div className="area-selector-container">
+                      <label>Área asignada:</label>
+                      {tutor.tutorAsignado ? (
+                        <div className="area-asignada">
+                          <strong>{tutor.nombreArea}</strong>
+                          <span className="badge-asignado">Asignado</span>
+                          {!tutor.nombresTutor && (
+                            <p className="info-tutor">Información del tutor no disponible</p>
                           )}
                         </div>
+                      ) : (
+                        <>
+                          <SelectInputStandalone
+                            name={`area-tutor-${index}`}
+                            value={selectedAreas[index] || ""}
+                            onChange={(e) => handleSelectArea(index, e.target.value)}
+                            options={participanteData?.areasTutores
+                              ?.filter(areaTutor => areaTutor.idTutor === null)
+                              .map(areaTutor => ({
+                                value: areaTutor.idArea,
+                                label: areaTutor.nombreArea
+                              })) || []}
+                            emptyMessage="No hay áreas disponibles"
+                            required
+                          />
+                          {selectedAreas[index] && (
+                            <span className="area-seleccionada">
+                              {participanteData?.areasTutores?.find(
+                                a => a.idArea === selectedAreas[index]
+                              )?.nombreArea}
+                            </span>
+                          )}
+                        </>
                       )}
                     </div>
                   </div>
-                ))}
-              </div>
-            </div>
-            
-            <div className="upload-excel-container">
-              <button 
-                className="upload-excel-btn"
-                onClick={handleSubmitAsignaciones}
-                disabled={tutoresAsignaciones.some(t => !t.esTutorLegal && !t.area) || submitting}
-              >
-                {submitting ? 'Enviando...' : 'Asignar áreas a tutores'}
-              </button>
-            </div>
-          </div>
+                  {!tutor.tutorAsignado && (
+                    <button
+                      type="button"
+                      className="remove-tutor-btn"
+                      onClick={() => eliminarTutor(index)}
+                    >
+                      × Cancelar
+                    </button>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
-      )}
+      </div>
+
+      <div className="step3-navigation">
+        <ButtonPrimary
+          type="button"
+          buttonStyle="primary"
+          onClick={handleRegistrarTutores}
+          disabled={tutoresLocales.length === 0 ||
+            (tutoresLocales.every(t => t.tutorAsignado) &&
+              tutoresLocales.length === getMaxTutores())}
+        >
+          {tutoresLocales.length === getMaxTutores() ?
+            "Todos los tutores están asignados" : "Registrar Tutores Académicos"}
+        </ButtonPrimary>
+      </div>
     </div>
   );
 };

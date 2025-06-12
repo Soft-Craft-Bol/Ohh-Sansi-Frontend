@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import { motion } from "framer-motion";
-import { Form, Formik } from "formik";
 import BuscadorCodigo from "./../buscadorCodigo/BuscadorCodigo";
 import { ButtonPrimary } from "../button/ButtonPrimary";
-import { getCatalogoAreasCategorias, setCatalogoAreasParticipante } from "../../api/api";
+import { getCatalogoAreasCategorias, setCatalogoAreasParticipante, getEstudenteByCi } from "../../api/api";
 import "./Step2Form.css";
 
 const AsignarAreasForm = ({ participanteCI, shouldSearch, onSearchComplete, onComplete, autoNavigate }) => {
@@ -15,20 +14,42 @@ const AsignarAreasForm = ({ participanteCI, shouldSearch, onSearchComplete, onCo
   const [codigoIntroducido, setCodigoIntroducido] = useState("");
   const [areasAsignadas, setAreasAsignadas] = useState([]);
   const [error, setError] = useState("");
+  const [dataEstudiante, setDataEstudiante] = useState(null);
+
+  const carnet = estudiante ? estudiante.carnetIdentidadParticipante : null;
 
   useEffect(() => {
-    console.log("Participante CI:", participanteCI);
+    if (!carnet) {
+      return;
+    }
+    const fetchEstudiante = async (carnet) => {
+      try {
+        const res = await getEstudenteByCi(carnet);
+        if (res.data) {
+          setDataEstudiante(res.data);
+          setCodigoIntroducido(res.data.carnetIdentidadParticipante.toString());
+        } else {
+          setDataEstudiante(null);
+        }
+      } catch (error) {
+        console.error("Error fetching estudiante:", error);
+        setDataEstudiante(null);
+      }
+    };
+    fetchEstudiante(carnet);
+  }, [carnet]);
+
+  useEffect(() => {
+  
     if (participanteCI && participanteCI.trim() !== "") {
       if (shouldSearch) {
         buscarEstudiante(participanteCI);
-        //onSearchComplete(); // Notificar que la búsqueda se completó
       }
     }
   }, [participanteCI, shouldSearch, onSearchComplete]);
 
   useEffect(() => {
     if (autoNavigate && seleccionadas.length > 0) {
-      // Esperar un momento para que el usuario vea el mensaje de éxito
       const timer = setTimeout(() => {
         onComplete();
       }, 1500);
@@ -38,12 +59,12 @@ const AsignarAreasForm = ({ participanteCI, shouldSearch, onSearchComplete, onCo
 
   const containerVariants = {
     hidden: { opacity: 0, y: 20 },
-    visible: { 
-      opacity: 1, 
+    visible: {
+      opacity: 1,
       y: 0,
-      transition: { 
-        duration: 0.5 
-      } 
+      transition: {
+        duration: 0.5
+      }
     }
   };
 
@@ -64,15 +85,14 @@ const AsignarAreasForm = ({ participanteCI, shouldSearch, onSearchComplete, onCo
 
   const handleInputChange = (e) => {
     const value = e.target.value;
-    if (value.length <= 11 && /^\d*$/.test(value)) {
-      setCodigoIntroducido(value);
-      setError("");
-    } else if (value.length > 11) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'El carnet no puede tener más de 11 dígitos'
-      });
+    if (/^\d*$/.test(value)) {
+      if (value.length <= 11) {
+        setCodigoIntroducido(value);
+        setError("");
+      } else {
+        setError("El carnet no puede tener más de 11 dígitos");
+        setCodigoIntroducido(value.slice(0, 11));
+      }
     }
   };
 
@@ -82,7 +102,6 @@ const AsignarAreasForm = ({ participanteCI, shouldSearch, onSearchComplete, onCo
     }
   };
 
-  
   const buscarEstudiante = async (carnet) => {
     if (!carnet || carnet.trim() === "") {
       Swal.fire({
@@ -92,7 +111,7 @@ const AsignarAreasForm = ({ participanteCI, shouldSearch, onSearchComplete, onCo
       });
       return;
     }
-  
+
     const carnetNumerico = parseInt(carnet, 10);
     if (isNaN(carnetNumerico) || carnetNumerico > 2147483647) {
       Swal.fire({
@@ -102,12 +121,11 @@ const AsignarAreasForm = ({ participanteCI, shouldSearch, onSearchComplete, onCo
       });
       return;
     }
-  
+
     setLoading(true);
     try {
-      // Obtener áreas disponibles y estado de asignación
       const resCatalogo = await getCatalogoAreasCategorias(carnetNumerico);
-      
+
       if (resCatalogo.data.length === 0) {
         setEstudiante({ carnetIdentidadParticipante: carnetNumerico });
         setAreas([]);
@@ -119,15 +137,13 @@ const AsignarAreasForm = ({ participanteCI, shouldSearch, onSearchComplete, onCo
         return;
       }
 
-      // Procesar áreas asignadas
       const asignadas = resCatalogo.data
         .filter(item => item.asignada)
         .map(item => item.id_area);
-      
-      setAreasAsignadas(asignadas);
-      setSeleccionadas(asignadas); // Marcamos como seleccionadas las áreas ya asignadas
 
-      // Preparar datos para mostrar
+      setAreasAsignadas(asignadas);
+      setSeleccionadas(asignadas);
+
       const combined = resCatalogo.data.map((item) => ({
         idArea: item.id_area,
         nombreArea: item.nombre_area,
@@ -140,19 +156,18 @@ const AsignarAreasForm = ({ participanteCI, shouldSearch, onSearchComplete, onCo
         },
         idOlimpiada: item.id_olimpiada,
         idCatalogo: item.id_catalogo,
-        yaAsignada: item.asignada // Nuevo campo para saber si ya está asignada
+        yaAsignada: item.asignada
       }));
 
       setEstudiante({ carnetIdentidadParticipante: carnetNumerico });
       setAreas(combined);
 
-      // Mostrar mensaje si ya tiene áreas asignadas
       if (asignadas.length > 0) {
         Swal.fire({
           icon: 'info',
           title: 'Áreas ya asignadas',
-          text: `Este participante ya tiene ${asignadas.length} área(s) asignada(s)`,
-          timer: 2000
+          text: `Se encontró ${asignadas.length} área${asignadas.length !== 1 ? 's' : ''} previamente asignada${asignadas.length !== 1 ? 's' : ''}. ${asignadas.length < 2 ? 'Puede agregar otra área' : 'Límite de áreas alcanzado'}`,
+          timer: 6000
         });
       }
     } catch (err) {
@@ -170,9 +185,8 @@ const AsignarAreasForm = ({ participanteCI, shouldSearch, onSearchComplete, onCo
   };
 
   const toggleSeleccion = (id) => {
-    // No permitir deseleccionar áreas ya asignadas
     if (areasAsignadas.includes(id)) return;
-    
+
     setSeleccionadas((prev) => {
       if (prev.includes(id)) return prev.filter((a) => a !== id);
       if (prev.length >= 2) {
@@ -188,6 +202,18 @@ const AsignarAreasForm = ({ participanteCI, shouldSearch, onSearchComplete, onCo
   };
 
   const handleGuardar = async () => {
+    const hayCambios = seleccionadas.some(id => !areasAsignadas.includes(id)) ||
+      areasAsignadas.some(id => !seleccionadas.includes(id));
+
+    if (!hayCambios) {
+      Swal.fire({
+        icon: 'info',
+        title: 'Sin cambios',
+        text: 'No se han realizado cambios en las áreas asignadas'
+      });
+      return;
+    }
+
     if (!estudiante || seleccionadas.length === 0) {
       Swal.fire({
         icon: 'error',
@@ -196,9 +222,8 @@ const AsignarAreasForm = ({ participanteCI, shouldSearch, onSearchComplete, onCo
       });
       return;
     }
-  
+
     try {
-      // Preparar los datos en el formato que espera el backend
       const dataToSend = areas
         .filter((a) => seleccionadas.includes(a.idArea))
         .map((a) => ({
@@ -208,13 +233,13 @@ const AsignarAreasForm = ({ participanteCI, shouldSearch, onSearchComplete, onCo
           idCatalogo: a.idCatalogo,
         }));
       await setCatalogoAreasParticipante(estudiante.carnetIdentidadParticipante, dataToSend);
-  
+
       Swal.fire({
         icon: 'success',
         title: '¡Éxito!',
         text: 'Áreas asignadas correctamente'
       }).then(() => {
-        onComplete(); // Llamar a la función de completar el paso
+        onComplete();
       });
       setEstudiante(null);
       setSeleccionadas([]);
@@ -225,7 +250,7 @@ const AsignarAreasForm = ({ participanteCI, shouldSearch, onSearchComplete, onCo
       Swal.fire({
         icon: 'error',
         title: 'Error',
-        text: 'Error al asignar las áreas'
+        text: e.response?.data?.message || 'Error al asignar las áreas'
       });
     }
   };
@@ -238,7 +263,6 @@ const AsignarAreasForm = ({ participanteCI, shouldSearch, onSearchComplete, onCo
   const formatCurrency = (value) => {
     return value?.toFixed ? value.toFixed(2) : "0.00";
   };
-
 
   const renderAreaCard = (area) => {
     const estaSeleccionada = seleccionadas.includes(area.idArea);
@@ -254,8 +278,8 @@ const AsignarAreasForm = ({ participanteCI, shouldSearch, onSearchComplete, onCo
         whileTap={{ scale: yaAsignada ? 1 : 0.98 }}
       >
         <div className="area-header">
-          <input 
-            type="checkbox" 
+          <input
+            type="checkbox"
             checked={estaSeleccionada}
             readOnly
             className="area-checkbox"
@@ -272,11 +296,17 @@ const AsignarAreasForm = ({ participanteCI, shouldSearch, onSearchComplete, onCo
     );
   };
 
-
-  
+  const handleClearCI = () => {
+    setCodigoIntroducido("");
+    setEstudiante(null);
+    setAreas([]);
+    setSeleccionadas([]);
+    setAreasAsignadas([]);
+    setDataEstudiante(null);
+  };
 
   return (
-    <motion.div 
+    <motion.div
       className="step2-container"
       variants={containerVariants}
       initial="hidden"
@@ -289,23 +319,39 @@ const AsignarAreasForm = ({ participanteCI, shouldSearch, onSearchComplete, onCo
           descripcion="Ingrese el carnet del estudiante para buscar áreas disponibles"
           placeholder="Ej: 123456789"
           codigoIntroducidoTexto="Carnet introducido:"
-          codigoIntroducido={codigoIntroducido}
+          inputValue={codigoIntroducido}
           onInputChange={handleInputChange}
           onKeyPress={handleKeyPress}
           onSearch={() => buscarEstudiante(codigoIntroducido)}
-          //error={error}
+          onClear={handleClearCI}
           containerVariants={containerVariants}
+          allowLetters={false}
+          maxLength={11}
         />
       </div>
 
       {loading && (
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.3 }}
           className="loading-indicator"
         >
           Cargando...
+        </motion.div>
+      )}
+
+      {dataEstudiante && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="step2-datos-estudiante"
+        >
+          <h3>Datos del Estudiante</h3>
+          <p><strong>Nombre:</strong> {dataEstudiante.nombreParticipante} {dataEstudiante.apellidoPaterno} {dataEstudiante.apellidoMaterno}</p>
+          <p><strong>CI:</strong> {dataEstudiante.carnetIdentidadParticipante}</p>
+          <p><strong>Grado:</strong> {dataEstudiante.nombreGrado}</p>
         </motion.div>
       )}
 
@@ -318,15 +364,13 @@ const AsignarAreasForm = ({ participanteCI, shouldSearch, onSearchComplete, onCo
           <div className="step2-instructions">
             {areasAsignadas.length > 0 ? (
               <p>
-                <strong>Áreas asignadas:</strong> {areasAsignadas.length}/2. 
+                <strong>Áreas asignadas:</strong> {areasAsignadas.length}/2.
                 {areasAsignadas.length < 2 ? ' Puede agregar otra área.' : ' Límite alcanzado.'}
               </p>
             ) : (
               <p>Seleccione hasta 2 áreas</p>
             )}
-            
           </div>
-          
 
           <motion.div className="step2-grid" variants={listVariants} initial="hidden" animate="visible">
             {areas.map(renderAreaCard)}
@@ -358,7 +402,12 @@ const AsignarAreasForm = ({ participanteCI, shouldSearch, onSearchComplete, onCo
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
           >
-            <ButtonPrimary onClick={handleGuardar}>Guardar Selección</ButtonPrimary>
+            <ButtonPrimary
+              onClick={handleGuardar}
+              disabled={seleccionadas.length === 0 || (areasAsignadas.length === 2 && seleccionadas.length === areasAsignadas.length)}
+            >
+              Guardar Selección
+            </ButtonPrimary>
           </motion.div>
         </motion.div>
       )}

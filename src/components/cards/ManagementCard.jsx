@@ -1,10 +1,18 @@
 import React from "react";
 import "./ManagementCard.css";
-import { FaCircle } from "react-icons/fa";
+import { FaCircle, FaEdit, FaLock } from "react-icons/fa";
 
-const ManagementCard = ({ title, info = [], extraContent = null, status }) => {
+const ManagementCard = ({ 
+  title, 
+  info = [], 
+  extraContent = null, 
+  status,
+  onEdit,
+  editable = true,
+  isEditing = false
+}) => {
   return (
-    <div className="management-card">
+    <div className={`management-card ${isEditing ? 'editing' : ''}`}>
       <div className="card-decoration"></div>
       
       <div className="management-card-body">
@@ -13,13 +21,34 @@ const ManagementCard = ({ title, info = [], extraContent = null, status }) => {
             <h4 className="management-card-title">
               {title}
               {status !== undefined && (
-                <span className={`status-indicator ${status ? 'active' : 'inactive'}`}>
+                <span className={`status-indicator ${status?.toLowerCase().replace(/\s+/g, '-')}`}>
                   <FaCircle className="status-icon" />
-                  {status ? 'Activo' : 'Inactivo'}
+                  {status}
                 </span>
               )}
             </h4>
           )}
+          
+          {/* Botón de Editar */}
+          <div className="management-card-actions">
+            {editable && onEdit ? (
+              <button 
+                className={`edit-btn ${isEditing ? 'editing' : ''}`}
+                onClick={onEdit}
+                title={isEditing ? "Editando..." : "Editar olimpiada"}
+                disabled={isEditing}
+              >
+                <FaEdit />
+                {isEditing && <span className="editing-text">Editando</span>}
+              </button>
+            ) : (
+              !editable && (
+                <div className="non-editable-indicator" title="No se puede editar">
+                  <FaLock />
+                </div>
+              )
+            )}
+          </div>
           
           {extraContent && <div className="management-extra">{extraContent}</div>}
         </div>

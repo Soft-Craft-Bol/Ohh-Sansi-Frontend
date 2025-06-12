@@ -1,6 +1,7 @@
 import React from 'react';
 import './OrdenPagoDetalle.css';
 import { generateOrdenPagoPDF } from '../../utils/PDFGenerator';
+import Swal from 'sweetalert2';
 
 const OrdenPagoDetalle = ({ data, nit_tutor }) => {
   const formatFecha = (fechaStr) => {
@@ -22,11 +23,19 @@ const OrdenPagoDetalle = ({ data, nit_tutor }) => {
         .save()
         .catch(error => {
           console.error('Error al generar el PDF:', error);
-          alert('Ocurrió un error al generar el PDF. Por favor intente nuevamente.');//cambiar a soner, criterio de acptacion
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Ocurrió un error al generar el PDF. Por favor intente nuevamente.'
+          });
         });
     } catch (error) {
       console.error('Error al generar el PDF:', error);
-      alert('Ocurrió un error al generar el PDF. Por favor intente nuevamente.');//cambiar a soner, criterio de acptacion
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Ocurrió un error al generar el PDF. Por favor intente nuevamente.'
+      });
     }
   };
 

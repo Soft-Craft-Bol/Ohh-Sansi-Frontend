@@ -13,6 +13,9 @@ import Swal from "sweetalert2";
 import "./Step1Form.css";
 import DisabledButton from "../button/DisabledButton";
 import useDebounce from "../../hooks/WriteInputs/useDebounce";
+import { HiEnvelope, HiIdentification } from "react-icons/hi2";
+import { FaUser } from "react-icons/fa";
+import { MdPhoneAndroid } from "react-icons/md";
 
 const Step1Form = () => {
   const today = new Date().toISOString().split("T")[0];
@@ -24,25 +27,6 @@ const Step1Form = () => {
   const { colegios, loading: loadingColegios } = useFetchColegio(selectedMunicipio);
   const [loadingOverlay, setLoadingOverlay] = useState(false);
   const [isSubmittingForm, setIsSubmittingForm] = useState(false);
-
-  const loadSavedData = () => {
-    const savedData = localStorage.getItem("participanteFormData");
-    return savedData
-      ? JSON.parse(savedData)
-      : {
-        nombre: "",
-        apellido: "",
-        documento: "",
-        complemento: "",
-        fechaNacimiento: "",
-        departamento: "",
-        municipio: "",
-        institucion: "",
-        grado: "",
-        email: "",
-        telefono: "",
-      };
-  };
 
   const handleSubmit = async (values, resetForm) => {
     if (isSubmittingForm) return;
@@ -109,11 +93,7 @@ const Step1Form = () => {
         confirmButtonText: "Continuar",
         
       }).then(() => {
-        onRegistroExitoso(values.documento);
-        onComplete();
         resetForm();
-        localStorage.removeItem("participanteFormData");
-        
       });
   
     } catch (error) {
@@ -172,7 +152,7 @@ const Step1Form = () => {
   }, []);
 
   return (
-    <div className="form-container">
+    <div className="in-form-container">
       {loadingOverlay && <div className="overlay"></div>}
       <h1>Registro de Participante</h1>
       <span className="form-description">Ingrese los datos del participante</span>
@@ -223,18 +203,18 @@ const Step1Form = () => {
           return (
           <Form className="step1-grid">
             <div className="field-container">
-              <InputText name="documento" label="Documento de Identidad" required onlyNumbers maxLength={9} placeholder="Ej: 12354987" />
+              <InputText name="documento" label="Documento de Identidad" required onlyNumbers maxLength={9} placeholder="Ej: 12354987"icon={HiIdentification} />
             </div>
 
             <div className="field-container">
               <InputText name="complemento" label="Complemento" maxLength={2} onlyAlphaNumeric placeholder="Ej: 1T" />
             </div>
             <div className="field-container">
-              <InputText name="nombre" label="Nombre" required onlyLetters={true} maxLength={50} placeholder="Ej: Edwin"
+              <InputText name="nombre" label="Nombre" required onlyLetters={true} maxLength={50} placeholder="Ej: Edwin" icon={FaUser}
               />
             </div>
             <div className="field-container">
-              <InputText name="apellido" label="Apellido" required onlyLetters maxLength={50} placeholder="Ej: Sánchez Velarde"
+              <InputText name="apellido" label="Apellido" required onlyLetters maxLength={50} placeholder="Ej: Sánchez Velarde" icon={FaUser}
               />
             </div>
             <div className="field-container">
@@ -304,10 +284,10 @@ const Step1Form = () => {
               />
             </div>
             <div className="field-container">
-              <InputText name="email" label="Correo electrónico" type="email" placeholder="correo@ejemplo.com" required />
+              <InputText name="email" label="Correo electrónico" type="email" placeholder="correo@ejemplo.com" required icon={HiEnvelope}/>
             </div>
             <div className="field-container">
-              <InputText name="telefono" label="Teléfono" required onlyNumbers maxLength={8} placeholder="Ej: 67559758" />
+              <InputText name="telefono" label="Teléfono" required onlyNumbers maxLength={8} placeholder="Ej: 67559758" icon={MdPhoneAndroid} />
             </div>
             <div className="field-container full-width">
               <div className="form-actions">

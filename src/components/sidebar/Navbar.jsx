@@ -1,124 +1,198 @@
-import React, { useState, useEffect } from 'react';
-import { FaMoon, FaSignOutAlt, FaSun, FaUserCircle } from 'react-icons/fa';
-import { Link, useNavigate } from 'react-router-dom';
-import { FaHome, FaUserEdit, FaUsers, FaClipboardCheck, FaFileInvoiceDollar, FaUpload, FaMoneyCheckAlt } from 'react-icons/fa';
-import { getUser, removeToken, signOut, getToken } from '../../utils/authFuntions';
-import './Navbar.css';
+import React, { useEffect, useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { 
+  FaBars, FaTimes, FaHome, FaFlask, FaUserPlus, FaChevronDown,
+  FaUserGraduate, FaUsers, FaSearch, FaFileInvoice, FaUpload
+} from 'react-icons/fa';
 import logo from '../../assets/img/logo.png';
-import ScrollReveal from 'scrollreveal';
+import './Navbar.css';
+import  {Breadcrumbs}  from './Breadcrumbs';
 
 const Navbar = () => {
-  const [isDarkMode, setIsDarkMode] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isQuickActionsOpen, setIsQuickActionsOpen] = useState(false);
+  const location = useLocation();
   const navigate = useNavigate();
 
-  const toggleDarkMode = () => {
-    const newMode = !isDarkMode;
-    setIsDarkMode(newMode);
-    document.body.classList.toggle('dark', newMode);
-    localStorage.setItem('darkMode', newMode);
+  const quickActions = [
+    { 
+      icon: <FaUserGraduate />, 
+      title: "Inscripción Individual", 
+      link: "/inscripcion-individual",
+      description: "Inscribe a un estudiante"
+    },
+    { 
+      icon: <FaUsers />, 
+      title: "Inscripción Masiva", 
+      link: "/inscripcion-masiva",
+      description: "Inscribe múltiples estudiantes"
+    },
+    { 
+      icon: <FaSearch />, 
+      title: "Consultar Estado", 
+      link: "/estado-de-inscripcion",
+      description: "Verifica tu inscripción"
+    },
+    { 
+      icon: <FaFileInvoice />, 
+      title: "Generar Orden", 
+      link: "/orden-de-pago",
+      description: "Genera orden de pago"
+    },
+    { 
+      icon: <FaUpload />, 
+      title: "Subir Comprobante", 
+      link: "/subir-boleta",
+      description: "Sube tu comprobante de pago"
+    }
+  ];
+
+  useEffect(() => {
+    setIsMenuOpen(false);
+    setIsQuickActionsOpen(false);
+  }, [location]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest('.navbar-dropdown')) {
+        setIsQuickActionsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleNavigation = (path, sectionId = null) => {
+    if (location.pathname === '/') {
+      if (sectionId) {
+        const element = document.getElementById(sectionId);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    } else {
+      navigate('/');
+      setTimeout(() => {
+        if (sectionId) {
+          const element = document.getElementById(sectionId);
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth' });
+          }
+        } else {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      }, 100);
+    }
+    setIsMenuOpen(false);
+    setIsQuickActionsOpen(false);
   };
 
-  useEffect(() => {
-    const savedMode = localStorage.getItem('darkMode');
-    if (savedMode) {
-      setIsDarkMode(JSON.parse(savedMode));
-      if (savedMode === 'true') {
-        document.body.classList.add('dark');
-      }
-    }
-  }, []);
-
-  useEffect(() => {
-    const userData = getUser();
-    const token = getToken();
-
-    if (token) {
-      setIsAuthenticated(true);
-      setIsAdmin(true);
-    } else {
-      setIsAuthenticated(false);
-      setIsAdmin(false);
-    }
-
-    ScrollReveal().reveal('nav', {
-      duration: 1000,
-      origin: 'top',
-      distance: '60px',
-      easing: 'ease-in-out',
-      reset: false
-    });
-  }, []);
-
-  const handleLogout = () => {
-    signOut();
-    navigate('/');
+  const handleQuickActionClick = (link) => {
+    navigate(link);
+    setIsQuickActionsOpen(false);
+    setIsMenuOpen(false);
   };
 
   return (
-    <nav className="navbar">
-      <div className="nav-left">
-        <Link to="/" className="logo-container">
-          <img src={logo} alt="Logo Olimpiadas" className="logo-nav" />
-          <span className="logo-text">Olimpiadas ohSansi</span>
-        </Link>
-      </div>
+    <>
+      <nav className="navbar">
+        <div className="navbar-container">
+          <button
+            className="navbar-brand"
+            onClick={() => handleNavigation('/')}
+            aria-label="Ir al inicio"
+          >
+            <img src={logo} alt="Logo UMSS" className="navbar-logo" />
+            <div className="navbar-brand-text">
+              <h1 className="navbar-brand-title">ohSansi</h1>
+              <p className="navbar-brand-subtitle">UMSS</p>
+            </div>
+          </button>
 
-      <div className="nav-center">
-        <ul className="nav-links">
-          <li>
-            <Link to="/" className="nav-item">
-              <FaHome className="nav-icon" /> Inicio
-            </Link>
-          </li>
+          <div className={`navbar-nav ${isMenuOpen ? 'active' : ''}`}>
+            <button
+              className="navbar-close-menu"
+              onClick={() => setIsMenuOpen(false)}
+              aria-label="Cerrar menú"
+            >
+              <FaTimes />
+            </button>
 
-          <li className="dropdown">
-            <span className="dropdown-toggle">
-              <FaClipboardCheck className="nav-icon" />
-              Inscripciones
-            </span>
-            <ul className="dropdown-menu">
-              <li><Link to="/inscripcion-individual" className="nav-item"><FaUserEdit className="nav-icon" /> Individual</Link></li>
-              <li><Link to="/inscripcion-masiva" className="nav-item"><FaUsers className="nav-icon" /> Masiva</Link></li>
-              <li><Link to="/estado-de-inscripcion" className="nav-item"><FaClipboardCheck className="nav-icon" /> Estado</Link></li>
-              <li><Link to="/orden-de-pago" className="nav-item"><FaFileInvoiceDollar className="nav-icon" /> Orden de Pago</Link></li>
-              <li><Link to="/subir-boleta" className="nav-item"><FaUpload className="nav-icon" /> Subir Boleta</Link></li>
-              <li><Link to="/metodo-pago" className="nav-item"><FaMoneyCheckAlt className="nav-icon" /> Método de Pago</Link></li>
-            </ul>
-          </li>
-        </ul>
-      </div>
+            <button
+              className="navbar-link"
+              onClick={() => handleNavigation('/')}
+            >
+              <FaHome className="navbar-link-icon" />
+              <span>Inicio</span>
+            </button>
 
-      <div className="nav-right">
-        <label htmlFor="switch-mode" className="switch-mode">
-          <input
-            type="checkbox"
-            id="switch-mode"
-            hidden
-            checked={isDarkMode}
-            onChange={toggleDarkMode}
-          />
-          {isDarkMode ? <FaSun /> : <FaMoon />}
-        </label>
+            <button
+              className="navbar-link"
+              onClick={() => handleNavigation('/', 'areas')}
+            >
+              <FaFlask className="navbar-link-icon" />
+              <span>Áreas</span>
+            </button>
 
-        {isAuthenticated && isAdmin && (
-          <div className="admin-dropdown">
-            <FaUserCircle className="admin-icon" />
-            <div className="admin-dropdown-menu">
-              <Link to="/admin" className="nav-item"><FaClipboardCheck className="nav-icon" /> Panel Admin</Link>
-              <button onClick={handleLogout} className="nav-item"><FaSignOutAlt className="nav-icon" /> Cerrar Sesión</button>
+            <div className="navbar-dropdown">
+              <button
+                className={`navbar-link navbar-dropdown-trigger ${isQuickActionsOpen ? 'active' : ''}`}
+                onClick={() => setIsQuickActionsOpen(!isQuickActionsOpen)}
+              >
+                <FaUserPlus className="navbar-link-icon" />
+                <span>Inscripción</span>
+                <FaChevronDown className={`navbar-dropdown-arrow ${isQuickActionsOpen ? 'rotated' : ''}`} />
+              </button>
+
+              {isQuickActionsOpen && (
+                <div className="navbar-dropdown-menu">
+                  <div className="navbar-dropdown-header">
+                    <h4>Proceso de Inscripción</h4>
+                    <p>Accede directamente a cada paso</p>
+                  </div>
+                  {quickActions.map((action, index) => (
+                    <button
+                      key={index}
+                      className="navbar-dropdown-item"
+                      onClick={() => handleQuickActionClick(action.link)}
+                    >
+                      <div className="navbar-dropdown-item-icon">
+                        {action.icon}
+                      </div>
+                      <div className="navbar-dropdown-item-content">
+                        <span className="navbar-dropdown-item-title">{action.title}</span>
+                        <span className="navbar-dropdown-item-desc">{action.description}</span>
+                      </div>
+                    </button>
+                  ))}
+                  <div className="navbar-dropdown-footer">
+                    <button
+                      className="navbar-dropdown-footer-btn"
+                      onClick={() => handleNavigation('/', 'inscripcion')}
+                    >
+                      Ver información completa
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
-        )}
 
-        {!isAuthenticated && (
-          <Link to="/login" className="login-link">
-            Iniciar sesión
-          </Link>
-        )}
-      </div>
-    </nav>
+          <button
+            className="navbar-hamburger"
+            onClick={() => setIsMenuOpen(true)}
+            aria-label="Abrir menú"
+          >
+            <FaBars />
+          </button>
+        </div>
+      </nav>
+
+      <Breadcrumbs />
+    </>
   );
 };
 

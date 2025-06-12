@@ -1,0 +1,535 @@
+/* Lista Inscritos - Componente Principal */
+.ra-lista-inscritos {
+  min-height: 100vh;
+  transition: colors 0.3s;
+  color: rgb(17, 24, 39);
+}
+
+.dark .ra-lista-inscritos {
+  background-color: rgb(17, 24, 39);
+  color: rgb(243, 244, 246);
+}
+
+/* Contenedor Principal */
+.ra-main-content {
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+/* Estilos para las áreas */
+.ra-areas-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.ra-area-badge {
+  background-color: #e2e8f0;
+  color: #4a5568;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+@media (min-width: 640px) {
+  .ra-main-content {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .ra-main-content {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+/* Tarjeta de Filtros */
+.ra-filters-card {
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  transition: colors 0.3s;
+  background-color: white;
+  border: 1px solid rgb(229, 231, 235);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.dark .ra-filters-card {
+  background-color: rgb(31, 41, 55);
+  border-color: rgb(75, 85, 99);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
+}
+
+/* Header de Filtros */
+.ra-filters-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.ra-filter-icon {
+  height: 1.25rem;
+  width: 1.25rem;
+  color: rgb(37, 99, 235);
+}
+
+.ra-filters-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+/* Grid de Filtros */
+.ra-filters-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .ra-filters-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Labels */
+.ra-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  color: rgb(55, 65, 81);
+}
+
+.dark .ra-label {
+  color: rgb(209, 213, 219);
+}
+
+/* Selects */
+.ra-select {
+  width: 100%;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgb(209, 213, 219);
+  transition: all 0.2s;
+  background-color: white;
+  color: rgb(17, 24, 39);
+  font-size: 0.875rem;
+}
+
+.ra-select:focus {
+  outline: none;
+  border-color: rgb(59, 130, 246);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.dark .ra-select {
+  background-color: rgb(55, 65, 81);
+  border-color: rgb(75, 85, 99);
+  color: rgb(243, 244, 246);
+}
+
+.dark .ra-select:focus {
+  border-color: rgb(59, 130, 246);
+}
+
+/* Contenedor de Botón */
+.ra-button-container {
+  display: flex;
+  align-items: end;
+}
+
+/* Botón Primario */
+.ra-button-primary {
+  width: 100%;
+  background-color: rgb(37, 99, 235);
+  color: white;
+  font-weight: 500;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: none;
+  cursor: pointer;
+  font-size: 0.875rem;
+}
+
+.ra-button-primary:hover:not(:disabled) {
+  background-color: rgb(29, 78, 216);
+  transform: translateY(-1px);
+}
+
+.ra-button-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Spinner */
+.ra-spinner {
+  animation: ra-spin 1s linear infinite;
+  border-radius: 50%;
+  height: 1rem;
+  width: 1rem;
+  border: 2px solid white;
+  border-top-color: transparent;
+}
+
+@keyframes ra-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Iconos */
+.ra-icon {
+  height: 1rem;
+  width: 1rem;
+}
+
+/* Tarjeta de Resultados */
+.ra-results-card {
+  border-radius: 0.75rem;
+  transition: colors 0.3s;
+  background-color: white;
+  border: 1px solid rgb(229, 231, 235);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.dark .ra-results-card {
+  background-color: rgb(31, 41, 55);
+  border-color: rgb(75, 85, 99);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
+}
+
+/* Header de Resultados */
+.ra-results-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid rgb(229, 231, 235);
+}
+
+.dark .ra-results-header {
+  border-bottom-color: rgb(75, 85, 99);
+}
+
+.ra-results-header-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .ra-results-header-content {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0;
+  }
+}
+
+.ra-results-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.ra-results-stats {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.875rem;
+}
+
+.ra-stat-item {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: rgb(75, 85, 99);
+}
+
+.dark .ra-stat-item {
+  color: rgb(209, 213, 219);
+}
+
+/* Botón de Exportar */
+.ra-button-export {
+  background-color: rgb(22, 163, 74);
+  color: white;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: none;
+  cursor: pointer;
+  font-size: 0.875rem;
+}
+
+.ra-button-export:hover {
+  background-color: rgb(21, 128, 61);
+  transform: translateY(-1px);
+}
+
+/* Tabla */
+.ra-table-container {
+  overflow-x: auto;
+}
+
+.ra-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.ra-table-header {
+  background-color: rgb(249, 250, 251);
+}
+
+.dark .ra-table-header {
+  background-color: rgb(55, 65, 81);
+}
+
+.ra-table-th {
+  padding: 1rem 1.5rem;
+  text-align: left;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: rgb(55, 65, 81);
+  border-bottom: 1px solid rgb(229, 231, 235);
+}
+
+.dark .ra-table-th {
+  color: rgb(229, 231, 235);
+  border-bottom-color: rgb(75, 85, 99);
+}
+
+.ra-table-tbody tr {
+  border-bottom: 1px solid rgb(229, 231, 235);
+}
+
+.dark .ra-table-tbody tr {
+  border-bottom-color: rgb(75, 85, 99);
+}
+
+.ra-table-row {
+  transition: colors 0.2s;
+}
+
+.ra-table-row:hover {
+  background-color: rgb(249, 250, 251);
+}
+
+.dark .ra-table-row:hover {
+  background-color: rgb(55, 65, 81);
+}
+
+.ra-table-td {
+  padding: 1rem 1.5rem;
+  vertical-align: top;
+}
+
+/* Información del Participante */
+.ra-participant-name {
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+
+.ra-participant-firstname {
+  font-size: 0.875rem;
+  color: rgb(75, 85, 99);
+}
+
+.dark .ra-participant-firstname {
+  color: rgb(156, 163, 175);
+}
+
+/* Información del Colegio */
+.ra-college-info {
+  display: flex;
+  align-items: start;
+  gap: 0.5rem;
+}
+
+.ra-college-icon {
+  height: 1rem;
+  width: 1rem;
+  margin-top: 0.25rem;
+  flex-shrink: 0;
+  color: rgb(37, 99, 235);
+}
+
+.ra-college-name {
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+/* Información de Ubicación */
+.ra-location-info {
+  display: flex;
+  align-items: start;
+  gap: 0.5rem;
+}
+
+.ra-location-icon {
+  height: 1rem;
+  width: 1rem;
+  margin-top: 0.25rem;
+  flex-shrink: 0;
+  color: rgb(22, 163, 74);
+}
+
+.ra-location-text {
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.ra-location-department {
+  color: rgb(75, 85, 99);
+  margin-top: 0.125rem;
+}
+
+.dark .ra-location-department {
+  color: rgb(156, 163, 175);
+}
+
+/* Badge de ID */
+.ra-id-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background-color: rgb(219, 234, 254);
+  color: rgb(30, 64, 175);
+}
+
+.dark .ra-id-badge {
+  background-color: rgb(30, 58, 138);
+  color: rgb(191, 219, 254);
+}
+
+/* Footer de Resultados */
+.ra-results-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid rgb(229, 231, 235);
+  background-color: rgb(249, 250, 251);
+}
+
+.dark .ra-results-footer {
+  border-top-color: rgb(75, 85, 99);
+  background-color: rgb(55, 65, 81);
+}
+
+.ra-footer-text {
+  text-align: center;
+}
+
+.ra-footer-org {
+  font-size: 0.875rem;
+  color: rgb(75, 85, 99);
+  margin-bottom: 0.25rem;
+}
+
+.dark .ra-footer-org {
+  color: rgb(156, 163, 175);
+}
+
+.ra-footer-date {
+  font-size: 0.75rem;
+  color: rgb(107, 114, 128);
+}
+
+.dark .ra-footer-date {
+  color: rgb(107, 114, 128);
+}
+
+/* Estado Vacío */
+.ra-empty-state {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  border-radius: 0.75rem;
+  background-color: white;
+  border: 1px solid rgb(229, 231, 235);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.dark .ra-empty-state {
+  background-color: rgb(31, 41, 55);
+  border-color: rgb(75, 85, 99);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
+}
+
+.ra-empty-icon {
+  margin: 0 auto 1rem auto;
+  height: 3rem;
+  width: 3rem;
+  color: rgb(156, 163, 175);
+}
+
+.dark .ra-empty-icon {
+  color: rgb(75, 85, 99);
+}
+
+.ra-empty-title {
+  font-size: 1.125rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  color: rgb(55, 65, 81);
+}
+
+.dark .ra-empty-title {
+  color: rgb(209, 213, 219);
+}
+
+.ra-empty-description {
+  color: rgb(107, 114, 128);
+  line-height: 1.5;
+}
+
+.dark .ra-empty-description {
+  color: rgb(107, 114, 128);
+}
+
+/* Responsive Breakpoints */
+@media (max-width: 768px) {
+  .ra-table-th,
+  .ra-table-td {
+    padding: 0.75rem;
+  }
+  
+  .ra-college-name,
+  .ra-location-text {
+    font-size: 0.8125rem;
+  }
+  
+  .ra-main-content {
+    padding: 1rem 0.75rem;
+  }
+  
+  .ra-filters-card {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .ra-table-th,
+  .ra-table-td {
+    padding: 0.5rem;
+  }
+  
+  .ra-results-header {
+    padding: 1rem;
+  }
+  
+  .ra-results-footer {
+    padding: 0.75rem 1rem;
+  }
+}

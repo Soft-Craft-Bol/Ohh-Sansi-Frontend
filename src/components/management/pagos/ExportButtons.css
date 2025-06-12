@@ -1,0 +1,78 @@
+.export-buttons {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.export-btn {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  min-width: 120px;
+  justify-content: center;
+}
+
+.export-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.export-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.export-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.5);
+}
+
+.pdf {
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
+  color: white;
+}
+
+.pdf:hover {
+  background: linear-gradient(135deg, #c0392b, #a93226);
+}
+
+.excel {
+  background: linear-gradient(135deg, #27ae60, #229954);
+  color: white;
+}
+
+.excel:hover {
+  background: linear-gradient(135deg, #229954, #1e8449);
+}
+
+.csv {
+  background: linear-gradient(135deg, #3498db, #2980b9);
+  color: white;
+}
+
+.csv:hover {
+  background: linear-gradient(135deg, #2980b9, #2471a3);
+}
+
+@media (max-width: 768px) {
+  .export-buttons {
+    gap: 8px;
+  }
+  
+  .export-btn {
+    padding: 10px 16px;
+    font-size: 13px;
+    min-width: 100px;
+  }
+}

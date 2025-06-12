@@ -1,48 +1,37 @@
 import React, { useState, useCallback, useEffect, memo } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Formik, Form } from 'formik';
+import { FaEnvelope, FaLock, FaUserShield } from 'react-icons/fa';
+import { motion } from 'framer-motion';
 import './LoginUser.css';
 import { loginUser } from '../../api/api';
-import loadImage from '../../assets/ImagesApp';
 import { validationSchema } from '../../schemas/LoginValidate';
-import { saveToken, saveUser } from '../../utils/authFuntions';
-import { parseJwt } from '../../utils/authJson';
+import { parseJwt } from '../../utils/AuthUtils';
 import InputText from '../../components/inputs/InputText';
 import { ButtonPrimary } from '../../components/button/ButtonPrimary';
 import { useAuth } from '../../context/AuthProvider';
+import logo from '../../assets/img/logo.png';
 
 const initialValues = {
   correoUsuario: '',
   password: '',
 };
 
-const useImageLoader = (imageName) => {
-  const [image, setImage] = useState(null);
-
-  useEffect(() => {
-    loadImage(imageName).then((img) => setImage(img.default));
-  }, [imageName]);
-
-  return image;
-};
-
-const MemoizedInputText = memo(({ name, placeholder, label, type = "text" }) => (
-  <InputText name={name} placeholder={placeholder} label={label} type={type} />
-));
-
 const LoginUser = () => {
   const [loginError, setLoginError] = useState('');
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const location = useLocation();
+  const { isAuthenticated, login, isLoading } = useAuth();
 
-  const ohSansi = useImageLoader("ohSansi");
-  const logoFcyt = useImageLoader("logoFcyt");
+  // Obtener la ruta a la que se quería acceder originalmente
+  const from = location.state?.from?.pathname || '/admin';
 
   useEffect(() => {
-    if (isAuthenticated) {
-      navigate('/admin');
+    // Solo redirigir si ya está autenticado Y el componente se está cargando explícitamente
+    if (isAuthenticated && !isLoading) {
+      navigate(from, { replace: true });
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, isLoading, navigate, from]);
 
   const handleSubmit = useCallback(async (values, { setSubmitting }) => {
     setLoginError('');
@@ -51,27 +40,25 @@ const LoginUser = () => {
         correoUsuario: values.correoUsuario.trim(),
         password: values.password,
       });
-      console.log('result:', result);
-
+      
       if (result?.data?.token) {
         const token = result.data.token;
         const decodedToken = parseJwt(token);
         const roles = decodedToken?.authorities?.split(',') || [];
-
-        saveToken(token);
-        saveUser({
+        const userData = {
           correoUsuario: result.data.correoUsuario,
           roles: roles,
           photo: result.data.photo,
-        });
-
-        navigate('/admin');
-        window.location.reload();
+        };
+        
+        login(token, userData);
+        // Redirigir después del login exitoso
+        navigate(from, { replace: true });
       } else {
         setLoginError('Usuario o contraseña incorrectos.');
       }
     } catch (error) {
-      console.error('Error en el login:', JSON.stringify(error));
+      console.error('Error en el login:', error);
       setLoginError(
         error.response?.status === 401
           ? 'Usuario o contraseña incorrectos.'
@@ -79,14 +66,32 @@ const LoginUser = () => {
       );
     }
     setSubmitting(false);
-  }, [navigate]);
+  }, [login, navigate, from]);
+
+  if (isLoading) {
+    return (
+      <div className="login-loading">
+        <div className="loading-spinner"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="login-container">
-      {ohSansi && <img className="logo-fesa" src={ohSansi} alt="ohSansi" height="200px"/>}
-      <div className="login-form">
-        <h1>Inicia sesión</h1>
-        {logoFcyt && <img className="logo-fesa" src={logoFcyt} alt="logoFcyt" height="80px"/>}
+      {/* Fondo con partículas científicas */}
+      <div className="login-background-pattern"></div>
+      
+      <motion.div 
+        className="login-card"
+        initial={{ opacity: 0, y: -50 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+      >
+        <div className="login-header">
+          <img src={logo} alt="Logo Olimpiadas" className="login-logo" />
+          <h1 className="login-title">ohSansi</h1>
+          <p className="login-subtitle">Olimpiadas Científicas UMSS</p>
+        </div>
 
         <Formik
           initialValues={initialValues}
@@ -94,21 +99,56 @@ const LoginUser = () => {
           onSubmit={handleSubmit}
         >
           {({ isSubmitting }) => (
-            <Form style={{ flexDirection: "column" }}>
-              <MemoizedInputText name="correoUsuario" placeholder="Introduzca su correo electrónico" label="Correo electrónico" />
-              <MemoizedInputText name="password" type="password" placeholder="Introduzca su contraseña" label="Contraseña" />
+            <Form className="login-form">
+              <div className="login-form-icon">
+                <FaUserShield />
+              </div>
 
-              <div style={{display:"flex", flexDirection:"column"}}>
-                {loginError && <span className="error-message">{loginError}</span>}
-                <ButtonPrimary type="submit" disabled={isSubmitting} className="btn-general" >
-                  {isSubmitting ? 'Ingresando...' : 'Ingresar'}
+              <InputText
+                name="correoUsuario"
+                placeholder="Correo electrónico"
+                label="Correo electrónico"
+                icon={FaEnvelope}
+              />
+              <InputText
+                name="password"
+                type="password"
+                placeholder="Contraseña"
+                label="Contraseña"
+                icon={FaLock}
+              />
+
+              <div className="login-actions">
+                {loginError && (
+                  <motion.div 
+                    className="login-error"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                  >
+                    {loginError}
+                  </motion.div>
+                )}
+                <ButtonPrimary 
+                  type="submit" 
+                  disabled={isSubmitting} 
+                  className="login-button"
+                >
+                  {isSubmitting ? (
+                    <span className="login-button-loading">
+                      <span className="spinner-dot"></span>
+                      <span className="spinner-dot"></span>
+                      <span className="spinner-dot"></span>
+                    </span>
+                  ) : 'Ingresar'}
                 </ButtonPrimary>
-                <Link to="/reset">¿Olvidaste la contraseña?</Link>
+                <Link to="/reset" className="login-forgot">
+                  ¿Olvidaste la contraseña?
+                </Link>
               </div>
             </Form>
           )}
         </Formik>
-      </div>
+      </motion.div>
     </div>
   );
 };

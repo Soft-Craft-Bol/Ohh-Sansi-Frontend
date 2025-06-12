@@ -1,56 +1,94 @@
 @import '../../App.css';
+
 .buscador-codigo {
-  color: #002c5f;
-  margin-top: 20px;
+  color: var(--blue);
+  margin-top: 24px;
+  padding: 16px;
+  background-color: #f9fafe;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+
+.buscador-codigo p {
+  font-size: 1rem;
+  margin-bottom: 12px;
 }
 
 .input-container {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin: 10px 0;
   background-color: var(--lighter);
-  padding: 6px 12px;
-  border-radius: 6px;
+  padding: 10px 16px;
+  border-radius: 8px;
   border: 1px solid var(--grey);
-  max-width: 300px;
+  max-width: 350px;
+  margin: 0 auto 12px auto;
+  transition: box-shadow 0.3s;
+}
+
+.input-container:focus-within {
+  box-shadow: 0 0 0 2px var(--blue-light);
 }
 
 .input-container input {
   border: none;
   outline: none;
   background: transparent;
-  font-size: 14px;
-  height: 1.5rem;
+  font-size: 1rem;
+  height: 1.8rem;
   flex: 1;
+  color: var(--blue-dark);
 }
 
-.search-icon {
+.search-icon, .clear-icon {
   color: var(--blue);
-  font-size: 1rem;
+  font-size: 1.1rem;
   cursor: pointer;
+  transition: color 0.2s, transform 0.2s;
+}
+
+.search-icon:hover,
+.clear-icon:hover {
+  transform: scale(1.1);
+}
+
+.clear-icon:hover {
+  color: var(--red);
+}
+
+.search-icon:hover {
+  color: var(--blue-dark);
 }
 
 .cont-cod-int {
   display: flex;
-  flex-direction: row;
+  justify-content: center;
   align-items: baseline;
+  margin-top: 10px;
+  flex-wrap: wrap;
 }
 
 .code-text {
-  font-size: 1.3rem;
+  font-size: 1.1rem;
   margin-right: 0.5rem;
+  color: var(--blue-dark);
 }
 
 .codigo-introducido {
-  font-size: 1.4rem;
+  font-size: 1.2rem;
   font-style: italic;
-  font-weight: bolder;
+  font-weight: bold;
   color: var(--blue);
+  word-break: break-all;
 }
 
 .error-message {
-  color: red;
-  font-size: 0.9rem;
-  margin-top: 5px;
+  color: var(--red);
+  font-size: 0.95rem;
+  margin-top: 8px;
 }

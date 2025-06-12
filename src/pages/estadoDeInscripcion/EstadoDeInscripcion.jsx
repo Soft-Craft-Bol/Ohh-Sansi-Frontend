@@ -30,6 +30,11 @@ const EstadoDeInscripcion = () => {
     visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
   };
 
+  const handleClear = () => {
+    resetEstado(); 
+  };
+  
+
   return (
     <div className='estado-inscripcion'>
       <Header 
@@ -47,16 +52,17 @@ const EstadoDeInscripcion = () => {
           descripcion="Obtén información de la inscripción introduciendo el número de documento del participante"
           placeholder="Introduce el documento del participante"
           codigoIntroducidoTexto="Número de documento introducido:"
-          codigoIntroducido={documento}
+          inputValue={documento}
           onInputChange={(e) => {
             const value = e.target.value;
             const soloNumeros = value.replace(/\D/g, '');
-            if (soloNumeros.length <= 10) {
+            if (soloNumeros.length <= 9) {
               setDocumento(soloNumeros);
             }
           }}
           onKeyPress={handleKeyPress}
           onSearch={handleSearch}
+          onClear={handleClear}
           error={error}
           containerVariants={containerVariants}
         />

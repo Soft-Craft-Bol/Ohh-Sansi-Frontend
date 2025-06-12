@@ -1,0 +1,20 @@
+.date-range-picker {
+  position: relative;
+}
+
+.date-picker-input {
+  padding: 10px 15px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 0.9rem;
+  width: 250px;
+  background-color: white;
+}
+
+.react-datepicker-wrapper {
+  display: block;
+}
+
+.react-datepicker__input-container input {
+  width: 100%;
+}

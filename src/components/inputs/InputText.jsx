@@ -3,9 +3,63 @@ import { useField } from "formik";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import "./InputText.css";
 
-function InputText({ label, required, type = "text", as = "input", showCounter = false, maxLength, ...props }) {
-    const [field, meta, helpers] = useField(props);
-    const [showPassword, setShowPassword] = useState(false);
+function InputText({label,required,type = "text",showCounter = false,maxLength,
+  icon: Icon,decimal = false, decimalPlaces = 2,step = "1", 
+  ...props}) {
+  const [field, meta, helpers] = useField(props);
+  const [showPassword, setShowPassword] = useState(false);
+
+  const handleChange = (e) => {
+    let value = e.target.value;
+
+    if (decimal) {
+      value = value.replace(/[^0-9.]/g, '');
+      
+      const parts = value.split('.');
+      if (parts.length > 2) {
+        value = parts[0] + '.' + parts.slice(1).join('');
+      }
+      
+      if (parts.length === 2) {
+        value = parts[0] + '.' + parts[1].slice(0, decimalPlaces);
+      }
+    }
+    else if (props.onlyNumbers === true) {
+      value = value.replace(/\D/g, "");
+    } else if (props.onlyLetters === true) {
+      value = value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑü\s]/g, "");
+    } else if (props.onlyAlphaNumeric === true) {
+      value = value.replace(/[^a-zA-Z0-9]/g, "");
+    } else if (props.onlyLettersCapital === true) {
+      value = value.replace(/[^A-Z0-9\s]/g, "");
+    }
+
+    field.onChange({
+      target: {
+        name: field.name,
+        value,
+      },
+    });
+  };
+
+  const handleKeyDown = (e) => {
+    if (decimal && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
+      e.preventDefault();
+      const currentValue = parseFloat(field.value) || 0;
+      const stepValue = parseFloat(step) || (decimal ? Math.pow(10, -decimalPlaces) : 1);
+      
+      const newValue = e.key === 'ArrowUp' 
+        ? currentValue + stepValue
+        : currentValue - stepValue;
+
+      field.onChange({
+        target: {
+          name: field.name,
+          value: newValue.toFixed(decimalPlaces)
+        }
+      });
+    }
+  };
 
   return (
     <div className="input-component">
@@ -13,43 +67,25 @@ function InputText({ label, required, type = "text", as = "input", showCounter =
         {label} {required && <span className="required">*</span>}
       </label>
       <div className="input-wrapper">
+        {Icon && (
+          <div className="input-icon">
+            <Icon />
+          </div>
+        )}
         <input
-          className={`text-input ${meta.touched && meta.error ? "input-error" : ""}`}
+          className={`text-input ${meta.touched && meta.error ?
+           "input-error" : ""} 
+          ${Icon ? 'with-icon' : ''}`}
           {...field}
           {...props}
           type={type === "password" && showPassword ? "text" : type}
-          max={props.max}
+          onKeyDown={handleKeyDown}
+          step={decimal ? step || Math.pow(10, -decimalPlaces) : step}
           maxLength={maxLength}
-          
-          onChange={(e) => {
-            let value = e.target.value;
-    
-            if (props.onlyNumbers === true) {
-                value = value.replace(/\D/g, "");
-            }
-
-            if (props.onlyLetters === true) {
-              value = value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑü\s]/g, "");
-            }
-
-            if (props.onlyAlphaNumeric === true) {
-              value = value.replace(/[^a-zA-Z0-9]/g, "");
-            }
-
-            if (props.onlyLettersCapital === true) {
-              value = value.replace(/[^A-Z]/g, "");
-            }
-        
-            field.onChange({
-                target: {
-                    name: field.name,
-                    value,
-                },
-            });
-        }}
+          onChange={handleChange} 
           onBlur={(e) => {
-            field.onBlur(e); 
-            helpers.setTouched(true); 
+            field.onBlur(e);
+            helpers.setTouched(true);
           }}
         />
         {type === "password" && (
