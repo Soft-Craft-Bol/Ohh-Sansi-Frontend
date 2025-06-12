@@ -261,7 +261,7 @@ export const exportToPDFInscritos = (data, title, area = '') => {
     startY: area ? 40 : 34,
     styles: {
       fontSize: 8,
-      cellPadding: 3,
+      cellPadding: 2,
       valign: 'middle'
     },
     headStyles: {
@@ -273,7 +273,7 @@ export const exportToPDFInscritos = (data, title, area = '') => {
       fillColor: [245, 245, 245]
     },
     columnStyles: {
-      0: { halign: 'center', cellWidth: 20 }, // ID
+      0: { halign: 'center', cellWidth: 15 }, // ID
       1: { cellWidth: 30 }, // Apellidos
       2: { cellWidth: 25 }, // Nombres
       3: { cellWidth: 40 }, // Áreas

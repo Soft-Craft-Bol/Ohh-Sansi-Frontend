@@ -6,6 +6,7 @@ import Header from '../../components/header/Header';
 import ImageEditor from '../../components/imageEditor/ImageEditorKonva';
 import ImageScanner from '../../components/camScanner/ImageScanner';
 import uploadImageToCloudinary from '../../utils/uploadImageToCloudinary';
+import { useNavigate } from 'react-router-dom';
 import './Comprobante.css';
 
 export default function Comprobante() {
@@ -20,7 +21,7 @@ export default function Comprobante() {
   const [extractedText, setExtractedText] = useState('');
   const [receiptData, setReceiptData] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
-
+  const navigate = useNavigate()
   // ─── Funciones ──────────────────────────────────────────────────────────
 
   const handleVerifyCodigo = useCallback(async () => {
@@ -40,6 +41,13 @@ export default function Comprobante() {
           'Este código ya tiene un pago verificado, no es necesario subir comprobante.',
           'info'
         );
+      } else if (response.data.estadoPago === 'Pago rechazado') {
+      Swal.fire(
+        'Pago rechazado',
+        'Tu comprobante fue rechazado. Por favor, vuelve a subir un comprobante válido.',
+        'warning'
+      );
+      // Aquí podrías habilitar el formulario para subir nuevamente el comprobante si lo tenías deshabilitado
       } else if (response.data.mensaje === 'El participante no generó orden de pago') {
         Swal.fire(
           'Sin orden de pago',
@@ -123,7 +131,6 @@ export default function Comprobante() {
         estadoOrden: "GENERADO",
         notasAdicionales: receiptData.notasAdicionales || ''
       };
-      console.log('enviando', pagoData)
       const responsePago = await verificarPago(pagoData);
       if (responsePago.data && responsePago.status === 200) {
         Swal.fire({
@@ -139,6 +146,7 @@ export default function Comprobante() {
         setAttempts(2);
         setExtractedText('');
         setReceiptData(null);
+        navigate('/')
       } else {
         throw new Error('No se pudo verificar el pago. Inténtalo nuevamente.');
       }
@@ -318,14 +326,15 @@ export default function Comprobante() {
                   </div>
                 )}
                 <button
-                  className="submit-button"
+                className='enviar-btn'
                   onClick={handleSubmitReceipt}
                   disabled={isUploading}
                 >
                   {isUploading ? 'Verificando pago...' : 'Confirmar y verificar pago'}
+                  <span></span>
                 </button>
                 <button
-                  className="new-scan-button"
+                  className="repeat-btn"
                   onClick={() => {
                     setSelectedImage(null);
                     setCroppedImage(null);

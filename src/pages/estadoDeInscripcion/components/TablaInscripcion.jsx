@@ -126,11 +126,13 @@ const TablaInscripcion = ({
                 ? '✓ Aceptada'
                 : datosInscripcion.comprobantePagoStatus.estado === 'PENDIENTE'
                 ? '⟳ Pendiente'
+                : datosInscripcion.comprobantePagoStatus.estado === 'No Pagado'
+                ? 'No existente' 
                 : '✗ Rechazado'}
             </span>
           </div>
           <div className="col-fecha">
-            {datosInscripcion.comprobantePagoStatus.comprobantePago
+            {datosInscripcion.comprobantePagoStatus.comprobantePago !== "No existen registros"
               ? `Monto: Bs ${datosInscripcion.comprobantePagoStatus.comprobantePago.montoPagado}`
               : 'No disponible'}
           </div>
