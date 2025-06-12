@@ -258,7 +258,7 @@ const ManagementPage = () => {
               </p>
             </div>
           </div>
-          <div className="admin-header-right">
+          {/* <div className="admin-header-right">
             <button
               className="admin-header-dark-toggle"
               onClick={toggleDarkMode}
@@ -266,7 +266,7 @@ const ManagementPage = () => {
             >
               {darkMode ? <Sun size={20} /> : <Moon size={20} />}
             </button>
-          </div>
+          </div> */}
         </header>        {/* Content Area */}
         <main className="admin-content">
             <Suspense fallback={
